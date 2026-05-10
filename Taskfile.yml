@@ -9,8 +9,10 @@ vars:
   CONTAINER: kokorotts
   CONTAINER_LOCAL: kokorotts_local
   TEMP_WAV: '%TEMP%\\kokorotts_task.wav'
+  TEMP_AUDIO: '%TEMP%\\kokorotts_task_audio'
   API_TEXT: 'Hello world. This is Kokoro TTS.'
   API_VOICE: 'af_heart'
+  API_FORMAT: 'mp3'
   DRY_RUN: '0'
   NEXT_VERSION: ''
   SKIP_VALIDATION: '0'
@@ -53,13 +55,14 @@ tasks:
       - cmd /c start "" "http://localhost:{{.PORT}}"
 
   imageapi:
-    desc: Call API, play generated temp WAV, then remove it
+    desc: Call API, play generated temp audio, then remove it
     cmds:
       - 'cmd /c curl.exe -sS --retry 30 --retry-delay 2 --retry-connrefused http://localhost:{{.PORT}}/tts/ping >nul'
-      - 'cmd /c curl.exe -sS -X POST http://localhost:{{.PORT}}/tts/convert -H "Content-Type: application/json" -d "{\"text\":\"Hello world. This is Kokoro TTS.\",\"speed\":1.0,\"voice\":\"af_heart\",\"device\":\"{{.APP_DEVICE}}\"}" --output {{.TEMP_WAV}}'
-      - 'cmd /c if not exist {{.TEMP_WAV}} exit /b 1'
-      - 'cmd /c python -c "import winsound; winsound.PlaySound(r''{{.TEMP_WAV}}'', winsound.SND_FILENAME)"'
-      - 'cmd /c del /f /q {{.TEMP_WAV}}'
+      - 'cmd /c curl.exe -sS -X POST http://localhost:{{.PORT}}/tts/convert -H "Content-Type: application/json" -d "{\"text\":\"{{.API_TEXT}}\",\"speed\":1.0,\"voice\":\"{{.API_VOICE}}\",\"device\":\"{{.APP_DEVICE}}\",\"output_format\":\"{{.API_FORMAT}}\"}" --output {{.TEMP_AUDIO}}.{{.API_FORMAT}}'
+      - 'cmd /c if not exist {{.TEMP_AUDIO}}.{{.API_FORMAT}} exit /b 1'
+      - 'cmd /c python -c "from pathlib import Path; p=Path(r''{{.TEMP_AUDIO}}.{{.API_FORMAT}}''); assert p.exists() and p.stat().st_size > 0, p"'
+      - 'powershell -NoProfile -ExecutionPolicy Bypass -File scripts/play-audio.ps1 -Path "{{.TEMP_AUDIO}}.{{.API_FORMAT}}"'
+      - 'cmd /c del /f /q {{.TEMP_AUDIO}}.{{.API_FORMAT}}'
 
   imageapi-voice:
     desc: Call API for API_VOICE/API_TEXT, play generated temp WAV, then remove it
@@ -69,6 +72,15 @@ tasks:
       - 'cmd /c if not exist {{.TEMP_WAV}} exit /b 1'
       - 'cmd /c python -c "import winsound; winsound.PlaySound(r''{{.TEMP_WAV}}'', winsound.SND_FILENAME)"'
       - 'cmd /c del /f /q {{.TEMP_WAV}}'
+
+  imageapi-format:
+    desc: Call API for API_FORMAT and verify the output file is non-empty
+    cmds:
+      - 'cmd /c curl.exe -sS --retry 30 --retry-delay 2 --retry-connrefused http://localhost:{{.PORT}}/tts/ping >nul'
+      - 'cmd /c curl.exe -sS -X POST http://localhost:{{.PORT}}/tts/convert -H "Content-Type: application/json" -d "{\"text\":\"{{.API_TEXT}}\",\"speed\":1.0,\"voice\":\"{{.API_VOICE}}\",\"device\":\"{{.APP_DEVICE}}\",\"output_format\":\"{{.API_FORMAT}}\"}" --output {{.TEMP_AUDIO}}.{{.API_FORMAT}}'
+      - 'cmd /c if not exist {{.TEMP_AUDIO}}.{{.API_FORMAT}} exit /b 1'
+      - 'cmd /c python -c "from pathlib import Path; p=Path(r''{{.TEMP_AUDIO}}.{{.API_FORMAT}}''); assert p.exists() and p.stat().st_size > 0, p"'
+      - 'cmd /c del /f /q {{.TEMP_AUDIO}}.{{.API_FORMAT}}'
 
   imagestop:
     desc: Stop running KokoroTTS containers

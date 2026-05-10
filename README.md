@@ -16,6 +16,7 @@ This repository is a focused fork of the upstream project:
 - Added a root `VERSION` file for the app/runtime release label.
 - Kept Python package metadata on a PEP 440-compatible development version for reliable builds.
 - Exposed the full Kokoro-82M voice set in the UI/API.
+- Added optional `wav`, `mp3`, `flac`, and `ogg` output formats in the UI/API while keeping WAV as the default.
 - Added multilingual Docker prefetch support, including UniDic for offline Japanese synthesis.
 - Added `task imageapi-voice` for quick audible smoke tests with specific voices.
 
@@ -74,6 +75,17 @@ curl -X POST "http://localhost:7860/tts/convert" \
   --output hello.wav
 ```
 
+Optional output formats:
+
+```bash
+curl -X POST "http://localhost:7860/tts/convert" \
+  -H "Content-Type: application/json" \
+  -d '{"text":"Hello from kokoroTTS.","voice":"af_heart","output_format":"mp3"}' \
+  --output hello.mp3
+```
+
+Supported `output_format` values are `wav`, `mp3`, `flac`, and `ogg`. Omitting the field keeps the original WAV response behavior.
+
 ## Taskfile Workflow (Windows-friendly)
 
 From repo root:
@@ -83,6 +95,7 @@ task image
 task imagerun
 task imageweb
 task imageapi
+task imageapi-format API_FORMAT=mp3
 ```
 
 Hot-swap local app code into container (no rebuild loop):

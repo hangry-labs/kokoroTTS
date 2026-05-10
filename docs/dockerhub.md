@@ -44,6 +44,14 @@ curl -X POST "http://localhost:7860/tts/convert" \
   --output hello.wav
 ```
 
+**MP3 output:**
+```bash
+curl -X POST "http://localhost:7860/tts/convert" \
+  -H "Content-Type: application/json" \
+  -d '{"text":"Hello world from Kokoro.","voice":"af_heart","output_format":"mp3"}' \
+  --output hello.mp3
+```
+
 **Force CPU:**
 ```bash
 curl -X POST "http://localhost:7860/tts/convert" \
@@ -88,7 +96,7 @@ I respond fastest on GitHub — Docker Hub comments aren’t monitored regularly
 - The container serves both the Gradio UI and HTTP API from the same port.
 - Default UI path: `/`
 - API base path: `/tts/*`
-- The `/tts/convert` endpoint currently returns a WAV stream.
+- The `/tts/convert` endpoint returns WAV by default and also supports `mp3`, `flac`, and `ogg` through the optional `output_format` field.
 - Recommended image tag: `sensejworld/kokorotts:v0.2`
 
 ## Releases
@@ -97,6 +105,7 @@ I respond fastest on GitHub — Docker Hub comments aren’t monitored regularly
 - Added a root `VERSION` file for the app/runtime release label.
 - Kept Python package metadata on a PEP 440-compatible development version for reliable builds.
 - Exposed the full Kokoro-82M voice set in the UI/API.
+- Added optional `wav`, `mp3`, `flac`, and `ogg` output formats in the UI/API while keeping WAV as the default.
 - Added multilingual Docker prefetch support, including UniDic for offline Japanese synthesis.
 - Added `task imageapi-voice` for quick audible smoke tests with specific voices.
 
