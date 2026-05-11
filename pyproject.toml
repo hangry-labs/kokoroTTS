@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "kokorotts"
 # PEP 440 package metadata version. Runtime/release display version lives in VERSION.
-version = "0.2.0"
+version = "0.3.0.dev0"
 description = "KokoroTTS UI + API"
 readme = "README.md"
 authors = [
