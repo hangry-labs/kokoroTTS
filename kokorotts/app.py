@@ -209,7 +209,17 @@ def predict(text, voice="af_heart", speed=1):
     return generate_first(text, voice, speed, use_gpu=False)[0]
 
 
-def generate_all(text, voice="af_heart", speed=1, hardware="auto", use_gpu: Optional[bool] = None):
+def generate_all(
+    text,
+    voice="af_heart",
+    speed=1,
+    hardware="auto",
+    pitch_semitones=0,
+    tempo=1,
+    volume=1,
+    normalize=False,
+    use_gpu: Optional[bool] = None,
+):
     pipeline = pipelines[voice[0]]
     pack = pipeline.load_voice(voice)
     if use_gpu is not None:
@@ -228,7 +238,15 @@ def generate_all(text, voice="af_heart", speed=1, hardware="auto", use_gpu: Opti
                 audio = get_model("cpu")(ps, ref_s, speed)
             else:
                 raise gr.Error(exc)
-        yield SAMPLE_RATE, to_int16_audio(audio.numpy())
+        processed_audio = apply_audio_effects(
+            to_int16_audio(audio.numpy()),
+            SAMPLE_RATE,
+            pitch_semitones,
+            tempo,
+            volume,
+            normalize,
+        )
+        yield SAMPLE_RATE, processed_audio
         if first:
             first = False
             yield SAMPLE_RATE, np.zeros(1, dtype=np.int16)
@@ -265,6 +283,105 @@ def normalize_stream_format(stream_format: str | None) -> str:
         supported = ", ".join(STREAM_FORMATS)
         raise ValueError(f"Unsupported stream_format '{stream_format}'. Supported formats: {supported}")
     return normalized
+
+
+def audio_effects_enabled(
+    pitch_semitones: float = 0.0,
+    tempo: float = 1.0,
+    volume: float = 1.0,
+    normalize: bool = False,
+) -> bool:
+    return (
+        abs(pitch_semitones) > 0.001
+        or abs(tempo - 1.0) > 0.001
+        or abs(volume - 1.0) > 0.001
+        or normalize
+    )
+
+
+def atempo_filters(multiplier: float) -> list[str]:
+    filters = []
+    current = multiplier
+    while current > 2.0:
+        filters.append("atempo=2.0")
+        current /= 2.0
+    while current < 0.5:
+        filters.append("atempo=0.5")
+        current /= 0.5
+    filters.append(f"atempo={current:.6f}")
+    return filters
+
+
+def build_audio_effect_filters(
+    sample_rate: int,
+    pitch_semitones: float = 0.0,
+    tempo: float = 1.0,
+    volume: float = 1.0,
+    normalize: bool = False,
+) -> list[str]:
+    filters = []
+    if abs(pitch_semitones) > 0.001:
+        pitch_factor = 2 ** (pitch_semitones / 12)
+        shifted_rate = max(1, int(round(sample_rate * pitch_factor)))
+        filters.extend([f"asetrate={shifted_rate}", f"aresample={sample_rate}"])
+        filters.extend(atempo_filters(1 / pitch_factor))
+    if abs(tempo - 1.0) > 0.001:
+        filters.extend(atempo_filters(tempo))
+    if abs(volume - 1.0) > 0.001:
+        filters.append(f"volume={volume:.6f}")
+    if normalize:
+        filters.append("loudnorm=I=-16:TP=-1.5:LRA=11")
+    return filters
+
+
+def apply_audio_effects(
+    audio: np.ndarray,
+    sample_rate: int = SAMPLE_RATE,
+    pitch_semitones: float = 0.0,
+    tempo: float = 1.0,
+    volume: float = 1.0,
+    normalize: bool = False,
+) -> np.ndarray:
+    if not audio_effects_enabled(pitch_semitones, tempo, volume, normalize) or audio.size == 0:
+        return audio
+
+    filters = build_audio_effect_filters(sample_rate, pitch_semitones, tempo, volume, normalize)
+    wav_bytes = audio_to_wav_bytes(audio, sample_rate)
+    command = [
+        "ffmpeg",
+        "-hide_banner",
+        "-loglevel",
+        "error",
+        "-f",
+        "wav",
+        "-i",
+        "pipe:0",
+        "-af",
+        ",".join(filters),
+        "-f",
+        "s16le",
+        "-acodec",
+        "pcm_s16le",
+        "-ac",
+        "1",
+        "-ar",
+        str(sample_rate),
+        "pipe:1",
+    ]
+    try:
+        result = subprocess.run(
+            command,
+            input=wav_bytes,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=True,
+        )
+    except FileNotFoundError as exc:
+        raise RuntimeError("ffmpeg is required for pitch, tempo, volume, or normalization controls") from exc
+    except subprocess.CalledProcessError as exc:
+        stderr = exc.stderr.decode("utf-8", errors="replace").strip()
+        raise RuntimeError(f"ffmpeg failed to apply audio controls: {stderr}") from exc
+    return np.frombuffer(result.stdout, dtype="<i2").astype(np.int16, copy=True)
 
 
 def encode_audio_bytes(audio: np.ndarray, output_format: str = "wav", sample_rate: int = SAMPLE_RATE) -> bytes:
@@ -317,12 +434,23 @@ def encoded_audio_to_temp_file(audio: np.ndarray, output_format: str = "wav", sa
         return file.name
 
 
-def synthesize_file(text, voice="af_heart", speed=1, hardware="auto", output_format="wav"):
+def synthesize_file(
+    text,
+    voice="af_heart",
+    speed=1,
+    hardware="auto",
+    output_format="wav",
+    pitch_semitones=0,
+    tempo=1,
+    volume=1,
+    normalize=False,
+):
     audio_tuple, phonemes = synthesize_full(text, voice, speed, hardware)
     if audio_tuple is None:
         return None, phonemes
     sample_rate, waveform = audio_tuple
     try:
+        waveform = apply_audio_effects(waveform, sample_rate, pitch_semitones, tempo, volume, normalize)
         output_file = encoded_audio_to_temp_file(waveform, output_format, sample_rate)
     except (RuntimeError, ValueError) as exc:
         raise gr.Error(str(exc)) from exc
@@ -499,6 +627,36 @@ with gr.Blocks(title="KokoroTTS") as ui:
                     info="Select Auto/CPU or a specific visible GPU",
                 )
             speed = gr.Slider(minimum=0.5, maximum=2, value=1, step=0.1, label="Speed")
+            with gr.Accordion("Audio Controls", open=False):
+                pitch_semitones = gr.Slider(
+                    minimum=-12,
+                    maximum=12,
+                    value=0,
+                    step=0.5,
+                    label="Pitch",
+                    info="Semitone shift after synthesis. 0 disables pitch processing.",
+                )
+                tempo = gr.Slider(
+                    minimum=0.5,
+                    maximum=2,
+                    value=1,
+                    step=0.05,
+                    label="Tempo",
+                    info="Post-synthesis tempo multiplier. 1 disables tempo processing.",
+                )
+                volume = gr.Slider(
+                    minimum=0,
+                    maximum=2,
+                    value=1,
+                    step=0.05,
+                    label="Volume",
+                    info="Output volume multiplier. 1 disables volume processing.",
+                )
+                normalize = gr.Checkbox(
+                    value=False,
+                    label="Normalize Loudness",
+                    info="Apply ffmpeg loudness normalization after synthesis.",
+                )
             output_format = gr.Dropdown(
                 choices=[(config["label"], key) for key, config in OUTPUT_FORMATS.items()],
                 value="mp3",
@@ -511,9 +669,17 @@ with gr.Blocks(title="KokoroTTS") as ui:
 
     random_btn.click(fn=get_random_quote, inputs=[voice], outputs=[text])
     voice.change(fn=refresh_text_for_language_change, inputs=[voice, voice_language_state], outputs=[text, voice_language_state])
-    generate_btn.click(fn=synthesize_file, inputs=[text, voice, speed, hardware, output_format], outputs=[out_audio, out_ps])
+    generate_btn.click(
+        fn=synthesize_file,
+        inputs=[text, voice, speed, hardware, output_format, pitch_semitones, tempo, volume, normalize],
+        outputs=[out_audio, out_ps],
+    )
     tokenize_btn.click(fn=tokenize_first, inputs=[text, voice], outputs=[out_ps])
-    stream_event = stream_btn.click(fn=generate_all, inputs=[text, voice, speed, hardware], outputs=[out_stream])
+    stream_event = stream_btn.click(
+        fn=generate_all,
+        inputs=[text, voice, speed, hardware, pitch_semitones, tempo, volume, normalize],
+        outputs=[out_stream],
+    )
     stop_btn.click(fn=None, cancels=stream_event)
     predict_btn.click(fn=predict, inputs=[text, voice, speed], outputs=[out_audio])
 
@@ -535,6 +701,28 @@ class TTSRequest(BaseModel):
     speed: float = Field(1.0, ge=0.5, le=2.0, description="Speech speed multiplier.")
     device: str = Field("auto", description="auto, cpu, or cuda:N.")
     use_gpu: Optional[bool] = Field(None, description="Legacy compatibility switch. Prefer device.")
+    pitch_semitones: float = Field(
+        0.0,
+        ge=-12.0,
+        le=12.0,
+        description="Optional post-synthesis pitch shift in semitones. 0 disables pitch processing.",
+    )
+    tempo: float = Field(
+        1.0,
+        ge=0.5,
+        le=2.0,
+        description="Optional post-synthesis tempo multiplier. 1 disables tempo processing.",
+    )
+    volume: float = Field(
+        1.0,
+        ge=0.0,
+        le=2.0,
+        description="Optional output volume multiplier. 1 disables volume processing.",
+    )
+    normalize: bool = Field(
+        False,
+        description="Apply ffmpeg loudness normalization after synthesis.",
+    )
     output_format: str = Field(
         "wav",
         alias="format",
@@ -585,6 +773,17 @@ def synthesize_payload(payload: TTSRequest) -> tuple[str, int, np.ndarray]:
     if audio_tuple is None:
         return output_format, SAMPLE_RATE, np.zeros(0, dtype=np.int16)
     sample_rate, waveform = audio_tuple
+    try:
+        waveform = apply_audio_effects(
+            waveform,
+            sample_rate,
+            payload.pitch_semitones,
+            payload.tempo,
+            payload.volume,
+            payload.normalize,
+        )
+    except RuntimeError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
     return output_format, sample_rate, waveform
 
 
@@ -623,6 +822,14 @@ def iter_stream_audio(payload: StreamingTTSRequest, stream_format: str):
     for _, ps, _ in pipeline(payload.text, payload.voice, payload.speed):
         ref_s = pack[len(ps) - 1]
         audio = to_int16_audio(model(ps, ref_s, payload.speed).numpy())
+        audio = apply_audio_effects(
+            audio,
+            SAMPLE_RATE,
+            payload.pitch_semitones,
+            payload.tempo,
+            payload.volume,
+            payload.normalize,
+        )
         if stream_format == "pcm_s16le":
             yield encode_pcm_s16le(audio)
         elif stream_format == "mp3":
@@ -646,6 +853,12 @@ def defaults() -> dict:
         "voice": "af_heart",
         "speed": 1.0,
         "device": "auto",
+        "audio_controls": {
+            "pitch_semitones": 0.0,
+            "tempo": 1.0,
+            "volume": 1.0,
+            "normalize": False,
+        },
         "output_formats": {"default": "wav", "available": get_supported_output_formats()},
         "stream_formats": {"default": "pcm_s16le", "available": STREAM_FORMATS},
     }

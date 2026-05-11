@@ -82,6 +82,15 @@ curl -X POST "http://localhost:7860/tts/generate" \
   -o hello.mp3
 ```
 
+Optional audio controls are neutral by default and can be enabled per request:
+
+```bash
+curl -X POST "http://localhost:7860/tts/generate" \
+  -H "Content-Type: application/json" \
+  -d '{"text":"Hello from Hangry Labs KokoroTTS","voice":"af_heart","output_format":"mp3","pitch_semitones":2,"tempo":1.1,"volume":0.9,"normalize":true}' \
+  -o hello-styled.mp3
+```
+
 Use another voice:
 
 ```bash

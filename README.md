@@ -136,6 +136,16 @@ curl -X POST "http://localhost:7860/tts/generate" \
   -o output.mp3
 ```
 
+Optional audio controls are available on `/tts/generate`, `/tts/convert`, and `/tts/stream`.
+They are neutral by default, so existing API clients do not pay the extra ffmpeg processing cost unless a control is changed:
+
+```bash
+curl -X POST "http://localhost:7860/tts/generate" \
+  -H "Content-Type: application/json" \
+  -d '{"text":"Hello world!","voice":"af_heart","output_format":"mp3","pitch_semitones":2,"tempo":1.1,"volume":0.9,"normalize":true}' \
+  -o output.mp3
+```
+
 Useful discovery endpoints:
 
 - `GET /tts/status`
@@ -227,6 +237,7 @@ task release
 - Kept Python package metadata on a PEP 440-compatible development version for reliable builds.
 - Exposed the full Kokoro-82M voice set in the UI/API.
 - Added optional `wav`, `mp3`, `flac`, and `ogg` output formats in the UI/API while keeping WAV as the default.
+- Added optional UI/API audio controls for pitch, tempo, volume, and loudness normalization with neutral defaults for backward compatibility.
 - Added language-aware UI sample texts with 10 lighthearted prompts per served language prefix.
 - Added a Hangry Labs examples page with generated MP3 product-intro samples, native-language page selection, and language filtering.
 - Added pinned dependency workflow with `requirements.in`, resolved `requirements.txt`, and `task deps`.

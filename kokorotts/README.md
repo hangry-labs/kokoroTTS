@@ -54,3 +54,12 @@ Optional runtime env vars:
 - Runtime sets `HF_HUB_OFFLINE=1` and `TRANSFORMERS_OFFLINE=1`, so serving works without internet.
 
 API payload also supports explicit hardware selection with `device` (and keeps legacy `use_gpu` for compatibility).
+
+Optional post-synthesis audio controls are available in the UI and API:
+
+- `pitch_semitones`: `-12` to `12`, default `0`.
+- `tempo`: `0.5` to `2.0`, default `1`.
+- `volume`: `0` to `2.0`, default `1`.
+- `normalize`: boolean, default `false`.
+
+Neutral defaults skip the extra ffmpeg processing pass.
