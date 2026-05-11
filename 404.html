@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Page Not Found | Hangry Labs</title>
+    <link rel="icon" type="image/png" href="hangrylabs/favicon_small.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+        overflow-x: hidden;
+        background: #000;
+        color: #ffb076;
+      }
+
+      canvas {
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        width: 100%;
+        height: 100%;
+      }
+
+      .page-shell {
+        position: relative;
+        z-index: 10;
+        min-height: 100vh;
+        background: rgba(0, 0, 0, 0.5);
+      }
+
+      .page-shell::before {
+        background:
+          linear-gradient(180deg, rgba(0, 0, 0, 0.24), rgba(0, 0, 0, 0.82)),
+          url("hangrylabs/hero_background_small.png") center top / cover no-repeat;
+        content: "";
+        inset: 0;
+        opacity: 0.24;
+        pointer-events: none;
+        position: fixed;
+        z-index: -1;
+      }
+
+      .brand-card {
+        background: rgba(20, 20, 20, 0.94);
+        border: 2px solid rgba(255, 107, 0, 0.34);
+        border-radius: 12px;
+        box-shadow:
+          0 0 28px rgba(255, 107, 0, 0.18),
+          0 0 80px rgba(255, 60, 0, 0.12);
+      }
+
+      .brand-glow {
+        color: #ff6b00;
+        text-shadow:
+          0 0 20px rgba(255, 107, 0, 0.62),
+          0 0 48px rgba(255, 60, 0, 0.28);
+      }
+
+      .pill {
+        border: 1px solid rgba(255, 107, 0, 0.42);
+        background: rgba(255, 107, 0, 0.12);
+        border-radius: 999px;
+        color: #ffb076;
+        transition:
+          background 0.2s ease,
+          border-color 0.2s ease,
+          color 0.2s ease,
+          box-shadow 0.2s ease;
+      }
+
+      .pill:hover {
+        background: rgba(255, 107, 0, 0.24);
+        border-color: #ff6b00;
+        color: #ffc08a;
+        box-shadow: 0 0 18px rgba(255, 107, 0, 0.34);
+      }
+
+      .not-found-art {
+        border: 2px solid rgba(255, 107, 0, 0.32);
+        border-radius: 18px;
+        box-shadow:
+          0 0 28px rgba(255, 107, 0, 0.22),
+          0 0 80px rgba(255, 60, 0, 0.14);
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="shapes" aria-hidden="true"></canvas>
+    <main class="page-shell">
+      <section class="mx-auto grid min-h-screen w-full max-w-5xl items-center gap-8 px-4 py-8 sm:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:px-8">
+        <div>
+          <a class="inline-flex items-center gap-3 text-decoration-none" href="https://nuggies.website/" target="_blank" rel="noopener noreferrer">
+            <img class="h-11 w-11 rounded-lg border border-orange-500/40 object-cover shadow-[0_0_20px_rgba(255,107,0,0.22)]" src="hangrylabs/favicon_small.png" alt="Hangry Labs logo">
+            <span class="text-base font-extrabold text-[#ffb076]">Hangry Labs</span>
+          </a>
+          <div class="mt-8">
+            <h1 class="brand-glow text-5xl font-extrabold leading-none sm:text-7xl">404</h1>
+            <p class="mt-5 max-w-xl text-lg leading-8 text-[#ffb076]">
+              This page wandered away from the easy path.
+            </p>
+            <div class="mt-8 flex flex-wrap gap-3">
+              <a class="pill px-5 py-2 text-sm font-semibold no-underline" href="examples/">Back to Melo T T S</a>
+              <a class="pill px-5 py-2 text-sm font-semibold no-underline" href="https://github.com/hangry-labs/MeloTTS">GitHub</a>
+              <a class="pill px-5 py-2 text-sm font-semibold no-underline" href="https://nuggies.website/" target="_blank" rel="noopener noreferrer">nuggies.website</a>
+            </div>
+          </div>
+        </div>
+        <div class="brand-card p-3">
+          <img class="not-found-art block w-full" src="hangrylabs/404_small.png" alt="404 page not found artwork">
+        </div>
+      </section>
+    </main>
+    <script src="examples/background.js"></script>
+  </body>
+</html>

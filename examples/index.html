@@ -1,0 +1,511 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Hangry Labs KokoroTTS Voice Examples</title>
+    <link rel="icon" type="image/png" href="../hangrylabs/favicon_small.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+        overflow-x: hidden;
+        background: #000;
+        color: #ffb076;
+        scroll-behavior: smooth;
+      }
+
+      canvas {
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        width: 100%;
+        height: 100%;
+      }
+
+      .page-shell {
+        position: relative;
+        z-index: 10;
+        min-height: 100vh;
+        background: rgba(0, 0, 0, 0.42);
+      }
+
+      .page-shell::before {
+        background:
+          linear-gradient(180deg, rgba(0, 0, 0, 0.22), rgba(0, 0, 0, 0.82)),
+          url("../hangrylabs/hero_background_small.png") center top / cover no-repeat;
+        content: "";
+        inset: 0;
+        opacity: 0.2;
+        pointer-events: none;
+        position: fixed;
+        z-index: -1;
+      }
+
+      .brand-card {
+        background: rgba(20, 20, 20, 0.94);
+        border: 2px solid rgba(255, 107, 0, 0.3);
+        border-radius: 12px;
+        box-shadow: 0 0 28px rgba(255, 107, 0, 0.12);
+        cursor: pointer;
+        transition:
+          border-color 0.25s ease,
+          box-shadow 0.25s ease,
+          transform 0.25s ease;
+      }
+
+      .brand-card:hover {
+        border-color: #ff6b00;
+        box-shadow: 0 0 24px rgba(255, 107, 0, 0.34);
+        transform: translateY(-3px);
+      }
+
+      .brand-card:focus-visible {
+        border-color: #ff8a33;
+        box-shadow:
+          0 0 0 3px rgba(255, 107, 0, 0.28),
+          0 0 28px rgba(255, 107, 0, 0.42);
+        outline: none;
+      }
+
+      .brand-card.is-playing {
+        animation: cardPulse 1.4s ease-in-out infinite;
+        border-color: #ff6b00;
+      }
+
+      @keyframes cardPulse {
+        0%,
+        100% {
+          box-shadow:
+            0 0 18px rgba(255, 107, 0, 0.28),
+            0 0 42px rgba(255, 107, 0, 0.12);
+        }
+
+        50% {
+          box-shadow:
+            0 0 28px rgba(255, 107, 0, 0.5),
+            0 0 68px rgba(255, 107, 0, 0.2);
+        }
+      }
+
+      .brand-glow {
+        color: #ff6b00;
+        text-shadow:
+          0 0 20px rgba(255, 107, 0, 0.62),
+          0 0 48px rgba(255, 60, 0, 0.28);
+      }
+
+      .pill {
+        border: 1px solid rgba(255, 107, 0, 0.42);
+        background: rgba(255, 107, 0, 0.12);
+        border-radius: 999px;
+        color: #ffb076;
+      }
+
+      .language-filter {
+        align-items: center;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.55rem;
+        margin-bottom: 1rem;
+      }
+
+      .filter-button,
+      .language-button {
+        appearance: none;
+        border: 1px solid rgba(255, 107, 0, 0.42);
+        background: rgba(20, 20, 20, 0.84);
+        border-radius: 999px;
+        color: #ffb076;
+        cursor: pointer;
+        font-size: 0.86rem;
+        font-weight: 700;
+        line-height: 1;
+        padding: 0.68rem 0.9rem;
+        transition:
+          background 0.2s ease,
+          border-color 0.2s ease,
+          color 0.2s ease,
+          box-shadow 0.2s ease;
+      }
+
+      .filter-button:hover,
+      .filter-button:focus-visible,
+      .filter-button.is-active,
+      .language-button:hover,
+      .language-button:focus-visible,
+      .language-button.is-active {
+        background: rgba(255, 107, 0, 0.22);
+        border-color: #ff6b00;
+        box-shadow: 0 0 16px rgba(255, 107, 0, 0.18);
+        color: #ffc394;
+        outline: none;
+      }
+
+      .topbar {
+        align-items: flex-start;
+        background: rgba(10, 10, 10, 0.86);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 107, 0, 0.26);
+        border-radius: 12px;
+        display: flex;
+        gap: 0.85rem;
+        justify-content: space-between;
+        margin-bottom: 1.35rem;
+        padding: 0.85rem;
+      }
+
+      .brand-lockup {
+        align-items: flex-start;
+        color: inherit;
+        display: flex;
+        gap: 0.7rem;
+        min-width: 0;
+        padding: 0.1rem 0 0 0.1rem;
+        text-decoration: none;
+      }
+
+      .brand-logo {
+        border: 1px solid rgba(255, 107, 0, 0.36);
+        border-radius: 8px;
+        box-shadow: 0 0 20px rgba(255, 107, 0, 0.22);
+        height: 2.65rem;
+        object-fit: cover;
+        width: 2.65rem;
+      }
+
+      .brand-name {
+        color: #ffb076;
+        font-size: 1rem;
+        font-weight: 800;
+        line-height: 1.1;
+      }
+
+      .brand-subtitle {
+        color: #ff8a33;
+        font-size: 0.76rem;
+        font-weight: 600;
+        margin-top: 0.15rem;
+      }
+
+      .hero {
+        align-items: start;
+        display: grid;
+        gap: 2rem;
+        grid-template-columns: minmax(0, 1.08fr) minmax(280px, 0.72fr);
+      }
+
+      .hero-logo-panel {
+        align-items: flex-start;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+      }
+
+      .hero-logo-link {
+        display: block;
+        margin-left: auto;
+        max-width: min(360px, 100%);
+        text-decoration: none;
+        width: 100%;
+      }
+
+      .hero-logo {
+        aspect-ratio: 1 / 1;
+        border: 2px solid rgba(255, 107, 0, 0.3);
+        border-radius: 18px;
+        box-shadow:
+          0 0 28px rgba(255, 107, 0, 0.22),
+          0 0 80px rgba(255, 60, 0, 0.14);
+        object-fit: cover;
+        width: 100%;
+      }
+
+      .hero-site-link {
+        align-self: flex-end;
+        animation: siteLinkPulse 2.4s ease-in-out infinite;
+        color: #ff9b45;
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0;
+        margin-top: 0.24rem;
+        text-align: center;
+        text-decoration: none;
+        text-shadow:
+          0 0 10px rgba(255, 107, 0, 0.5),
+          0 0 22px rgba(255, 107, 0, 0.22);
+        width: min(360px, 100%);
+      }
+
+      @keyframes siteLinkPulse {
+        0%,
+        100% {
+          opacity: 0.74;
+        }
+
+        50% {
+          opacity: 1;
+        }
+      }
+
+      .top-actions,
+      .top-links {
+        align-items: center;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.55rem;
+        justify-content: flex-end;
+      }
+
+      .volume-control {
+        align-items: center;
+        background: rgba(255, 107, 0, 0.1);
+        border: 1px solid rgba(255, 107, 0, 0.34);
+        border-radius: 999px;
+        display: flex;
+        gap: 0.55rem;
+        padding: 0.45rem 0.65rem;
+      }
+
+      .volume-button {
+        align-items: center;
+        appearance: none;
+        background: transparent;
+        border: 0;
+        color: #ffb076;
+        cursor: pointer;
+        display: inline-flex;
+        height: 2rem;
+        justify-content: center;
+        padding: 0;
+        width: 2rem;
+      }
+
+      .volume-button:hover,
+      .volume-button:focus-visible {
+        color: #ff6b00;
+        outline: none;
+      }
+
+      .volume-button svg {
+        display: block;
+        height: 1.55rem;
+        width: 1.55rem;
+      }
+
+      .volume-button svg path {
+        stroke: currentColor;
+      }
+
+      .volume-button svg[hidden],
+      audio {
+        display: none;
+      }
+
+      .volume-slider {
+        accent-color: #ff6b00;
+        cursor: pointer;
+        width: 4.5rem;
+      }
+
+      .player {
+        align-items: center;
+        display: grid;
+        gap: 0.75rem;
+        grid-template-columns: minmax(0, 1fr) auto;
+      }
+
+      .progress-button {
+        appearance: none;
+        background: transparent;
+        border: 0;
+        cursor: pointer;
+        min-width: 0;
+        padding: 0.75rem 0;
+        touch-action: none;
+        user-select: none;
+        width: 100%;
+      }
+
+      .progress-button:focus-visible {
+        outline: 2px solid rgba(255, 107, 0, 0.8);
+        outline-offset: 4px;
+      }
+
+      .progress-track {
+        align-items: center;
+        background: rgba(255, 107, 0, 0.16);
+        border: 1px solid rgba(255, 107, 0, 0.3);
+        border-radius: 999px;
+        box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.5);
+        display: flex;
+        height: 0.56rem;
+        overflow: visible;
+        position: relative;
+        width: 100%;
+      }
+
+      .progress-fill {
+        background: linear-gradient(90deg, #ff6b00, #ff9b45);
+        border-radius: inherit;
+        box-shadow: 0 0 14px rgba(255, 107, 0, 0.55);
+        height: 100%;
+        left: 0;
+        position: absolute;
+        top: 0;
+        transition: width 0.08s linear;
+        width: 0;
+      }
+
+      .progress-knob {
+        background: #ff6b00;
+        border: 2px solid #ffc08a;
+        border-radius: 999px;
+        box-shadow:
+          0 0 8px rgba(255, 107, 0, 0.7),
+          0 0 16px rgba(255, 107, 0, 0.28);
+        height: 1rem;
+        left: 0;
+        position: absolute;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        transition: left 0.08s linear;
+        width: 1rem;
+        z-index: 2;
+      }
+
+      .duration {
+        color: #ffb076;
+        font-family: "Courier New", monospace;
+        font-size: 0.78rem;
+        min-width: 4.4rem;
+        text-align: right;
+      }
+
+      a {
+        color: #ff6b00;
+      }
+
+      a:hover {
+        color: #ff8a33;
+        text-shadow: 0 0 12px rgba(255, 107, 0, 0.42);
+      }
+
+      @media (max-width: 900px) {
+        .hero {
+          grid-template-columns: 1fr;
+        }
+
+        .hero-logo-link,
+        .hero-logo {
+          margin-left: 0;
+          max-width: 220px;
+        }
+
+        .hero-site-link {
+          align-self: flex-start;
+          width: min(220px, 100%);
+        }
+      }
+
+      @media (max-width: 720px) {
+        .topbar {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+
+        .top-actions,
+        .top-links {
+          justify-content: flex-start;
+        }
+
+        .player {
+          grid-template-columns: 1fr;
+        }
+
+        .duration {
+          text-align: left;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="shapes" aria-hidden="true"></canvas>
+    <main class="page-shell">
+      <section class="mx-auto flex min-h-screen w-full max-w-6xl flex-col px-4 py-3 sm:px-6 sm:py-4 lg:px-8">
+        <header class="mb-8 pt-0">
+          <div class="hero">
+            <div>
+              <div class="topbar">
+                <a class="brand-lockup" href="https://nuggies.website/" target="_blank" rel="noopener noreferrer">
+                  <img class="brand-logo" src="../hangrylabs/favicon_small.png" alt="Hangry Labs logo">
+                  <div>
+                    <div class="brand-name">Hangry Labs</div>
+                    <div class="brand-subtitle" data-i18n="brandSubtitle">Useful tools, easy to run</div>
+                  </div>
+                </a>
+                <div class="top-actions">
+                  <div class="volume-control" aria-label="Volume control">
+                    <button class="volume-button" type="button" aria-label="Mute audio" data-muted="false">
+                      <svg class="volume-icon-on" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M6.5 15.5H4.75A1.75 1.75 0 013 13.75v-3.5c0-.97.78-1.75 1.75-1.75H6.5l5-4.25v15.5l-5-4.25zM16 8.5a5 5 0 010 7M18.75 6a8.5 8.5 0 010 12"></path>
+                      </svg>
+                      <svg class="volume-icon-muted" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false" hidden>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M6.5 15.5H4.75A1.75 1.75 0 013 13.75v-3.5c0-.97.78-1.75 1.75-1.75H6.5l5-4.25v15.5l-5-4.25zM17 9.5l4 4M21 9.5l-4 4"></path>
+                      </svg>
+                    </button>
+                    <input class="volume-slider" type="range" min="0" max="1" step="0.01" value="0.85" aria-label="Volume">
+                  </div>
+                  <nav class="top-links" aria-label="Project links">
+                    <a class="pill px-4 py-2 text-sm font-semibold no-underline" href="https://hub.docker.com/r/hangrylabs/kokorotts/tags" data-i18n="dockerHub">Docker Hub</a>
+                    <a class="pill px-4 py-2 text-sm font-semibold no-underline" href="https://github.com/Hangry-Labs/kokoroTTS">GitHub</a>
+                  </nav>
+                </div>
+              </div>
+              <h1 class="brand-glow max-w-4xl text-4xl font-extrabold leading-none sm:text-6xl">
+                <span data-i18n="headline">KokoroTTS voice examples</span>
+              </h1>
+              <p class="mt-5 max-w-3xl text-base leading-7 text-[#ffb076] sm:text-lg" data-i18n="intro">
+                Easy-to-run text-to-speech Docker images built for professionals and for people who are not technical.
+                Install Docker, run one command, open the browser, or call the same API from your own application.
+                KokoroTTS creates compact MP3 audio, exposes the full Kokoro voice set, and works out of the box.
+              </p>
+              <div class="mt-5 flex flex-wrap gap-2">
+                <span class="pill px-3 py-1 text-sm font-semibold" data-i18n="pillVoices">54 voices</span>
+                <span class="pill px-3 py-1 text-sm font-semibold" data-i18n="pillLanguages">9 language prefixes</span>
+                <span class="pill px-3 py-1 text-sm font-semibold" data-i18n="pillApi">UI + API</span>
+                <span class="pill px-3 py-1 text-sm font-semibold" data-i18n="pillOffline">Offline-friendly Docker image</span>
+              </div>
+            </div>
+            <div class="hero-logo-panel" aria-hidden="true">
+              <a class="hero-logo-link" href="https://nuggies.website/" target="_blank" rel="noopener noreferrer" tabindex="-1">
+                <img class="hero-logo" src="../hangrylabs/logo_small.png" alt="">
+              </a>
+              <a class="hero-site-link" href="https://nuggies.website/" target="_blank" rel="noopener noreferrer">nuggies.website</a>
+            </div>
+          </div>
+        </header>
+
+        <section class="language-filter" aria-label="Filter voice examples by language" data-i18n-aria="voiceFilterLabel">
+          <button class="filter-button" type="button" data-language-value="all" aria-pressed="false" data-i18n="filterAll">All</button>
+          <button class="filter-button is-active" type="button" data-language-value="American English" aria-pressed="true">American English</button>
+          <button class="filter-button" type="button" data-language-value="British English" aria-pressed="false">British English</button>
+          <button class="filter-button" type="button" data-language-value="Japanese" aria-pressed="false">日本語</button>
+          <button class="filter-button" type="button" data-language-value="Mandarin Chinese" aria-pressed="false">中文</button>
+          <button class="filter-button" type="button" data-language-value="Spanish" aria-pressed="false">Español</button>
+          <button class="filter-button" type="button" data-language-value="French" aria-pressed="false">Français</button>
+          <button class="filter-button" type="button" data-language-value="Hindi" aria-pressed="false">हिन्दी</button>
+          <button class="filter-button" type="button" data-language-value="Italian" aria-pressed="false">Italiano</button>
+          <button class="filter-button" type="button" data-language-value="Brazilian Portuguese" aria-pressed="false">Português do Brasil</button>
+        </section>
+
+        <section class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3" aria-label="Voice examples" data-i18n-aria="voiceExamplesLabel" data-voice-grid></section>
+      </section>
+    </main>
+    <script src="voices.js"></script>
+    <script src="player.js"></script>
+    <script src="background.js"></script>
+  </body>
+</html>

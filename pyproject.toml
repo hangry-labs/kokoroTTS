@@ -9,7 +9,7 @@ version = "0.2.0.dev0"
 description = "KokoroTTS UI + API"
 readme = "README.md"
 authors = [
-    { name="TheMasterOfDisasters" }
+    { name="Hangry Labs" }
 ]
 license = { file = "LICENSE" }
 classifiers = [
@@ -36,5 +36,5 @@ only-include = ["kokorotts"]
 only-packages = true
 
 [project.urls]
-Homepage = "https://github.com/TheMasterOfDisasters/kokoroTTS"
-Repository = "https://github.com/TheMasterOfDisasters/kokoroTTS"
+Homepage = "https://github.com/Hangry-Labs/kokoroTTS"
+Repository = "https://github.com/Hangry-Labs/kokoroTTS"
