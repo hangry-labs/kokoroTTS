@@ -61,10 +61,10 @@ The tiny image is smaller, but it downloads model and voice files after startup 
 docker run -p 7860:7860 --gpus all hangrylabs/kokorotts:latest
 docker run -p 7860:7860 hangrylabs/kokorotts:latest
 docker run -p 7860:7860 --gpus "device=1" -e CUDA_VISIBLE_DEVICES=1 hangrylabs/kokorotts:latest
-docker run -p 7860:7860 --gpus all -v kokorotts_hf_cache:/app/.cache/huggingface hangrylabs/kokorotts:tiny
+docker run -p 7860:7860 --gpus all -v kokorotts_hf_cache:/app/.cache/huggingface hangrylabs/kokorotts:latest_tiny
 ```
 
-Use the stable version tag when you want repeatable deployments. Use `latest` when you want the newest published full image, and `tiny` when you want the newest published tiny image.
+Use the stable version tag when you want repeatable deployments. Use `latest` when you want the newest published full image, and `latest_tiny` when you want the newest published tiny image.
 
 Then open:
 

@@ -267,7 +267,7 @@ task release
 - Improved the UI Stream tab so Stop cancels active streams cooperatively and starting a new stream clears stale audio before using the latest text.
 - Added a persistent Docker Hugging Face cache volume for task-run containers, with `task nuke` removing it for from-scratch validation.
 - Added a separate tiny Docker image target and task workflow for cache-volume-based model downloads while keeping the normal image fully baked for offline use.
-- Updated Docker publish workflows for separate full (`vX.Y`/`latest`) and tiny (`vX.Y_tiny`/`tiny`) image tracks, explicit `hangrylabs/kokorotts` publishing, and manual release dispatch with a selected checkout ref.
+- Updated Docker publish workflows for separate full (`vX.Y`/`latest`) and tiny (`vX.Y_tiny`/`latest_tiny`) image tracks, explicit `hangrylabs/kokorotts` publishing, and manual release dispatch with a selected checkout ref.
 - Removed unnecessary caution callouts from public docs and the Stream tab for a cleaner product-facing experience.
 
 ### v0.2

@@ -18,7 +18,7 @@ on:
         required: false
         type: string
       push_latest:
-        description: "Also publish tiny"
+        description: "Also publish latest_tiny"
         required: false
         default: true
         type: boolean
@@ -67,15 +67,15 @@ jobs:
 
       - name: Build tiny Docker image
         run: |
-          docker build --target tiny -t $IMAGE_NAME:tiny .
+          docker build --target tiny -t $IMAGE_NAME:latest_tiny .
           if [[ -n "$VERSION" ]]; then
-            docker tag $IMAGE_NAME:tiny $IMAGE_NAME:${VERSION}_tiny
+            docker tag $IMAGE_NAME:latest_tiny $IMAGE_NAME:${VERSION}_tiny
           fi
 
       - name: Push tiny Docker image
         run: |
           if [[ "${{ github.event_name }}" != "workflow_dispatch" || "${{ inputs.push_latest }}" == "true" ]]; then
-            docker push $IMAGE_NAME:tiny
+            docker push $IMAGE_NAME:latest_tiny
           fi
           if [[ -n "$VERSION" ]]; then
             docker push $IMAGE_NAME:${VERSION}_tiny
