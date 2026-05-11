@@ -219,6 +219,8 @@ task release
 - Added optional `wav`, `mp3`, `flac`, and `ogg` output formats in the UI/API while keeping WAV as the default.
 - Added language-aware UI sample texts with 10 lighthearted prompts per served language prefix.
 - Added a Hangry Labs examples page with generated MP3 product-intro samples, native-language page selection, and language filtering.
+- Added pinned dependency workflow with `requirements.in`, resolved `requirements.txt`, and `task deps`.
+- Removed old Gatsby/Frankenstein long-text demo buttons and unused bundled text files.
 - Added multilingual Docker prefetch support, including UniDic for offline Japanese synthesis.
 - Added `task imageapi-voice` and `task imageapi-format` for practical smoke tests.
 

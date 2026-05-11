@@ -33,6 +33,11 @@ tasks:
     cmds:
       - powershell -NoProfile -ExecutionPolicy Bypass -File scripts/release.ps1 -DryRun "{{.DRY_RUN}}" -NextVersion "{{.NEXT_VERSION}}" -SkipValidation "{{.SKIP_VALIDATION}}"
 
+  deps:
+    desc: Regenerate Linux/Python 3.11 pinned requirements.txt from requirements.in
+    cmds:
+      - uv pip compile requirements.in --python-version 3.11 --python-platform x86_64-manylinux_2_36 --no-header --no-annotate --output-file requirements.txt
+
   imagerun:
     desc: Run image with UI and API on PORT (default GPU_DEVICE=0)
     cmds:

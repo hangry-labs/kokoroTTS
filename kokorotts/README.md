@@ -7,8 +7,8 @@ The app exposes the bundled Kokoro-82M voice set across American English, Britis
 ## Run without Docker
 
 ```bash
+python -m pip install -r requirements.txt
 python -m pip install -e .
-python -m pip install -r kokorotts/requirements.txt
 python kokorotts/app.py
 ```
 
@@ -21,11 +21,14 @@ python kokorotts/app.py
 From repository root:
 
 ```bash
+task deps
 task image
 task imagerun
 task imageweb
 task imageapi
 ```
+
+`task deps` regenerates the pinned root `requirements.txt` from `requirements.in` for the Docker/Linux runtime.
 
 For hot-swapping local app files into the running container:
 

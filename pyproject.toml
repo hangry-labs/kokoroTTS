@@ -17,14 +17,18 @@ classifiers = [
     "License :: OSI Approved :: Apache Software License",
     "Operating System :: OS Independent"
 ]
-requires-python = ">=3.10, <3.14"
+requires-python = ">=3.11, <3.14"
 dependencies = [
-    "huggingface_hub>=0.30.0,<1.0",
-    "loguru",
-    "misaki[en,ja,zh]>=0.9.4",
-    "numpy",
-    "torch",
-    "transformers"
+    "fastapi==0.136.1",
+    "gradio==6.14.0",
+    "huggingface-hub==0.36.2",
+    "loguru==0.7.3",
+    "misaki[en,ja,zh]==0.9.4",
+    "numpy==2.4.4",
+    "setuptools==79.0.1",
+    "torch==2.11.0",
+    "transformers==4.57.6",
+    "uvicorn[standard]==0.46.0"
 ]
 
 [project.scripts]

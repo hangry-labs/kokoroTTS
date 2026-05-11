@@ -3,7 +3,6 @@ import os
 import subprocess
 import tempfile
 import wave
-from pathlib import Path
 from typing import Optional
 
 import gradio as gr
@@ -55,7 +54,6 @@ DEFAULT_REPO_ID = os.getenv("KOKORO_REPO_ID", "hexgrad/Kokoro-82M")
 APP_VERSION = os.getenv("APP_VERSION", KOKORO_VERSION)
 BUILD_ID = os.getenv("BUILD_ID", "stable")
 DEFAULT_DEVICE = os.getenv("KOKOROTTS_DEVICE", "auto")
-DATA_DIR = Path(__file__).resolve().parent
 MODEL_CACHE = {}
 pipelines = {
     lang_code: KPipeline(lang_code=lang_code, repo_id=DEFAULT_REPO_ID, model=False)
@@ -278,14 +276,6 @@ def to_int16_audio(audio: np.ndarray) -> np.ndarray:
     return (np.clip(audio, -1.0, 1.0) * 32767).astype(np.int16)
 
 
-def get_gatsby():
-    return (DATA_DIR / "gatsby5k.md").read_text(encoding="utf-8").strip()
-
-
-def get_frankenstein():
-    return (DATA_DIR / "frankenstein5k.md").read_text(encoding="utf-8").strip()
-
-
 for voice_id in VOICE_CHOICES.values():
     pipelines[voice_id[0]].load_voice(voice_id)
 
@@ -379,16 +369,11 @@ with gr.Blocks(title="KokoroTTS") as ui:
                 info="WAV preserves existing API/UI behavior; other formats are encoded with ffmpeg",
             )
             random_btn = gr.Button("🎲 Random Quote 💬", variant="secondary")
-            with gr.Row():
-                gatsby_btn = gr.Button("🥂 Gatsby 📕", variant="secondary")
-                frankenstein_btn = gr.Button("💀 Frankenstein 📗", variant="secondary")
         with gr.Column():
             gr.TabbedInterface([generate_tab, stream_tab], ["Generate", "Stream"])
 
     random_btn.click(fn=get_random_quote, inputs=[voice], outputs=[text])
     voice.change(fn=refresh_text_for_language_change, inputs=[voice, voice_language_state], outputs=[text, voice_language_state])
-    gatsby_btn.click(fn=get_gatsby, inputs=[], outputs=[text])
-    frankenstein_btn.click(fn=get_frankenstein, inputs=[], outputs=[text])
     generate_btn.click(fn=synthesize_file, inputs=[text, voice, speed, hardware, output_format], outputs=[out_audio, out_ps])
     tokenize_btn.click(fn=tokenize_first, inputs=[text, voice], outputs=[out_ps])
     stream_event = stream_btn.click(fn=generate_all, inputs=[text, voice, speed, hardware], outputs=[out_stream])
