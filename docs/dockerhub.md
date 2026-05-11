@@ -1,136 +1,127 @@
-# 🗣️ KokoroTTS WebUI & API (Docker)
+<p>
+  <a href="https://hangry-labs.github.io/kokoroTTS/examples/">
+    <img src="https://github.com/Hangry-Labs/kokoroTTS/raw/main/logo.jpg" alt="Hangry Labs KokoroTTS logo">
+  </a>
+</p>
 
-This is the Hangry Labs Docker image for [KokoroTTS](https://github.com/Hangry-Labs/kokoroTTS), based on the original [Kokoro](https://github.com/hexgrad/kokoro), with a focus on making it **easy to run, integrate, and use offline** without extra setup.
+# Hangry Labs KokoroTTS
 
-## ✅ Features
-- Web interface (Gradio) on `/`
-- HTTP API on `/tts/*`
-- UI and API served from one container, one port
-- Docker-ready for local or cloud use
-- GPU acceleration when available
-- Offline-ready image with prefetched model and voice assets
-- Full Kokoro-82M voice set exposed in the UI/API
+Easy-to-run Kokoro text-to-speech Docker images with a browser UI and HTTP API included.
 
-## 🚀 Quick Start
-**CPU:**
+This Hangry Labs fork is built for people who want text to speech to work without a long setup. Install Docker, run one command, open the local UI, or call the API from your own application.
+
+## Listen First
+
+Voice examples are available here:
+
+https://hangry-labs.github.io/kokoroTTS/examples/
+
+The examples page includes MP3 previews for all 54 Kokoro voices across American English, British English, Japanese, Mandarin Chinese, Spanish, French, Hindi, Italian, and Brazilian Portuguese. Selecting a language filters the examples and switches the page text to that language.
+
+## Project Links
+
+- Voice examples: https://hangry-labs.github.io/kokoroTTS/examples/
+- GitHub repository: https://github.com/Hangry-Labs/kokoroTTS
+- Issues and support: https://github.com/Hangry-Labs/kokoroTTS/issues
+- Hangry Labs: https://nuggies.website/
+
+## Quick Start
+
+Run with NVIDIA GPU support:
+
+```bash
+docker run -p 7860:7860 --gpus all hangrylabs/kokorotts:v0.2
+```
+
+Run on CPU:
+
 ```bash
 docker run -p 7860:7860 hangrylabs/kokorotts:v0.2
 ```
 
-**NVIDIA GPU:**
-```bash
-docker run -p 7860:7860 --gpus all hangrylabs/kokorotts:v0.2
-```
+Run on a specific GPU:
 
-**Specific GPU (example: GPU index `1`):**
 ```bash
 docker run -p 7860:7860 --gpus "device=1" -e CUDA_VISIBLE_DEVICES=1 hangrylabs/kokorotts:v0.2
 ```
 
-Visit: [http://localhost:7860](http://localhost:7860) for the UI.  
-*(First synthesis may take a little longer while the model and device warm up.)*
+Then open:
 
-### 📡 API Usage Examples
-**Ping:**
-```bash
-curl -sS http://localhost:7860/tts/ping
-```
+http://localhost:7860
 
-**Simple:**
-```bash
-curl -X POST "http://localhost:7860/tts/convert" \
-  -H "Content-Type: application/json" \
-  -d '{"text":"Hello world from Kokoro.","voice":"af_heart","speed":1.0,"device":"auto"}' \
-  --output hello.wav
-```
+The container includes the web UI and the HTTP API on the same port.
 
-**MP3 output:**
-```bash
-curl -X POST "http://localhost:7860/tts/convert" \
-  -H "Content-Type: application/json" \
-  -d '{"text":"Hello world from Kokoro.","voice":"af_heart","output_format":"mp3"}' \
-  --output hello.mp3
-```
+## What You Get
 
-**Force CPU:**
+- Browser UI for manual text-to-speech generation
+- HTTP API for applications and automation
+- MP3 output from the UI by default
+- Backward-compatible WAV API responses unless `output_format` or `format` is requested
+- WAV, MP3, FLAC, and OGG output support
+- Full Kokoro-82M voice set exposed in the UI and API
+- GPU support when Docker/NVIDIA support is available
+- Offline-friendly usage once the image and baked model assets are available locally
+
+## API Example
+
+Default API behavior returns WAV for backward compatibility:
+
 ```bash
 curl -X POST "http://localhost:7860/tts/convert" \
   -H "Content-Type: application/json" \
-  -d '{"text":"CPU synthesis","voice":"af_heart","speed":1.0,"device":"cpu"}' \
-  --output cpu.wav
+  -d '{"text":"Hello from Hangry Labs KokoroTTS","voice":"af_heart"}' \
+  -o hello.wav
 ```
 
-## ⚙️ Runtime Environment Variables
-- `KOKORO_REPO_ID` (default: `hexgrad/Kokoro-82M`)
-- `KOKOROTTS_DEVICE` (default: `auto`; options: `auto`, `cpu`, `cuda:0`, `cuda:1`, ...)
-- `CUDA_VISIBLE_DEVICES` (Docker/NVIDIA visibility control)
-- `HF_TOKEN` (optional, for higher Hugging Face rate limits)
-- `PORT` (default: `7860`)
+Request MP3 when you want compact output:
 
-## 🗣️ Voices and Languages
-The image exposes 54 bundled voices across American English, British English, Japanese, Mandarin Chinese, Spanish, French, Hindi, Italian, and Brazilian Portuguese.
+```bash
+curl -X POST "http://localhost:7860/tts/convert" \
+  -H "Content-Type: application/json" \
+  -d '{"text":"Hello from Hangry Labs KokoroTTS","voice":"af_heart","output_format":"mp3"}' \
+  -o hello.mp3
+```
 
-Voice examples are available here:
-https://hangry-labs.github.io/kokoroTTS/examples/
+Use another voice:
 
-## 🌐 Offline Support
-The image prefetches model files, configuration, and UI voice assets during the Docker build.
+```bash
+curl -X POST "http://localhost:7860/tts/convert" \
+  -H "Content-Type: application/json" \
+  -d '{"text":"ココロ テキスト読み上げへようこそ。","voice":"jf_alpha","output_format":"mp3"}' \
+  -o kokoro-ja.mp3
+```
 
-At runtime, offline flags are enabled:
-- `HF_HUB_OFFLINE=1`
-- `TRANSFORMERS_OFFLINE=1`
+Health check:
 
-This means a pulled or prebuilt image can run on a machine without internet access.
+```bash
+curl http://localhost:7860/tts/ping
+```
 
-## 🆘 Support & Issues
-If you encounter a bug, have a feature request, or want to contribute:
-- 📄 Open a **[GitHub Issue](https://github.com/Hangry-Labs/kokoroTTS/issues)** with full details
-- 💬 Use the project repository for discussion and improvement ideas
-- 🛠 Check existing issues before reporting duplicates
+## Image Tags
 
-I respond fastest on GitHub — Docker Hub comments aren’t monitored regularly.
+- Current release tag: `v0.2`
+- Future release tags use the same pattern: `vX.Y`
 
-### 🔗 Common Help Topics
-- **[KokoroTTS Project](https://github.com/Hangry-Labs/kokoroTTS)**
-- **[Original Kokoro Project](https://github.com/hexgrad/kokoro)**
-- **[Docker Hub Tags](https://hub.docker.com/r/hangrylabs/kokorotts/tags)**
-
-## 📦 Notes
-- The container serves both the Gradio UI and HTTP API from the same port.
-- Default UI path: `/`
-- API base path: `/tts/*`
-- The `/tts/convert` endpoint returns WAV by default and also supports `mp3`, `flac`, and `ogg` through the optional `output_format` field.
-- Recommended image tag: `hangrylabs/kokorotts:v0.2`
-
-## Releases
-
-### v0.2-snapshot
-- Moved public project direction under Hangry Labs.
-- Added a root `VERSION` file for the app/runtime release label.
-- Kept Python package metadata on a PEP 440-compatible development version for reliable builds.
-- Exposed the full Kokoro-82M voice set in the UI/API.
-- Added optional `wav`, `mp3`, `flac`, and `ogg` output formats in the UI/API while keeping WAV as the default.
-- Added language-aware UI sample texts with 10 lighthearted prompts per served language prefix.
-- Added a Hangry Labs examples page with generated MP3 samples for all 54 voices.
-- Added multilingual Docker prefetch support, including UniDic for offline Japanese synthesis.
-- Added `task imageapi-voice` for quick audible smoke tests with specific voices.
-
-Expected Docker tags:
+Example release tags:
 
 ```bash
 docker run -p 7860:7860 --gpus all hangrylabs/kokorotts:v0.2
 docker run -p 7860:7860 --gpus "device=1" -e CUDA_VISIBLE_DEVICES=1 hangrylabs/kokorotts:v0.2
 ```
 
-### v0.0.1
-- Initial release of the KokoroTTS Docker image.
-- Trimmed the image to keep it slim and practical for deployment.
-- Baked required models and assets into the image for offline use.
-- Added startup/runtime details showing which specific GPU is detected.
-- Introduced Dockerized WebUI + API setup for easy local or server deployment.
-- Added integration-friendly API support for compatibility with the MeloTTS image, making it easier to swap between them in existing applications.
-- Enabled automated build and deployment workflow.
+## Links
 
-## 📜 License
-This fork is licensed under the Apache License 2.0.  
-Original work by [hexgrad](https://github.com/hexgrad) in [Kokoro](https://github.com/hexgrad/kokoro).
+- Voice examples: https://hangry-labs.github.io/kokoroTTS/examples/
+- GitHub: https://github.com/Hangry-Labs/kokoroTTS
+- Hangry Labs: https://nuggies.website/
+- Issues: https://github.com/Hangry-Labs/kokoroTTS/issues
+
+Docker Hub comments are not monitored regularly. GitHub Issues are the best place to report bugs.
+
+## Attribution
+
+This is an independently maintained fork of the original Kokoro project by hexgrad:
+
+https://github.com/hexgrad/kokoro
+
+License and attribution are preserved in the repository. Original Kokoro copyright remains with the upstream authors; Hangry Labs maintains the Docker packaging, Web UI/API integration, examples page, documentation, release tooling, and other modifications in this fork.
