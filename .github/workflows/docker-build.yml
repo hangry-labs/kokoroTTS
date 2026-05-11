@@ -5,8 +5,26 @@ on:
     branches:
       - main
     tags:
+      - "v*.*"
       - "v*.*.*"
   workflow_dispatch:
+    inputs:
+      image_tag:
+        description: "Optional Docker tag to publish, for example v0.2"
+        required: false
+        type: string
+      checkout_ref:
+        description: "Optional git ref to build. Defaults to image_tag when image_tag is set."
+        required: false
+        type: string
+      push_latest:
+        description: "Also publish latest"
+        required: false
+        default: true
+        type: boolean
+
+env:
+  IMAGE_NAME: hangrylabs/kokorotts
 
 jobs:
   build:
@@ -15,6 +33,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.checkout_ref || inputs.image_tag || github.ref }}
 
       - name: Free up disk space
         run: |
@@ -41,19 +61,23 @@ jobs:
         run: |
           if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
             echo "VERSION=${GITHUB_REF##refs/tags/}" >> $GITHUB_ENV
+          elif [[ -n "${{ inputs.image_tag }}" ]]; then
+            echo "VERSION=${{ inputs.image_tag }}" >> $GITHUB_ENV
           fi
 
       - name: Build Docker image
         run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/kokorotts:latest .
+          docker build -t $IMAGE_NAME:latest .
           if [[ -n "$VERSION" ]]; then
-            docker tag ${{ secrets.DOCKER_USERNAME }}/kokorotts:latest ${{ secrets.DOCKER_USERNAME }}/kokorotts:$VERSION
+            docker tag $IMAGE_NAME:latest $IMAGE_NAME:$VERSION
           fi
 
       - name: Push Docker image
         run: |
-          docker push ${{ secrets.DOCKER_USERNAME }}/kokorotts:latest
+          if [[ "${{ github.event_name }}" != "workflow_dispatch" || "${{ inputs.push_latest }}" == "true" ]]; then
+            docker push $IMAGE_NAME:latest
+          fi
           if [[ -n "$VERSION" ]]; then
-            docker push ${{ secrets.DOCKER_USERNAME }}/kokorotts:$VERSION
+            docker push $IMAGE_NAME:$VERSION
           fi
 
