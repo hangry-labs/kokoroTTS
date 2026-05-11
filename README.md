@@ -236,6 +236,7 @@ Hot-swap local app code into the container without rebuilding:
 ```bash
 task localrun
 task logs
+task client-test
 ```
 
 Release from a clean tree:
@@ -252,6 +253,7 @@ task release
 ### v0.3 Snapshot
 
 - Added a dependency-free Python HTTP client for using KokoroTTS endpoints from application code.
+- Added `task client-test` for server-backed Python client coverage across discovery, generation, conversion, streaming, and validation paths.
 - Added optional UI/API audio controls for pitch, tempo, volume, and loudness normalization with neutral defaults for backward compatibility.
 - Updated Docker publish workflow support for `vX.Y` tags, explicit `hangrylabs/kokorotts` publishing, and manual release dispatch with a selected checkout ref.
 - Removed unnecessary caution callouts from public docs and the Stream tab for a cleaner product-facing experience.

@@ -17,19 +17,30 @@ def _read_version() -> str:
 
 __version__ = _read_version()
 
-from loguru import logger
 import sys
+try:
+    from loguru import logger
+except ImportError:
+    import logging
 
-# Replace the default logger format with concise module:line context.
-logger.remove()
-logger.add(
-    sys.stderr,
-    format="<green>{time:HH:mm:ss}</green> | <cyan>{module:>16}:{line}</cyan> | <level>{level: >8}</level> | <level>{message}</level>",
-    colorize=True,
-    level="INFO",
-)
+    logger = logging.getLogger("kokorotts")
+    if not logger.handlers:
+        handler = logging.StreamHandler(sys.stderr)
+        handler.setFormatter(logging.Formatter("%(asctime)s | %(name)s:%(lineno)d | %(levelname)s | %(message)s"))
+        logger.addHandler(handler)
+    logger.setLevel(logging.INFO)
+else:
+    # Replace the default logger format with concise module:line context.
+    logger.remove()
+    logger.add(
+        sys.stderr,
+        format="<green>{time:HH:mm:ss}</green> | <cyan>{module:>16}:{line}</cyan> | <level>{level: >8}</level> | <level>{message}</level>",
+        colorize=True,
+        level="INFO",
+    )
 
-logger.disable("kokorotts")
+if hasattr(logger, "disable"):
+    logger.disable("kokorotts")
 
 from .client import AudioResponse, KokoroTTSClient, KokoroTTSClientError
 

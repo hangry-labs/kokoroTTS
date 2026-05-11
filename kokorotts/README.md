@@ -36,6 +36,7 @@ For hot-swapping local app files into the running container:
 ```bash
 task localrun
 task logs
+task client-test
 ```
 
 `localrun` mounts the full local `kokorotts/` directory into `/app/kokorotts` and enables auto-reload via `UVICORN_RELOAD=1`.

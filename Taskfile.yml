@@ -87,6 +87,12 @@ tasks:
       - 'cmd /c python -c "from pathlib import Path; p=Path(r''{{.TEMP_AUDIO}}.{{.API_FORMAT}}''); assert p.exists() and p.stat().st_size > 0, p"'
       - 'cmd /c del /f /q {{.TEMP_AUDIO}}.{{.API_FORMAT}}'
 
+  client-test:
+    desc: Run server-backed KokoroTTS Python client API tests
+    cmds:
+      - 'cmd /c curl.exe -sS --retry 30 --retry-delay 2 --retry-connrefused http://localhost:{{.PORT}}/tts/ping >nul'
+      - 'cmd /c "set KOKOROTTS_TEST_BASE_URL=http://localhost:{{.PORT}}&& python tests/run_client_tests.py"'
+
   imagestop:
     desc: Stop running KokoroTTS containers
     cmds:
