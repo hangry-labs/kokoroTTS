@@ -230,6 +230,12 @@ task release
 
 ## Version History
 
+### v0.3 Snapshot
+
+- Added optional UI/API audio controls for pitch, tempo, volume, and loudness normalization with neutral defaults for backward compatibility.
+- Updated Docker publish workflow support for `vX.Y` tags, explicit `hangrylabs/kokorotts` publishing, and manual release dispatch with a selected checkout ref.
+- Removed unnecessary caution callouts from public docs and the Stream tab for a cleaner product-facing experience.
+
 ### v0.2
 
 - Moved public project direction under Hangry Labs.
@@ -237,7 +243,6 @@ task release
 - Kept Python package metadata on a PEP 440-compatible development version for reliable builds.
 - Exposed the full Kokoro-82M voice set in the UI/API.
 - Added optional `wav`, `mp3`, `flac`, and `ogg` output formats in the UI/API while keeping WAV as the default.
-- Added optional UI/API audio controls for pitch, tempo, volume, and loudness normalization with neutral defaults for backward compatibility.
 - Added language-aware UI sample texts with 10 lighthearted prompts per served language prefix.
 - Added a Hangry Labs examples page with generated MP3 product-intro samples, native-language page selection, and language filtering.
 - Added pinned dependency workflow with `requirements.in`, resolved `requirements.txt`, and `task deps`.
