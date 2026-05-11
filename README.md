@@ -160,10 +160,6 @@ While Kokoro is an impressive model/library project, this Hangry Labs fork focus
 
 License and attribution are preserved in [`LICENSE`](LICENSE).
 
-âš ï¸ **Note:** This project is maintained for usability and convenience by a single developer. It is not a production-hardened system and may require additional work for critical deployments.
-
-âœ… **Offline Mode:** Supported when using the published Docker image or a locally built image after model and voice assets have been prefetched.
-
 ## Support & Issues
 
 If you encounter bugs, have feature requests, or need help using Hangry Labs KokoroTTS:

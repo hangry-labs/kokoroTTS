@@ -444,17 +444,12 @@ with gr.Blocks() as generate_tab:
         gr.Markdown(TOKEN_NOTE)
         predict_btn = gr.Button("Predict", variant="secondary", visible=False)
 
-STREAM_NOTE = ["⚠️ There is an unknown Gradio bug that might yield no audio the first time you click `Stream`."]
-STREAM_NOTE = "\n\n".join(STREAM_NOTE)
-
 with gr.Blocks() as stream_tab:
     out_stream = gr.Audio(label="Output Audio Stream", interactive=False, streaming=True, autoplay=True)
     with gr.Row():
         stream_btn = gr.Button("Stream", variant="primary")
         stop_btn = gr.Button("Stop", variant="stop")
-    with gr.Accordion("Note", open=True):
-        gr.Markdown(STREAM_NOTE)
-        gr.DuplicateButton()
+    gr.DuplicateButton()
 
 BADGE_CSS = """
 #build-badge {
