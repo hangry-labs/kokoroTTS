@@ -159,6 +159,25 @@ Useful discovery endpoints:
 - `POST /tts/stream`
 - `POST /tts/purge`
 
+### Use From Python
+
+Install this package in a Python project and point the client at a running KokoroTTS server:
+
+```python
+from kokorotts import KokoroTTSClient
+
+tts = KokoroTTSClient("http://localhost:7860")
+
+audio = tts.generate(
+    text="Hello from my Python app.",
+    voice="af_heart",
+    output_format="mp3",
+    pitch_semitones=2,
+)
+
+audio.save("hello.mp3")
+```
+
 ---
 
 ## About This Fork
@@ -232,6 +251,7 @@ task release
 
 ### v0.3 Snapshot
 
+- Added a dependency-free Python HTTP client for using KokoroTTS endpoints from application code.
 - Added optional UI/API audio controls for pitch, tempo, volume, and loudness normalization with neutral defaults for backward compatibility.
 - Updated Docker publish workflow support for `vX.Y` tags, explicit `hangrylabs/kokorotts` publishing, and manual release dispatch with a selected checkout ref.
 - Removed unnecessary caution callouts from public docs and the Stream tab for a cleaner product-facing experience.

@@ -1,5 +1,6 @@
 """KokoroTTS application package (UI + API)."""
 
+from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 
 
@@ -8,7 +9,10 @@ def _read_version() -> str:
     try:
         return version_file.read_text(encoding="utf-8").strip()
     except OSError:
-        return "0.2-snapshot"
+        try:
+            return version("kokorotts")
+        except PackageNotFoundError:
+            return "0+unknown"
 
 
 __version__ = _read_version()
@@ -27,5 +31,25 @@ logger.add(
 
 logger.disable("kokorotts")
 
-from .model import KModel
-from .pipeline import KPipeline
+from .client import AudioResponse, KokoroTTSClient, KokoroTTSClientError
+
+__all__ = [
+    "AudioResponse",
+    "KModel",
+    "KPipeline",
+    "KokoroTTSClient",
+    "KokoroTTSClientError",
+    "__version__",
+]
+
+
+def __getattr__(name: str):
+    if name == "KModel":
+        from .model import KModel
+
+        return KModel
+    if name == "KPipeline":
+        from .pipeline import KPipeline
+
+        return KPipeline
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

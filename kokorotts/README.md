@@ -55,6 +55,17 @@ Optional runtime env vars:
 
 API payload also supports explicit hardware selection with `device` (and keeps legacy `use_gpu` for compatibility).
 
+## Python API client
+
+Use `KokoroTTSClient` when your Python code should call a running KokoroTTS server:
+
+```python
+from kokorotts import KokoroTTSClient
+
+tts = KokoroTTSClient("http://localhost:7860")
+tts.generate("Hello from Python.", voice="af_heart", output_format="mp3").save("hello.mp3")
+```
+
 Optional post-synthesis audio controls are available in the UI and API:
 
 - `pitch_semitones`: `-12` to `12`, default `0`.
