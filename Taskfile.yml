@@ -22,6 +22,9 @@ vars:
   BENCHMARK_REPETITIONS: '5'
   BENCHMARK_COMMENT: ''
   BENCHMARK_REQUEST_TIMEOUT: '240'
+  VRAM_BENCHMARK_LIMIT: '0'
+  VRAM_BENCHMARK_SAMPLE_INTERVAL: '0.05'
+  VRAM_BENCHMARK_COMMENT: ''
   DRY_RUN: '0'
   NEXT_VERSION: ''
   SKIP_VALIDATION: '0'
@@ -146,9 +149,19 @@ tasks:
       - 'cmd /c python "benchmarks\tts\run_benchmark.py" --base-url {{.BENCHMARK_BASE_URL}} --device {{.APP_DEVICE}} --limit {{.BENCHMARK_LIMIT}} --repetitions {{.BENCHMARK_REPETITIONS}} --request-timeout {{.BENCHMARK_REQUEST_TIMEOUT}} --gpu-index {{.GPU_DEVICE}} --comment "{{.BENCHMARK_COMMENT}}"'
 
   benchmark-test:
-    desc: Run benchmark runner unit tests without starting inference
+    desc: Run benchmark runner unit tests in the local image without starting inference
     cmds:
-      - python -m unittest tests.test_benchmark -v
+      - 'cmd /c docker run --rm --entrypoint python -v "{{.TASKFILE_DIR}}\kokorotts:/app/kokorotts:ro" -v "{{.TASKFILE_DIR}}\benchmarks:/app/benchmarks:ro" -v "{{.TASKFILE_DIR}}\examples:/app/examples:ro" -v "{{.TASKFILE_DIR}}\tests:/app/tests:ro" {{.IMAGE}} -m unittest tests.test_benchmark tests.test_vram_benchmark -v'
+
+  benchmark-vram-smoke:
+    desc: Check the isolated VRAM benchmark with one voice without recording history
+    cmds:
+      - 'cmd /c docker run --rm --gpus all -e CUDA_VISIBLE_DEVICES={{.GPU_DEVICE}} -e HF_HUB_OFFLINE=1 -e TRANSFORMERS_OFFLINE=1 -e LOGURU_LEVEL=INFO --entrypoint python -v "{{.TASKFILE_DIR}}\benchmarks:/app/benchmarks" -v "{{.TASKFILE_DIR}}\examples:/app/examples:ro" {{.IMAGE}} -m benchmarks.vram.run_benchmark --device cuda:0 --gpu-index {{.GPU_DEVICE}} --limit 1 --sample-interval {{.VRAM_BENCHMARK_SAMPLE_INTERVAL}} --output /tmp/kokorotts_vram_smoke.json --no-append'
+
+  benchmark-vram:
+    desc: Measure isolated process and whole-device VRAM for every example voice
+    cmds:
+      - 'cmd /c docker run --rm --gpus all -e CUDA_VISIBLE_DEVICES={{.GPU_DEVICE}} -e HF_HUB_OFFLINE=1 -e TRANSFORMERS_OFFLINE=1 -e LOGURU_LEVEL=INFO --entrypoint python -v "{{.TASKFILE_DIR}}\benchmarks:/app/benchmarks" -v "{{.TASKFILE_DIR}}\examples:/app/examples:ro" {{.IMAGE}} -m benchmarks.vram.run_benchmark --device cuda:0 --gpu-index {{.GPU_DEVICE}} --limit {{.VRAM_BENCHMARK_LIMIT}} --sample-interval {{.VRAM_BENCHMARK_SAMPLE_INTERVAL}} --comment "{{.VRAM_BENCHMARK_COMMENT}}"'
 
   ui-test:
     desc: Run standalone UI route and cache-policy tests inside the local image
@@ -158,7 +171,7 @@ tasks:
   unit-test:
     desc: Run focused runtime, chunking, audio, benchmark, and standalone UI tests in Docker
     cmds:
-      - 'cmd /c docker run --rm --entrypoint python -v "{{.TASKFILE_DIR}}\kokorotts:/app/kokorotts:ro" -v "{{.TASKFILE_DIR}}\assets:/app/assets:ro" -v "{{.TASKFILE_DIR}}\benchmarks:/app/benchmarks:ro" -v "{{.TASKFILE_DIR}}\examples:/app/examples:ro" -v "{{.TASKFILE_DIR}}\tests:/app/tests:ro" {{.IMAGE}} -m unittest tests.test_audio tests.test_benchmark tests.test_pipeline_chunking tests.test_runtime tests.test_standalone_ui -v'
+      - 'cmd /c docker run --rm --entrypoint python -v "{{.TASKFILE_DIR}}\kokorotts:/app/kokorotts:ro" -v "{{.TASKFILE_DIR}}\assets:/app/assets:ro" -v "{{.TASKFILE_DIR}}\benchmarks:/app/benchmarks:ro" -v "{{.TASKFILE_DIR}}\examples:/app/examples:ro" -v "{{.TASKFILE_DIR}}\tests:/app/tests:ro" {{.IMAGE}} -m unittest tests.test_audio tests.test_benchmark tests.test_vram_benchmark tests.test_pipeline_chunking tests.test_runtime tests.test_standalone_ui -v'
 
   imagestop:
     desc: Stop running KokoroTTS containers

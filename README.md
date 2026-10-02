@@ -242,6 +242,8 @@ task release SKIP_VALIDATION=1
 
 ## Performance Benchmarks
 
+### Voice Generation
+
 Run the small, non-recording smoke benchmark against an active local server:
 
 ```bash
@@ -255,6 +257,17 @@ task benchmark-tts BENCHMARK_COMMENT="describe this configuration"
 ```
 
 Before measurement, the benchmark generates one voice per language so every language path and its required weights are warm. It then exercises full WAV generation through the public HTTP API and reports overall, per-language, and per-voice latency, audio duration, realtime factor, and realtime speed. See [`benchmarks/tts`](benchmarks/tts/) for the methodology, current results, and comparison guidance.
+
+### VRAM Usage
+
+VRAM measurement is a separate isolated-container benchmark because it requires a quiet GPU and direct access to the Kokoro process's PyTorch allocator. Stop the local server and other avoidable GPU workloads before recording an official result:
+
+```bash
+task imagestop
+task benchmark-vram VRAM_BENCHMARK_COMMENT="clean GPU baseline"
+```
+
+The report separates process-specific allocated/reserved VRAM from whole-device usage, and records lifecycle, per-language, and per-voice peaks. Use `task benchmark-vram-smoke` for a one-voice implementation check that does not update history. See [`benchmarks/vram`](benchmarks/vram/) for the full methodology and reports.
 
 ---
 
@@ -293,6 +306,7 @@ docker run -p 7860:7860 --gpus all -v kokorotts_hf_cache:/app/.cache/huggingface
 - Added a genuinely incremental Python streaming client while retaining the buffered `stream()` compatibility method, made the default package install client-only with an optional full server dependency set, and stopped package imports from modifying host Loguru configuration.
 - Ported shared UI hardening from Qwen3-ASR-STT: malformed GPU responses no longer break the System view, the icon font is served with the correct MIME type, and Lucide is reduced to the glyphs the Kokoro workspace actually uses.
 - Added a repeatable HTTP voice-generation benchmark sourced directly from the 54 examples in `examples/voices.js`. It warms one voice per language, measures every voice five times, and records overall, per-language, and per-voice latency, audio duration, realtime factor, and realtime speed in machine-readable and Markdown reports.
+- Added a separate isolated-container VRAM benchmark that records memory before runtime initialization, after voice preparation, after model loading, and during every voice. It reports exact Kokoro-process PyTorch peaks alongside sampled whole-device peaks without changing the public API.
 
 #### Planned Work
 
