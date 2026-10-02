@@ -170,6 +170,7 @@ cython_debug/
 # Local agent workspace and private notes
 .ai/
 todo/
+/AGENTS.md
 
 # PyPI configuration file
 .pypirc

@@ -255,9 +255,27 @@ task release DRY_RUN=1
 task release
 ```
 
+When the release candidate has already completed full validation and should not be rebuilt locally:
+
+```bash
+task release DRY_RUN=1 SKIP_VALIDATION=1
+task release SKIP_VALIDATION=1
+```
+
 ---
 
 ## Version History
+
+### v0.4 Snapshot
+
+Planned work:
+
+1. Replace Gradio with the tested standalone audio workspace from Hangry Labs Qwen3-ASR-STT, adapted for KokoroTTS generation and streaming workflows.
+2. Upgrade the runtime and dependency workflow from Python 3.11 to Python 3.13, using the validated Qwen3-ASR-STT dependency baseline where packages are shared and independently verifying Kokoro-specific dependencies.
+3. Review and reorganize the KokoroTTS implementation, remove code and dependencies that no longer serve the Docker UI/API product, and improve internal boundaries while preserving behavior.
+4. Add repeatable automated performance benchmarks and optimize GitHub Actions caching around expensive reusable dependency and language-data work without duplicating complete full and tiny image caches.
+5. Add German language and voice support using the newly available compatible model assets.
+6. Standardize the API surface, including an OpenAI-compatible speech endpoint, while retaining the existing `/tts/*` endpoints for backward compatibility.
 
 ### v0.3
 

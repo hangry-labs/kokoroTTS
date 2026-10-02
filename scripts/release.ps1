@@ -184,3 +184,10 @@ Invoke-Step "Prepare $nextSnapshotVersion" {
 }
 
 Write-Host "Release workflow complete."
+if (Test-Enabled $DryRun) {
+    Write-Host "Dry run only: no files, commits, or tags were changed."
+} else {
+    Write-Host "Commits and tag are local. Publish the release with:"
+    Write-Host "  git push origin main"
+    Write-Host "  git push origin $releaseTag"
+}
