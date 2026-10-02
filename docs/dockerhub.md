@@ -32,28 +32,28 @@ The examples page includes MP3 previews for all 54 Kokoro voices across American
 Run with NVIDIA GPU support:
 
 ```bash
-docker run -p 7860:7860 --gpus all hangrylabs/kokorotts:v0.2
+docker run -p 7860:7860 --gpus all hangrylabs/kokorotts:v0.3
 ```
 
 Run on CPU:
 
 ```bash
-docker run -p 7860:7860 hangrylabs/kokorotts:v0.2
+docker run -p 7860:7860 hangrylabs/kokorotts:v0.3
 ```
 
 Run on a specific GPU:
 
 ```bash
-docker run -p 7860:7860 --gpus "device=1" -e CUDA_VISIBLE_DEVICES=1 hangrylabs/kokorotts:v0.2
+docker run -p 7860:7860 --gpus "device=1" -e CUDA_VISIBLE_DEVICES=1 hangrylabs/kokorotts:v0.3
 ```
 
 Run the tiny image without baked model assets:
 
 ```bash
-docker run -p 7860:7860 --gpus all -v kokorotts_hf_cache:/app/.cache/huggingface hangrylabs/kokorotts:v0.2_tiny
+docker run -p 7860:7860 --gpus all -v kokorotts_hf_cache:/app/.cache/huggingface hangrylabs/kokorotts:v0.3_tiny
 ```
 
-The tiny image is smaller, but it downloads model and voice files after startup and stores them in the Docker volume. If you just want KokoroTTS to work quickly, use one of the standard `v0.2` commands above.
+The tiny image is smaller, but it downloads model and voice files after startup and stores them in the Docker volume. If you just want KokoroTTS to work quickly, use one of the standard `v0.3` commands above.
 
 ### Latest image:
 
@@ -117,7 +117,7 @@ Use another voice:
 ```bash
 curl -X POST "http://localhost:7860/tts/generate" \
   -H "Content-Type: application/json" \
-  -d '{"text":"ã‚³ã‚³ãƒ­ ãƒ†ã‚­ã‚¹ãƒˆèª­ã¿ä¸Šã’ã¸ã‚ˆã†ã“ãã€‚","voice":"jf_alpha","output_format":"mp3"}' \
+  -d '{"text":"Ã£â€šÂ³Ã£â€šÂ³Ã£Æ’Â­ Ã£Æ’â€ Ã£â€šÂ­Ã£â€šÂ¹Ã£Æ’Ë†Ã¨ÂªÂ­Ã£ÂÂ¿Ã¤Â¸Å Ã£Ââ€™Ã£ÂÂ¸Ã£â€šË†Ã£Ââ€ Ã£Ââ€œÃ£ÂÂÃ£â‚¬â€š","voice":"jf_alpha","output_format":"mp3"}' \
   -o kokoro-ja.mp3
 ```
 
@@ -131,16 +131,16 @@ curl http://localhost:7860/tts/ping
 
 ## Image Tags
 
-- Current release tag: `v0.2`
+- Current release tag: `v0.3`
 - Future release tags use the same pattern: `vX.Y`
 - Tiny tags use the pattern `vX.Y_tiny`
 
 Example release tags:
 
 ```bash
-docker run -p 7860:7860 --gpus all hangrylabs/kokorotts:v0.2
-docker run -p 7860:7860 --gpus "device=1" -e CUDA_VISIBLE_DEVICES=1 hangrylabs/kokorotts:v0.2
-docker run -p 7860:7860 --gpus all -v kokorotts_hf_cache:/app/.cache/huggingface hangrylabs/kokorotts:v0.2_tiny
+docker run -p 7860:7860 --gpus all hangrylabs/kokorotts:v0.3
+docker run -p 7860:7860 --gpus "device=1" -e CUDA_VISIBLE_DEVICES=1 hangrylabs/kokorotts:v0.3
+docker run -p 7860:7860 --gpus all -v kokorotts_hf_cache:/app/.cache/huggingface hangrylabs/kokorotts:v0.3_tiny
 ```
 
 The standard `vX.Y` image is the recommended image for most users. It includes Kokoro model, voices, and required language assets for offline-friendly use after the image is pulled.

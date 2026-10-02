@@ -96,19 +96,19 @@ GitHub does not render embedded audio players directly in README files, so direc
 ## Quick Start
 
 ```bash
-docker run -p 7860:7860 --gpus all hangrylabs/kokorotts:v0.2
+docker run -p 7860:7860 --gpus all hangrylabs/kokorotts:v0.3
 ```
 
 Run on CPU:
 
 ```bash
-docker run -p 7860:7860 hangrylabs/kokorotts:v0.2
+docker run -p 7860:7860 hangrylabs/kokorotts:v0.3
 ```
 
 Run on a specific GPU (example: GPU index `1`):
 
 ```bash
-docker run -p 7860:7860 --gpus "device=1" -e CUDA_VISIBLE_DEVICES=1 hangrylabs/kokorotts:v0.2
+docker run -p 7860:7860 --gpus "device=1" -e CUDA_VISIBLE_DEVICES=1 hangrylabs/kokorotts:v0.3
 ```
 
 Then open: **[http://localhost:7860](http://localhost:7860)**
@@ -219,8 +219,8 @@ This is useful if you want to:
 - Verify image tags for deployment
 
 Current tag pattern:
-- Full image: `v0.2`, future versions as `vX.Y`
-- Tiny image: `v0.2_tiny`, future versions as `vX.Y_tiny`
+- Full image: `v0.3`, future versions as `vX.Y`
+- Tiny image: `v0.3_tiny`, future versions as `vX.Y_tiny`
 
 ---
 
