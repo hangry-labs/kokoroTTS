@@ -97,7 +97,7 @@ tasks:
   imageapi:
     desc: Call API, play generated temp audio, then remove it
     cmds:
-      - 'cmd /c curl.exe -sS --retry 30 --retry-delay 2 --retry-connrefused http://localhost:{{.PORT}}/tts/ping >nul'
+      - 'cmd /c curl.exe -sS --retry 30 --retry-delay 2 --retry-all-errors http://localhost:{{.PORT}}/tts/ping >nul'
       - 'cmd /c curl.exe -sS -X POST http://localhost:{{.PORT}}/tts/generate -H "Content-Type: application/json" -d "{\"text\":\"{{.API_TEXT}}\",\"speed\":1.0,\"voice\":\"{{.API_VOICE}}\",\"device\":\"{{.APP_DEVICE}}\",\"output_format\":\"{{.API_FORMAT}}\"}" --output {{.TEMP_AUDIO}}.{{.API_FORMAT}}'
       - 'cmd /c if not exist {{.TEMP_AUDIO}}.{{.API_FORMAT}} exit /b 1'
       - 'cmd /c python -c "from pathlib import Path; p=Path(r''{{.TEMP_AUDIO}}.{{.API_FORMAT}}''); assert p.exists() and p.stat().st_size > 0, p"'
@@ -107,7 +107,7 @@ tasks:
   imageapi-voice:
     desc: Call API for API_VOICE/API_TEXT, play generated temp WAV, then remove it
     cmds:
-      - 'cmd /c curl.exe -sS --retry 30 --retry-delay 2 --retry-connrefused http://localhost:{{.PORT}}/tts/ping >nul'
+      - 'cmd /c curl.exe -sS --retry 30 --retry-delay 2 --retry-all-errors http://localhost:{{.PORT}}/tts/ping >nul'
       - 'cmd /c curl.exe -sS -X POST http://localhost:{{.PORT}}/tts/generate -H "Content-Type: application/json" -d "{\"text\":\"{{.API_TEXT}}\",\"speed\":1.0,\"voice\":\"{{.API_VOICE}}\",\"device\":\"{{.APP_DEVICE}}\"}" --output {{.TEMP_WAV}}'
       - 'cmd /c if not exist {{.TEMP_WAV}} exit /b 1'
       - 'cmd /c python -c "import winsound; winsound.PlaySound(r''{{.TEMP_WAV}}'', winsound.SND_FILENAME)"'
@@ -116,7 +116,7 @@ tasks:
   imageapi-format:
     desc: Call API for API_FORMAT and verify the output file is non-empty
     cmds:
-      - 'cmd /c curl.exe -sS --retry 30 --retry-delay 2 --retry-connrefused http://localhost:{{.PORT}}/tts/ping >nul'
+      - 'cmd /c curl.exe -sS --retry 30 --retry-delay 2 --retry-all-errors http://localhost:{{.PORT}}/tts/ping >nul'
       - 'cmd /c curl.exe -sS -X POST http://localhost:{{.PORT}}/tts/generate -H "Content-Type: application/json" -d "{\"text\":\"{{.API_TEXT}}\",\"speed\":1.0,\"voice\":\"{{.API_VOICE}}\",\"device\":\"{{.APP_DEVICE}}\",\"output_format\":\"{{.API_FORMAT}}\"}" --output {{.TEMP_AUDIO}}.{{.API_FORMAT}}'
       - 'cmd /c if not exist {{.TEMP_AUDIO}}.{{.API_FORMAT}} exit /b 1'
       - 'cmd /c python -c "from pathlib import Path; p=Path(r''{{.TEMP_AUDIO}}.{{.API_FORMAT}}''); assert p.exists() and p.stat().st_size > 0, p"'
@@ -125,7 +125,7 @@ tasks:
   client-test:
     desc: Run server-backed KokoroTTS Python client API tests
     cmds:
-      - 'cmd /c curl.exe -sS --retry 30 --retry-delay 2 --retry-connrefused http://localhost:{{.PORT}}/tts/ping >nul'
+      - 'cmd /c curl.exe -sS --retry 30 --retry-delay 2 --retry-all-errors http://localhost:{{.PORT}}/tts/ping >nul'
       - 'cmd /c "set KOKOROTTS_TEST_BASE_URL=http://localhost:{{.PORT}}&& python tests/run_client_tests.py"'
 
   imagestop:

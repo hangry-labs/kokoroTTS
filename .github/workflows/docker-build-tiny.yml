@@ -65,18 +65,32 @@ jobs:
             echo "VERSION=${{ inputs.image_tag }}" >> $GITHUB_ENV
           fi
 
-      - name: Build tiny Docker image
+      - name: Prepare tiny image tags
+        id: image_tags
         run: |
-          docker build --target tiny -t $IMAGE_NAME:latest_tiny .
-          if [[ -n "$VERSION" ]]; then
-            docker tag $IMAGE_NAME:latest_tiny $IMAGE_NAME:${VERSION}_tiny
-          fi
-
-      - name: Push tiny Docker image
-        run: |
+          tags=()
           if [[ "${{ github.event_name }}" != "workflow_dispatch" || "${{ inputs.push_latest }}" == "true" ]]; then
-            docker push $IMAGE_NAME:latest_tiny
+            tags+=("$IMAGE_NAME:latest_tiny")
           fi
           if [[ -n "$VERSION" ]]; then
-            docker push $IMAGE_NAME:${VERSION}_tiny
+            tags+=("$IMAGE_NAME:${VERSION}_tiny")
           fi
+          if (( ${#tags[@]} == 0 )); then
+            echo "No Docker tags selected for publishing." >&2
+            exit 1
+          fi
+          {
+            echo "tags<<EOF"
+            printf '%s\n' "${tags[@]}"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Build and push tiny Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          target: tiny
+          push: true
+          tags: ${{ steps.image_tags.outputs.tags }}
+          cache-from: type=gha,scope=kokorotts-tiny
+          cache-to: type=gha,mode=max,scope=kokorotts-tiny

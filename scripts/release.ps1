@@ -47,6 +47,39 @@ function Get-NextSnapshot {
     throw "Cannot infer next snapshot from '$Version'. Pass NEXT_VERSION=..."
 }
 
+function Update-DockerImageTags {
+    param(
+        [string]$Text,
+        [string]$ReleaseTag
+    )
+
+    $updated = [regex]::Replace(
+        $Text,
+        'hangrylabs/kokorotts:v\d+\.\d+(?:\.\d+)?(_tiny)?',
+        { param($match) "hangrylabs/kokorotts:$ReleaseTag$($match.Groups[1].Value)" }
+    )
+    $updated = [regex]::Replace(
+        $updated,
+        '(?m)^- Full image: `v\d+\.\d+(?:\.\d+)?`,',
+        "- Full image: ``$ReleaseTag``,"
+    )
+    $updated = [regex]::Replace(
+        $updated,
+        '(?m)^- Tiny image: `v\d+\.\d+(?:\.\d+)?_tiny`,',
+        "- Tiny image: ``${ReleaseTag}_tiny``,"
+    )
+    $updated = [regex]::Replace(
+        $updated,
+        '(?m)^- Current release tag: `v\d+\.\d+(?:\.\d+)?`\r?$',
+        "- Current release tag: ``$ReleaseTag``"
+    )
+    return [regex]::Replace(
+        $updated,
+        'standard `v\d+\.\d+(?:\.\d+)?` commands above',
+        "standard ``$ReleaseTag`` commands above"
+    )
+}
+
 function Invoke-Step {
     param(
         [string]$Description,
@@ -87,9 +120,9 @@ if ($nextSnapshotVersion -notmatch '^\d+\.\d+(?:\.\d+)?-snapshot$') {
 $nextReleaseBase = $nextSnapshotVersion -replace '-snapshot$', ''
 $nextPackageVersion = "$(Convert-ToPackageVersion $nextReleaseBase).dev0"
 
-$status = git status --porcelain -- . ":(exclude)todo"
+$status = git status --porcelain -- . ":(exclude)todo" ":(exclude).ai"
 if ($status -and -not (Test-Enabled $DryRun)) {
-    throw "Working tree outside todo/ must be clean before release. Commit or stash release-relevant changes first."
+    throw "Working tree outside .ai/ and todo/ must be clean before release. Commit or stash release-relevant changes first."
 }
 
 if (git rev-parse -q --verify "refs/tags/$releaseTag" 2>$null) {
@@ -109,12 +142,21 @@ Invoke-Step "Update files for $releaseTag" {
     $pyproject = $pyproject -replace '(?m)^version = "[^"]+"', "version = `"$releasePackageVersion`""
     Set-Text "pyproject.toml" $pyproject
 
-    foreach ($doc in @("README.md", "docs/dockerhub.md")) {
-        $text = Get-Content -Raw -LiteralPath $doc
-        $text = $text -replace [regex]::Escape("### v$snapshotVersion"), "### $releaseTag"
-        $text = $text -replace [regex]::Escape(":v$snapshotVersion"), ":$releaseTag"
-        Set-Text $doc $text
+    $readme = Get-Content -Raw -LiteralPath "README.md"
+    $readme = $readme.Replace("### v$releaseVersion Snapshot", "### $releaseTag")
+    $readme = $readme.Replace("### v$snapshotVersion", "### $releaseTag")
+    $historyMarker = "## Version History"
+    $historyIndex = $readme.IndexOf($historyMarker, [System.StringComparison]::Ordinal)
+    if ($historyIndex -lt 0) {
+        throw "README.md is missing the '$historyMarker' section."
     }
+    $readmePrefix = Update-DockerImageTags $readme.Substring(0, $historyIndex) $releaseTag
+    $readme = $readmePrefix + $readme.Substring($historyIndex)
+    Set-Text "README.md" $readme
+
+    $dockerHub = Get-Content -Raw -LiteralPath "docs/dockerhub.md"
+    $dockerHub = Update-DockerImageTags $dockerHub $releaseTag
+    Set-Text "docs/dockerhub.md" $dockerHub
 }
 
 Invoke-Step "Run release validation" {

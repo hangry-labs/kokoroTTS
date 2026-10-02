@@ -262,11 +262,16 @@ task release
 ### v0.3 Snapshot
 
 - Added a dependency-free Python HTTP client for using KokoroTTS endpoints from application code.
+- Made package imports lightweight so the HTTP client can be used without importing the local inference stack, with package metadata as a safe version fallback.
 - Added `task client-test` for server-backed Python client coverage across discovery, generation, conversion, streaming, and validation paths.
 - Added optional UI/API audio controls for pitch, tempo, volume, and loudness normalization with neutral defaults for backward compatibility.
 - Improved the UI Stream tab so Stop cancels active streams cooperatively and starting a new stream clears stale audio before using the latest text.
+- Removed the obsolete espeak language warning that incorrectly claimed non-English long-text chunking was unavailable.
 - Added a persistent Docker Hugging Face cache volume for task-run containers, with `task nuke` removing it for from-scratch validation.
 - Added a separate tiny Docker image target and task workflow for cache-volume-based model downloads while keeping the normal image fully baked for offline use.
+- Reordered Docker build stages so documentation, version, and application edits reuse the pinned dependency and UniDic layers instead of repeating the expensive cold build.
+- Added persistent BuildKit layer caches to the full and tiny GitHub Actions workflows so hosted builds can reuse those boundaries across runs.
+- Hardened Taskfile API readiness checks so transient startup responses are retried before smoke and client tests begin.
 - Updated Docker publish workflows for separate full (`vX.Y`/`latest`) and tiny (`vX.Y_tiny`/`latest_tiny`) image tracks, explicit `hangrylabs/kokorotts` publishing, and manual release dispatch with a selected checkout ref.
 - Removed unnecessary caution callouts from public docs and the Stream tab for a cleaner product-facing experience.
 

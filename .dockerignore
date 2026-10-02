@@ -3,6 +3,7 @@
 .gitignore
 .github
 .idea
+.ai/
 
 # Python cache/artifacts
 __pycache__/

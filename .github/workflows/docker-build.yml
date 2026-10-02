@@ -65,19 +65,33 @@ jobs:
             echo "VERSION=${{ inputs.image_tag }}" >> $GITHUB_ENV
           fi
 
-      - name: Build baked Docker image
+      - name: Prepare baked image tags
+        id: image_tags
         run: |
-          docker build --target baked -t $IMAGE_NAME:latest .
-          if [[ -n "$VERSION" ]]; then
-            docker tag $IMAGE_NAME:latest $IMAGE_NAME:$VERSION
-          fi
-
-      - name: Push baked Docker image
-        run: |
+          tags=()
           if [[ "${{ github.event_name }}" != "workflow_dispatch" || "${{ inputs.push_latest }}" == "true" ]]; then
-            docker push $IMAGE_NAME:latest
+            tags+=("$IMAGE_NAME:latest")
           fi
           if [[ -n "$VERSION" ]]; then
-            docker push $IMAGE_NAME:$VERSION
+            tags+=("$IMAGE_NAME:$VERSION")
           fi
+          if (( ${#tags[@]} == 0 )); then
+            echo "No Docker tags selected for publishing." >&2
+            exit 1
+          fi
+          {
+            echo "tags<<EOF"
+            printf '%s\n' "${tags[@]}"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Build and push baked Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          target: baked
+          push: true
+          tags: ${{ steps.image_tags.outputs.tags }}
+          cache-from: type=gha,scope=kokorotts-full
+          cache-to: type=gha,mode=max,scope=kokorotts-full
 
