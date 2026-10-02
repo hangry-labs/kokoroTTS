@@ -27,6 +27,7 @@ todo/
 
 # Large or non-runtime directories
 tests/
+benchmarks/
 examples/
 demo/
 

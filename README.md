@@ -34,6 +34,7 @@ Hangry Labs home: [nuggies.website](https://nuggies.website/).
 - [Support & Issues](#support--issues)
 - [Docker Images](#docker-images)
 - [Local Development](#local-development)
+- [Performance Benchmarks](#performance-benchmarks)
 - [Version History](#version-history)
 - [License](#license)
 
@@ -239,6 +240,24 @@ task release SKIP_VALIDATION=1
 
 ---
 
+## Performance Benchmarks
+
+Run the small, non-recording smoke benchmark against an active local server:
+
+```bash
+task benchmark-smoke
+```
+
+Run five measured generations for every voice in `examples/voices.js` and append a comparable result to the benchmark history:
+
+```bash
+task benchmark-tts BENCHMARK_COMMENT="describe this configuration"
+```
+
+Before measurement, the benchmark generates one voice per language so every language path and its required weights are warm. It then exercises full WAV generation through the public HTTP API and reports overall, per-language, and per-voice latency, audio duration, realtime factor, and realtime speed. See [`benchmarks/tts`](benchmarks/tts/) for the methodology, current results, and comparison guidance.
+
+---
+
 ## Version History
 
 ### v0.4 Snapshot
@@ -273,14 +292,14 @@ docker run -p 7860:7860 --gpus all -v kokorotts_hf_cache:/app/.cache/huggingface
 - Replaced the duplicate-initialization script startup with a lightweight Uvicorn launcher, reducing the development reload supervisor from roughly 1 GB to about 33 MB RSS in local measurements.
 - Added a genuinely incremental Python streaming client while retaining the buffered `stream()` compatibility method, made the default package install client-only with an optional full server dependency set, and stopped package imports from modifying host Loguru configuration.
 - Ported shared UI hardening from Qwen3-ASR-STT: malformed GPU responses no longer break the System view, the icon font is served with the correct MIME type, and Lucide is reduced to the glyphs the Kokoro workspace actually uses.
+- Added a repeatable HTTP voice-generation benchmark sourced directly from the 54 examples in `examples/voices.js`. It warms one voice per language, measures every voice five times, and records overall, per-language, and per-voice latency, audio duration, realtime factor, and realtime speed in machine-readable and Markdown reports.
 
 #### Planned Work
 
-1. Add repeatable automated performance benchmarks and optimize GitHub Actions caching around expensive reusable dependency and language-data work without duplicating complete full and tiny image caches.
-2. Add German language and voice support using the newly available compatible model assets.
-3. Standardize the API surface, including an OpenAI-compatible speech endpoint, while retaining the existing `/tts/*` endpoints for backward compatibility.
-4. Prove whether the system `espeak-ng` package can be removed in favor of the bundled `espeakng-loader` runtime without reducing language support or offline reliability.
-5. Investigate a local-network UniDic artifact/cache so repeated Docker builds do not depend on downloading the largest language-data layer from the public source.
+1. Add German language and voice support using the newly available compatible model assets.
+2. Standardize the API surface, including an OpenAI-compatible speech endpoint, while retaining the existing `/tts/*` endpoints for backward compatibility.
+3. Prove whether the system `espeak-ng` package can be removed in favor of the bundled `espeakng-loader` runtime without reducing language support or offline reliability.
+4. Benchmark and optimize Docker and GitHub Actions build times, including a local-network UniDic mirror, selective caching for expensive dependency and language-data layers, and a measured replacement for duplicated complete full and tiny image caches.
 
 ### v0.3
 

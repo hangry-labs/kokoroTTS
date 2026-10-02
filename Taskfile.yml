@@ -17,6 +17,11 @@ vars:
   API_TEXT: 'Hello world. This is Kokoro TTS.'
   API_VOICE: 'af_heart'
   API_FORMAT: 'mp3'
+  BENCHMARK_BASE_URL: 'http://127.0.0.1:7860'
+  BENCHMARK_LIMIT: '0'
+  BENCHMARK_REPETITIONS: '5'
+  BENCHMARK_COMMENT: ''
+  BENCHMARK_REQUEST_TIMEOUT: '240'
   DRY_RUN: '0'
   NEXT_VERSION: ''
   SKIP_VALIDATION: '0'
@@ -128,15 +133,32 @@ tasks:
       - 'cmd /c curl.exe -sS --retry 30 --retry-delay 2 --retry-all-errors http://localhost:{{.PORT}}/tts/ping >nul'
       - 'cmd /c "set KOKOROTTS_TEST_BASE_URL=http://localhost:{{.PORT}}&& python tests/run_client_tests.py"'
 
+  benchmark-smoke:
+    desc: Run two voice-generation performance cases without updating benchmark history
+    cmds:
+      - 'cmd /c curl.exe -sS --retry 30 --retry-delay 2 --retry-all-errors {{.BENCHMARK_BASE_URL}}/tts/ping >nul'
+      - 'cmd /c python "benchmarks\tts\run_benchmark.py" --base-url {{.BENCHMARK_BASE_URL}} --device {{.APP_DEVICE}} --limit 2 --repetitions 1 --request-timeout {{.BENCHMARK_REQUEST_TIMEOUT}} --gpu-index {{.GPU_DEVICE}} --output "%TEMP%\kokorotts_benchmark_smoke.json" --no-append'
+
+  benchmark-tts:
+    desc: Run the repeatable multilingual TTS benchmark and append its result
+    cmds:
+      - 'cmd /c curl.exe -sS --retry 30 --retry-delay 2 --retry-all-errors {{.BENCHMARK_BASE_URL}}/tts/ping >nul'
+      - 'cmd /c python "benchmarks\tts\run_benchmark.py" --base-url {{.BENCHMARK_BASE_URL}} --device {{.APP_DEVICE}} --limit {{.BENCHMARK_LIMIT}} --repetitions {{.BENCHMARK_REPETITIONS}} --request-timeout {{.BENCHMARK_REQUEST_TIMEOUT}} --gpu-index {{.GPU_DEVICE}} --comment "{{.BENCHMARK_COMMENT}}"'
+
+  benchmark-test:
+    desc: Run benchmark runner unit tests without starting inference
+    cmds:
+      - python -m unittest tests.test_benchmark -v
+
   ui-test:
     desc: Run standalone UI route and cache-policy tests inside the local image
     cmds:
       - 'cmd /c docker run --rm --entrypoint python -v "{{.TASKFILE_DIR}}\kokorotts:/app/kokorotts:ro" -v "{{.TASKFILE_DIR}}\assets:/app/assets:ro" -v "{{.TASKFILE_DIR}}\tests:/app/tests:ro" {{.IMAGE}} -m unittest tests.test_standalone_ui -v'
 
   unit-test:
-    desc: Run focused runtime, chunking, audio, and standalone UI tests in Docker
+    desc: Run focused runtime, chunking, audio, benchmark, and standalone UI tests in Docker
     cmds:
-      - 'cmd /c docker run --rm --entrypoint python -v "{{.TASKFILE_DIR}}\kokorotts:/app/kokorotts:ro" -v "{{.TASKFILE_DIR}}\assets:/app/assets:ro" -v "{{.TASKFILE_DIR}}\tests:/app/tests:ro" {{.IMAGE}} -m unittest tests.test_audio tests.test_pipeline_chunking tests.test_runtime tests.test_standalone_ui -v'
+      - 'cmd /c docker run --rm --entrypoint python -v "{{.TASKFILE_DIR}}\kokorotts:/app/kokorotts:ro" -v "{{.TASKFILE_DIR}}\assets:/app/assets:ro" -v "{{.TASKFILE_DIR}}\benchmarks:/app/benchmarks:ro" -v "{{.TASKFILE_DIR}}\examples:/app/examples:ro" -v "{{.TASKFILE_DIR}}\tests:/app/tests:ro" {{.IMAGE}} -m unittest tests.test_audio tests.test_benchmark tests.test_pipeline_chunking tests.test_runtime tests.test_standalone_ui -v'
 
   imagestop:
     desc: Stop running KokoroTTS containers
