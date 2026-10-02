@@ -115,10 +115,12 @@
       </div>
 
       <div class="tab-panel" data-panel="system" hidden>
-        <div class="view-heading"><div><h2>System</h2><p>Runtime, voice, and GPU state</p></div><button class="secondary-button" id="system-refresh" type="button"><i class="icon-refresh-cw"></i>Refresh</button></div>
+        <div class="view-heading"><div><h2>System</h2><p>Runtime, voice, and GPU state</p></div></div>
         <div class="system-grid">
-          <section><div class="section-title"><i class="icon-activity"></i><span>Runtime</span></div><div class="data-output json-output" id="runtime-output"></div></section>
-          <section><div class="section-title"><i class="icon-boxes"></i><span>Voices</span></div><div class="data-output json-output" id="voices-output"></div></section>
+          <div class="system-info-stack">
+            <section><div class="section-title"><i class="icon-activity"></i><span>Runtime</span></div><div class="data-output json-output" id="runtime-output"></div></section>
+            <section><div class="section-title"><i class="icon-boxes"></i><span>Voices</span></div><div class="data-output json-output" id="voices-output"></div></section>
+          </div>
           <section class="gpu-system-panel" id="gpu-output" aria-live="polite"></section>
         </div>
       </div>

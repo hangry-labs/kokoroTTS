@@ -6,10 +6,10 @@ from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 
 from fastapi import FastAPI
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
-from kokorotts.standalone_ui.gpu import gpu_monitor_html
+from kokorotts.standalone_ui.gpu import GPU_MONITOR
 
 
 PACKAGE_DIR = Path(__file__).resolve().parent
@@ -59,7 +59,7 @@ def create_app(*, api_app: FastAPI) -> FastAPI:
         return HTMLResponse(rendered_html, headers={"Cache-Control": "no-cache"})
 
     @api_app.get("/system/gpu", include_in_schema=False)
-    async def gpu() -> HTMLResponse:
-        return HTMLResponse(gpu_monitor_html(), headers={"Cache-Control": "no-store"})
+    def gpu() -> JSONResponse:
+        return JSONResponse(GPU_MONITOR.request_snapshot(), headers={"Cache-Control": "no-store"})
 
     return api_app

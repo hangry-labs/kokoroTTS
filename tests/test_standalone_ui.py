@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 import unittest
+import time
 from unittest.mock import patch
 
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from kokorotts.standalone_ui.gpu import gpu_history_points, gpu_monitor_html, read_gpu_stats
+from kokorotts.standalone_ui.gpu import GpuMonitor, read_gpu_stats
 from kokorotts.standalone_ui.server import _read_version_file, create_app
 
 
@@ -22,12 +23,14 @@ class StandaloneUiTests(unittest.TestCase):
         return backend
 
     def test_static_workspace_and_api_are_available(self) -> None:
-        with TestClient(create_app(api_app=self.backend_app())) as client:
-            index = client.get("/")
-            script = client.get("/static/app.js")
-            audio_editor = client.get("/static/audio-editor.js")
-            gpu = client.get("/system/gpu")
-            api = client.get("/tts/ping")
+        gpu_payload = {"gpus": [], "history": {}, "sample_interval_seconds": 1, "idle_timeout_seconds": 60}
+        with patch("kokorotts.standalone_ui.server.GPU_MONITOR.request_snapshot", return_value=gpu_payload):
+            with TestClient(create_app(api_app=self.backend_app())) as client:
+                index = client.get("/")
+                script = client.get("/static/app.js")
+                audio_editor = client.get("/static/audio-editor.js")
+                gpu = client.get("/system/gpu")
+                api = client.get("/tts/ping")
 
         self.assertEqual(index.status_code, 200)
         self.assertIn("KokoroTTS", index.text)
@@ -57,32 +60,80 @@ class StandaloneUiTests(unittest.TestCase):
         self.assertIn("$('#volume').disabled = normalized", script.text)
         self.assertIn("function resetVoiceControls()", script.text)
         self.assertIn("function renderJsonTree(", script.text)
-        self.assertIn("fetch('/system/gpu')", script.text)
+        self.assertIn("gpuWindowMs: 60 * 1000", script.text)
+        self.assertIn("GPU_HISTORY_RETENTION_MS = 10 * 60 * 1000", script.text)
+        self.assertIn("GPU_POLL_INTERVAL_MS = 1000", script.text)
+        self.assertIn("function renderGpuMonitor(", script.text)
+        self.assertIn("function addGpuChartGrid(", script.text)
+        self.assertIn("function attachGpuChartHover(", script.text)
+        self.assertIn("function stopGpuMonitor(", script.text)
+        self.assertIn("sessionStorage.setItem(GPU_SESSION_KEY", script.text)
+        self.assertNotIn('id="system-refresh"', index.text)
         self.assertEqual(audio_editor.status_code, 200)
         self.assertIn("WaveSurfer", audio_editor.text)
         self.assertEqual(gpu.status_code, 200)
-        self.assertIn("GPU Monitor", gpu.text)
+        self.assertIn("gpus", gpu.json())
+        self.assertIn("history", gpu.json())
+        self.assertIsInstance(gpu.json()["gpus"], list)
         self.assertEqual(gpu.headers["cache-control"], "no-store")
         self.assertEqual(api.json(), {"msg": "pong"})
 
     @patch("kokorotts.standalone_ui.gpu.subprocess.run")
-    def test_gpu_monitor_parses_and_renders_nvidia_smi(self, run) -> None:
+    def test_gpu_monitor_parses_nvidia_smi(self, run) -> None:
         run.return_value.returncode = 0
-        run.return_value.stdout = "0, NVIDIA RTX Test, 37, 4096, 16384, 52, 61.5\n"
+        run.return_value.stdout = (
+            "0, NVIDIA RTX Test, 37, 12, 4096, 16384, 52, 30, 61.5, 300, "
+            "2400, 3000, 13000, 14000, P2, 5, 16\n"
+        )
 
         stats = read_gpu_stats()
-        rendered = gpu_monitor_html()
 
         self.assertEqual(stats[0]["utilization"], 37)
         self.assertEqual(stats[0]["memory_total"], 16384)
-        self.assertIn("NVIDIA RTX Test", rendered)
-        self.assertIn("37%", rendered)
-        self.assertIn("4.0/16.0 GB", rendered)
-        self.assertIn("52 C", rendered)
-        self.assertIn("62 W", rendered)
+        self.assertEqual(stats[0]["name"], "NVIDIA RTX Test")
+        self.assertEqual(stats[0]["temperature"], 52)
+        self.assertEqual(stats[0]["power"], 61.5)
+        self.assertEqual(stats[0]["fan_speed"], 30)
+        self.assertEqual(stats[0]["graphics_clock"], 2400)
+        self.assertEqual(stats[0]["performance_state"], "P2")
 
-    def test_gpu_history_points_cover_monitor_width(self) -> None:
-        self.assertEqual(gpu_history_points([0, 50, 100]), "0.0,44.0 90.0,22.0 180.0,0.0")
+    @patch("kokorotts.standalone_ui.gpu.subprocess.run")
+    def test_gpu_monitor_keeps_gpu_when_optional_values_are_unavailable(self, run) -> None:
+        run.return_value.returncode = 0
+        run.return_value.stdout = (
+            "0, NVIDIA Compute GPU, 75, N/A, 1024, 8192, 48, [N/A], 125, 250, "
+            "1800, N/A, N/A, N/A, P0, 4, 16\n"
+        )
+
+        stats = read_gpu_stats()
+
+        self.assertEqual(len(stats), 1)
+        self.assertIsNone(stats[0]["fan_speed"])
+        self.assertIsNone(stats[0]["memory_utilization"])
+        self.assertEqual(stats[0]["power"], 125.0)
+
+    def test_gpu_monitor_samples_until_idle_timeout(self) -> None:
+        calls = 0
+
+        def reader():
+            nonlocal calls
+            calls += 1
+            return [{"index": 0, "name": "Test GPU", "utilization": calls}]
+
+        monitor = GpuMonitor(reader, sample_interval=0.01, idle_timeout=0.04, history_seconds=1)
+        try:
+            first = monitor.request_snapshot()
+            self.assertEqual(first["gpus"][0]["utilization"], 1)
+            time.sleep(0.03)
+            self.assertGreaterEqual(calls, 3)
+
+            time.sleep(0.05)
+            stopped_at = calls
+            time.sleep(0.03)
+            self.assertEqual(calls, stopped_at)
+            self.assertGreaterEqual(len(monitor.request_snapshot()["history"]["0"]), 3)
+        finally:
+            monitor.close()
 
     def test_development_assets_disable_browser_caching(self) -> None:
         with patch.dict("os.environ", {"KOKOROTTS_UI_DEV": "1"}):

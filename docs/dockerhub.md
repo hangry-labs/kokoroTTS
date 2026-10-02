@@ -74,6 +74,10 @@ The container includes the web UI and the HTTP API on the same port.
 
 ## What You Get
 
+<p>
+  <img src="https://github.com/Hangry-Labs/kokoroTTS/raw/main/assets/ui.jpg" alt="KokoroTTS browser interface">
+</p>
+
 - Responsive browser audio workspace with Generate, Stream, API, and System views
 - Waveform playback, seeking, download controls, and cancellable MP3 streaming
 - HTTP API for applications and automation
