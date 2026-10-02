@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>KokoroTTS</title>
+  <link rel="icon" href="/brand/favicon_small.png">
+  <link rel="stylesheet" href="/static/vendor/lucide/lucide.css">
+  <link rel="stylesheet" href="/static/styles.css">
+  <script type="module" src="/static/app.js"></script>
+</head>
+<body>
+  <header class="brand-hero">
+    <img class="brand-backdrop" src="/brand/banner.jpg" alt="" aria-hidden="true">
+    <div class="brand-shade"></div>
+    <nav class="brand-nav" aria-label="Application links">
+      <div class="brand-lockup">
+        <img src="/brand/logo_small.png" alt="Hangry Labs">
+        <div><strong>Hangry Labs</strong><span>Local speech infrastructure</span></div>
+      </div>
+      <div class="brand-links">
+        <a class="primary-link" href="https://hangry-labs.github.io/kokoroTTS/examples/" target="_blank" rel="noreferrer"><i class="icon-sparkles"></i>Examples</a>
+        <a href="/tts/docs"><i class="icon-book-open"></i>API docs</a>
+        <a href="/tts/voices"><i class="icon-audio-lines"></i>Voices</a>
+        <a href="https://github.com/Hangry-Labs/kokoroTTS" target="_blank" rel="noreferrer"><i class="icon-git-branch"></i>GitHub</a>
+      </div>
+    </nav>
+    <div class="brand-copy">
+      <h1><span class="product-highlight" data-text="KokoroTTS">KokoroTTS</span></h1>
+      <p>Multilingual speech synthesis with local browser and HTTP API access.</p>
+    </div>
+    <div class="runtime-badge" id="runtime-badge" data-state="starting">
+      <i class="icon-activity"></i>
+      <div class="runtime-copy"><strong>Inference starting</strong><span id="runtime-model">Waiting for inference service</span></div>
+      <span class="runtime-version">UI v{{UI_VERSION}}</span>
+    </div>
+  </header>
+
+  <div class="app-tabs" role="tablist" aria-label="Workspace views">
+    <button class="tab-button active" type="button" role="tab" aria-selected="true" data-tab="generate">Generate</button>
+    <button class="tab-button" type="button" role="tab" aria-selected="false" data-tab="stream">Stream</button>
+    <button class="tab-button" type="button" role="tab" aria-selected="false" data-tab="api">API</button>
+    <button class="tab-button" type="button" role="tab" aria-selected="false" data-tab="system">System</button>
+  </div>
+
+  <main class="workspace" data-view="generate">
+    <aside class="settings-panel">
+      <div class="section-title"><i class="icon-sliders-horizontal"></i><span>Voice</span></div>
+      <label class="field"><span>Language</span><select id="language"><option value="a">American English</option></select></label>
+      <label class="field"><span>Speaker</span><select id="voice"><option value="af_heart">af_heart</option></select></label>
+      <label class="field"><span>Hardware</span><select id="device"><option value="auto">Auto</option><option value="cpu">CPU</option></select></label>
+
+      <div class="settings-section">
+        <div class="section-heading-row">
+          <div class="section-title"><i class="icon-audio-waveform"></i><span>Voice controls</span></div>
+          <button class="icon-button reset-controls" id="reset-voice-controls" type="button" title="Reset voice controls" aria-label="Reset voice controls" disabled><i class="icon-rotate-ccw"></i></button>
+        </div>
+        <div class="range-stack">
+          <label class="range-control">
+            <span class="range-heading"><span class="setting-name">Speed <span class="setting-help"><button type="button" aria-label="About speed" aria-describedby="speed-help">i</button><span class="setting-tooltip" id="speed-help" role="tooltip">Controls Kokoro model speaking speed.</span></span></span></span>
+            <span class="range-input-row"><input id="speed-slider" type="range" min="0.5" max="2" step="0.1" value="1" data-value-input="speed"><input id="speed" class="number-input" type="number" min="0.5" max="2" step="0.01" value="1" aria-label="Speed value" data-range-input="speed-slider"></span>
+          </label>
+          <label class="range-control">
+            <span class="range-heading"><span class="setting-name">Pitch <span class="setting-help"><button type="button" aria-label="About pitch" aria-describedby="pitch-help">i</button><span class="setting-tooltip" id="pitch-help" role="tooltip">Post-processing pitch shift in semitones. Zero skips processing.</span></span></span></span>
+            <span class="range-input-row"><input id="pitch-slider" type="range" min="-12" max="12" step="0.1" value="0" data-value-input="pitch"><input id="pitch" class="number-input" type="number" min="-12" max="12" step="0.01" value="0" aria-label="Pitch value" data-range-input="pitch-slider"></span>
+          </label>
+          <label class="range-control">
+            <span class="range-heading"><span class="setting-name">Tempo <span class="setting-help"><button type="button" aria-label="About tempo" aria-describedby="tempo-help">i</button><span class="setting-tooltip" id="tempo-help" role="tooltip">Post-processing tempo multiplier. One skips processing.</span></span></span></span>
+            <span class="range-input-row"><input id="tempo-slider" type="range" min="0.5" max="2" step="0.1" value="1" data-value-input="tempo"><input id="tempo" class="number-input" type="number" min="0.5" max="2" step="0.01" value="1" aria-label="Tempo value" data-range-input="tempo-slider"></span>
+          </label>
+          <label class="range-control" id="volume-control">
+            <span class="range-heading"><span class="setting-name">Volume <span class="setting-help"><button type="button" aria-label="About volume" aria-describedby="volume-help">i</button><span class="setting-tooltip" id="volume-help" role="tooltip">Output volume multiplier. One skips processing. Disabled while loudness normalization is active.</span></span></span></span>
+            <span class="range-input-row"><input id="volume-slider" type="range" min="0" max="2" step="0.1" value="1" data-value-input="volume"><input id="volume" class="number-input" type="number" min="0" max="2" step="0.01" value="1" aria-label="Volume value" data-range-input="volume-slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <label class="toggle-field"><span>Normalize loudness</span><input id="normalize" type="checkbox"><span class="toggle-track" aria-hidden="true"></span></label>
+      <div class="status-line" id="global-status" data-tone="neutral">Connecting to inference</div>
+    </aside>
+
+    <section class="content-panel">
+      <section class="composer" id="composer">
+        <div class="composer-heading">
+          <div class="section-title"><i class="icon-message-square-text"></i><span>Text</span></div>
+          <div class="composer-actions">
+            <span class="text-metrics" id="text-metrics">0 characters</span>
+            <button class="secondary-button compact-command" id="sample-button" type="button"><i class="icon-shuffle"></i>New sample</button>
+            <button class="secondary-button compact-command" id="tokenize-button" type="button"><i class="icon-braces"></i>Inspect tokens</button>
+          </div>
+        </div>
+        <textarea id="text-input" rows="8" spellcheck="true" aria-label="Text to synthesize"></textarea>
+        <details id="token-details"><summary>Token details</summary><pre id="token-output"></pre></details>
+      </section>
+
+      <div class="tab-panel" data-panel="generate">
+        <div class="generate-action-row"><button class="primary-button" id="generate-button" type="button"><i class="icon-audio-lines"></i>Generate</button></div>
+        <div id="generate-output"></div>
+        <div class="output-options"><label class="compact-field"><span>Output format</span><select id="output-format"><option value="mp3">MP3</option></select></label></div>
+      </div>
+
+      <div class="tab-panel" data-panel="stream" hidden>
+        <div class="command-row">
+          <button class="secondary-button stop-button" id="stream-stop" type="button" disabled><i class="icon-square"></i>Stop</button>
+          <button class="primary-button" id="stream-start" type="button"><i class="icon-radio"></i>Stream</button>
+        </div>
+        <div id="stream-output"></div>
+        <div class="stream-progress" id="stream-progress" hidden><span></span></div>
+      </div>
+
+      <div class="tab-panel" data-panel="api" hidden>
+        <div class="view-heading"><div><h2>API</h2><p>Live discovery responses</p></div><button class="secondary-button" id="api-refresh" type="button"><i class="icon-refresh-cw"></i>Refresh</button></div>
+        <div class="data-output json-output" id="api-output"></div>
+      </div>
+
+      <div class="tab-panel" data-panel="system" hidden>
+        <div class="view-heading"><div><h2>System</h2><p>Runtime, voice, and GPU state</p></div><button class="secondary-button" id="system-refresh" type="button"><i class="icon-refresh-cw"></i>Refresh</button></div>
+        <div class="system-grid">
+          <section><div class="section-title"><i class="icon-activity"></i><span>Runtime</span></div><div class="data-output json-output" id="runtime-output"></div></section>
+          <section><div class="section-title"><i class="icon-boxes"></i><span>Voices</span></div><div class="data-output json-output" id="voices-output"></div></section>
+          <section class="gpu-system-panel" id="gpu-output" aria-live="polite"></section>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" role="alert" hidden></div>
+</body>
+</html>

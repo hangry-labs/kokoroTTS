@@ -74,7 +74,8 @@ The container includes the web UI and the HTTP API on the same port.
 
 ## What You Get
 
-- Browser UI for manual text-to-speech generation
+- Responsive browser audio workspace with Generate, Stream, API, and System views
+- Waveform playback, seeking, download controls, and cancellable MP3 streaming
 - HTTP API for applications and automation
 - MP3 output from the UI by default
 - Backward-compatible WAV API responses unless `output_format` or `format` is requested
@@ -162,4 +163,4 @@ This is an independently maintained fork of the original Kokoro project by hexgr
 
 https://github.com/hexgrad/kokoro
 
-License and attribution are preserved in the repository. Original Kokoro copyright remains with the upstream authors; Hangry Labs maintains the Docker packaging, Web UI/API integration, examples page, documentation, release tooling, and other modifications in this fork.
+License and attribution are preserved in the repository. Original Kokoro copyright remains with the upstream authors; Hangry Labs maintains the Docker packaging, web UI/API integration, examples page, documentation, release tooling, and other modifications in this fork.

@@ -75,6 +75,12 @@ class HttpClientServerSmokeTest(unittest.TestCase):
         self.assertEqual(len(languages["languages"]), 9)
         self.assertIn("j", languages["loaded_languages"])
 
+    def test_tts_samples_returns_language_intro(self) -> None:
+        sample = self.client.sample("j")
+        self.assertEqual(sample["language"], "j")
+        self.assertFalse(sample["random"])
+        self.assertGreater(len(sample["text"]), 20)
+
     def test_tts_speakers_lists_language_voices(self) -> None:
         speakers = self.client.speakers("j")
         self.assertIn("jf_alpha", speakers["speakers"])
@@ -92,6 +98,12 @@ class HttpClientServerSmokeTest(unittest.TestCase):
         self.assertGreater(metrics["metrics"]["characters"], 0)
         self.assertGreater(metrics["metrics"]["segments"], 0)
 
+    def test_tts_tokenize_returns_phoneme_segments(self) -> None:
+        tokens = self.client.tokenize("Hello from KokoroTTS.", voice="af_heart")
+        self.assertEqual(tokens["voice"], "af_heart")
+        self.assertGreater(len(tokens["segments"]), 0)
+        self.assertGreater(tokens["metrics"]["phoneme_characters"], 0)
+
     def test_tts_purge_rejects_invalid_device_without_purging(self) -> None:
         with self.assertRaises(KokoroTTSClientError) as error:
             self.client.purge("cuda:999")
@@ -103,9 +115,10 @@ class HttpClientServerSmokeTest(unittest.TestCase):
             "Testing generate from the Python client.",
             voice="af_heart",
             output_format="mp3",
-            pitch_semitones=1,
-            tempo=1.05,
-            volume=0.9,
+            speed=1.07,
+            pitch_semitones=0.15,
+            tempo=1.03,
+            volume=0.93,
         )
 
         self.assertEqual(audio.media_type, "audio/mpeg")

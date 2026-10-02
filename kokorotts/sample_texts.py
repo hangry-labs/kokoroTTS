@@ -1,7 +1,5 @@
 import random
 
-import gradio as gr
-
 
 SAMPLE_TEXTS = {
     "a": [
@@ -114,28 +112,10 @@ SAMPLE_TEXTS = {
     ],
 }
 
-VOICE_LANGUAGE_GROUPS = {
-    "a": "en",
-    "b": "en",
-    "j": "j",
-    "z": "z",
-    "e": "e",
-    "f": "f",
-    "h": "h",
-    "i": "i",
-    "p": "p",
-}
-
-
 def get_language_code_for_voice(voice="af_heart") -> str:
     if not voice:
         return "a"
     return voice[0] if voice[0] in SAMPLE_TEXTS else "a"
-
-
-def get_language_group_for_voice(voice="af_heart") -> str:
-    language_code = get_language_code_for_voice(voice)
-    return VOICE_LANGUAGE_GROUPS.get(language_code, language_code)
 
 
 def get_intro_text(voice="af_heart"):
@@ -150,10 +130,3 @@ def get_random_quote(voice="af_heart"):
 
 def get_initial_text():
     return get_intro_text("af_heart")
-
-
-def refresh_text_for_language_change(voice="af_heart", current_language_group="en"):
-    next_language_group = get_language_group_for_voice(voice)
-    if next_language_group == current_language_group:
-        return gr.update(), current_language_group
-    return get_intro_text(voice), next_language_group

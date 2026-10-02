@@ -1,27 +1,25 @@
 import io
 import os
 import subprocess
-import tempfile
-import threading
 import wave
 from typing import Optional
 
-import gradio as gr
 import numpy as np
 import torch
 import uvicorn
-from fastapi import Body, FastAPI, HTTPException, Query
+from fastapi import Body, FastAPI, HTTPException, Query, Request
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, ConfigDict, Field
+from starlette.concurrency import iterate_in_threadpool
 
 from kokorotts import __version__ as KOKORO_VERSION
 from kokorotts import KModel, KPipeline
 from kokorotts.sample_texts import (
     get_initial_text,
-    get_language_group_for_voice,
+    get_intro_text,
     get_random_quote,
-    refresh_text_for_language_change,
 )
+from kokorotts.standalone_ui.server import create_app as create_ui_app
 from kokorotts.voices import LANGUAGE_CHOICES, VOICE_CHOICES
 
 SAMPLE_RATE = 24000
@@ -84,8 +82,6 @@ APP_VERSION = os.getenv("APP_VERSION", KOKORO_VERSION)
 BUILD_ID = os.getenv("BUILD_ID", "stable")
 DEFAULT_DEVICE = os.getenv("KOKOROTTS_DEVICE", "auto")
 MODEL_CACHE = {}
-STREAM_LOCK = threading.Lock()
-STREAM_GENERATION = 0
 pipelines = {
     lang_code: KPipeline(lang_code=lang_code, repo_id=DEFAULT_REPO_ID, model=False)
     for lang_code in LANGUAGE_CHOICES
@@ -110,9 +106,9 @@ def get_runtime_label() -> str:
 
 
 def get_hardware_choices():
-    choices = [("Auto", "auto"), ("CPU 🐌", "cpu")]
+    choices = [("Auto", "auto"), ("CPU", "cpu")]
     for idx, name in enumerate(get_cuda_devices()):
-        choices.append((f"GPU {idx} 🚀 ({name})", f"cuda:{idx}"))
+        choices.append((f"GPU {idx} ({name})", f"cuda:{idx}"))
     return choices
 
 
@@ -147,21 +143,13 @@ def get_model(device: str) -> KModel:
     return MODEL_CACHE[device]
 
 
-def next_stream_generation() -> int:
-    global STREAM_GENERATION
-    with STREAM_LOCK:
-        STREAM_GENERATION += 1
-        return STREAM_GENERATION
-
-
-def is_current_stream_generation(stream_generation: int) -> bool:
-    with STREAM_LOCK:
-        return stream_generation == STREAM_GENERATION
-
-
-def stop_active_stream():
-    next_stream_generation()
-    return SAMPLE_RATE, np.zeros(1, dtype=np.int16)
+def run_model_with_fallback(model, ps, ref_s, speed: float, resolved_device: str):
+    try:
+        return model(ps, ref_s, speed)
+    except RuntimeError:
+        if resolved_device.startswith("cuda"):
+            return get_model("cpu")(ps, ref_s, speed)
+        raise
 
 
 def synthesize_full(text, voice="af_heart", speed=1, hardware="auto", use_gpu: Optional[bool] = None):
@@ -176,15 +164,7 @@ def synthesize_full(text, voice="af_heart", speed=1, hardware="auto", use_gpu: O
 
     for _, ps, _ in pipeline(text, voice, speed):
         ref_s = pack[len(ps) - 1]
-        try:
-            audio = model(ps, ref_s, speed)
-        except gr.exceptions.Error as exc:
-            if resolved_device.startswith("cuda"):
-                gr.Warning(str(exc))
-                gr.Info("Retrying with CPU. To avoid this error, change Hardware to CPU.")
-                audio = get_model("cpu")(ps, ref_s, speed)
-            else:
-                raise gr.Error(exc)
+        audio = run_model_with_fallback(model, ps, ref_s, speed, resolved_device)
         audio_chunks.append(audio.numpy())
         phoneme_chunks.append(ps)
 
@@ -194,86 +174,6 @@ def synthesize_full(text, voice="af_heart", speed=1, hardware="auto", use_gpu: O
     merged_audio = to_int16_audio(np.concatenate(audio_chunks))
     merged_ps = "\n".join(phoneme_chunks)
     return (SAMPLE_RATE, merged_audio), merged_ps
-
-
-def generate_first(text, voice="af_heart", speed=1, hardware="auto", use_gpu: Optional[bool] = None):
-    pipeline = pipelines[voice[0]]
-    pack = pipeline.load_voice(voice)
-    if use_gpu is not None:
-        hardware = "auto" if use_gpu else "cpu"
-    resolved_device = normalize_device(hardware)
-    model = get_model(resolved_device)
-    for _, ps, _ in pipeline(text, voice, speed):
-        ref_s = pack[len(ps) - 1]
-        try:
-            audio = model(ps, ref_s, speed)
-        except gr.exceptions.Error as exc:
-            if resolved_device.startswith("cuda"):
-                gr.Warning(str(exc))
-                gr.Info("Retrying with CPU. To avoid this error, set Hardware to CPU.")
-                audio = get_model("cpu")(ps, ref_s, speed)
-            else:
-                raise gr.Error(exc)
-        return (SAMPLE_RATE, to_int16_audio(audio.numpy())), ps
-    return None, ""
-
-
-def tokenize_first(text, voice="af_heart"):
-    pipeline = pipelines[voice[0]]
-    for _, ps, _ in pipeline(text, voice):
-        return ps
-    return ""
-
-
-def predict(text, voice="af_heart", speed=1):
-    return generate_first(text, voice, speed, use_gpu=False)[0]
-
-
-def generate_all(
-    text,
-    voice="af_heart",
-    speed=1,
-    hardware="auto",
-    pitch_semitones=0,
-    tempo=1,
-    volume=1,
-    normalize=False,
-    use_gpu: Optional[bool] = None,
-):
-    if not (text or "").strip():
-        raise gr.Error("Text must not be empty")
-    stream_generation = next_stream_generation()
-    yield SAMPLE_RATE, np.zeros(1, dtype=np.int16)
-    pipeline = pipelines[voice[0]]
-    pack = pipeline.load_voice(voice)
-    if use_gpu is not None:
-        hardware = "auto" if use_gpu else "cpu"
-    resolved_device = normalize_device(hardware)
-    model = get_model(resolved_device)
-    for _, ps, _ in pipeline(text, voice, speed):
-        if not is_current_stream_generation(stream_generation):
-            return
-        ref_s = pack[len(ps) - 1]
-        try:
-            audio = model(ps, ref_s, speed)
-        except gr.exceptions.Error as exc:
-            if resolved_device.startswith("cuda"):
-                gr.Warning(str(exc))
-                gr.Info("Switching to CPU")
-                audio = get_model("cpu")(ps, ref_s, speed)
-            else:
-                raise gr.Error(exc)
-        processed_audio = apply_audio_effects(
-            to_int16_audio(audio.numpy()),
-            SAMPLE_RATE,
-            pitch_semitones,
-            tempo,
-            volume,
-            normalize,
-        )
-        if not is_current_stream_generation(stream_generation):
-            return
-        yield SAMPLE_RATE, processed_audio
 
 
 def audio_to_wav_bytes(audio: np.ndarray, sample_rate: int = SAMPLE_RATE) -> bytes:
@@ -449,38 +349,6 @@ def encode_pcm_s16le(audio: np.ndarray) -> bytes:
     return (np.clip(audio, -1.0, 1.0) * 32767).astype("<i2").tobytes()
 
 
-def encoded_audio_to_temp_file(audio: np.ndarray, output_format: str = "wav", sample_rate: int = SAMPLE_RATE) -> str:
-    normalized_format = normalize_output_format(output_format)
-    extension = OUTPUT_FORMATS[normalized_format]["extension"]
-    audio_bytes = encode_audio_bytes(audio, normalized_format, sample_rate)
-    with tempfile.NamedTemporaryFile(delete=False, suffix=f".{extension}") as file:
-        file.write(audio_bytes)
-        return file.name
-
-
-def synthesize_file(
-    text,
-    voice="af_heart",
-    speed=1,
-    hardware="auto",
-    output_format="wav",
-    pitch_semitones=0,
-    tempo=1,
-    volume=1,
-    normalize=False,
-):
-    audio_tuple, phonemes = synthesize_full(text, voice, speed, hardware)
-    if audio_tuple is None:
-        return None, phonemes
-    sample_rate, waveform = audio_tuple
-    try:
-        waveform = apply_audio_effects(waveform, sample_rate, pitch_semitones, tempo, volume, normalize)
-        output_file = encoded_audio_to_temp_file(waveform, output_format, sample_rate)
-    except (RuntimeError, ValueError) as exc:
-        raise gr.Error(str(exc)) from exc
-    return output_file, phonemes
-
-
 def to_int16_audio(audio: np.ndarray) -> np.ndarray:
     if audio.dtype == np.int16:
         return audio
@@ -551,6 +419,15 @@ def get_text_metrics(text: str, voice: str = "af_heart") -> dict[str, int | str]
     }
 
 
+def get_phoneme_segments(text: str, voice: str = "af_heart") -> list[str]:
+    if voice not in VOICE_CHOICES.values():
+        raise ValueError(f"Invalid voice '{voice}'")
+    if not text.strip():
+        return []
+    pipeline = pipelines[get_voice_language(voice)]
+    return [ps for _, ps, _ in pipeline(text, voice)]
+
+
 def get_status_payload() -> dict:
     return {
         "msg": "pong",
@@ -565,6 +442,10 @@ def get_status_payload() -> dict:
         "languages": LANGUAGE_CHOICES,
         "voices": len(VOICE_CHOICES),
         "loaded_model_devices": list(MODEL_CACHE),
+        "hardware": [
+            {"label": label, "value": value}
+            for label, value in get_hardware_choices()
+        ],
         "output_formats": get_supported_output_formats(),
         "stream_formats": STREAM_FORMATS,
     }
@@ -572,142 +453,6 @@ def get_status_payload() -> dict:
 
 for voice_id in VOICE_CHOICES.values():
     pipelines[voice_id[0]].load_voice(voice_id)
-
-TOKEN_NOTE = """
-💡 Customize pronunciation with Markdown link syntax and /slashes/ like `[Kokoro](/kˈOkəɹO/)`
-
-💬 To adjust intonation, try punctuation `;:,.!?—…"()“”` or stress `ˈ` and `ˌ`
-
-⬇️ Lower stress `[1 level](-1)` or `[2 levels](-2)`
-
-⬆️ Raise stress 1 level `[or](+2)` 2 levels (only works on less stressed, usually short words)
-"""
-
-with gr.Blocks() as generate_tab:
-    out_audio = gr.Audio(label="Output Audio", interactive=False, streaming=False, autoplay=True)
-    generate_btn = gr.Button("Generate", variant="primary")
-    with gr.Accordion("Output Tokens", open=True):
-        out_ps = gr.Textbox(
-            interactive=False,
-            show_label=False,
-            info="Tokens used to generate the audio, up to 510 context length.",
-        )
-        tokenize_btn = gr.Button("Tokenize", variant="secondary")
-        gr.Markdown(TOKEN_NOTE)
-        predict_btn = gr.Button("Predict", variant="secondary", visible=False)
-
-with gr.Blocks() as stream_tab:
-    out_stream = gr.Audio(label="Output Audio Stream", interactive=False, streaming=True, autoplay=True)
-    with gr.Row():
-        stream_btn = gr.Button("Stream", variant="primary")
-        stop_btn = gr.Button("Stop", variant="stop")
-    gr.DuplicateButton()
-
-BADGE_CSS = """
-#build-badge {
-    position: fixed;
-    top: 12px;
-    right: 12px;
-    z-index: 9999;
-    background: rgba(0, 0, 0, 0.45);
-    color: #ffffff;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 8px;
-    padding: 6px 10px;
-    font-size: 12px;
-    font-family: Arial, sans-serif;
-    backdrop-filter: blur(2px);
-}
-"""
-
-hardware_choices = get_hardware_choices()
-hardware_values = {value for _, value in hardware_choices}
-default_hardware = DEFAULT_DEVICE if DEFAULT_DEVICE in hardware_values else "auto"
-
-with gr.Blocks(title="KokoroTTS") as ui:
-    gr.HTML(f"<style>{BADGE_CSS}</style>")
-    gr.HTML(f"<div id='build-badge'>Version: {APP_VERSION} | Build: {BUILD_ID}<br>{get_runtime_label()}</div>")
-    voice_language_state = gr.State(get_language_group_for_voice("af_heart"))
-    with gr.Row():
-        with gr.Column():
-            text = gr.Textbox(
-                label="Input Text",
-                info="Arbitrarily many characters supported",
-                value=get_initial_text(),
-            )
-            with gr.Row():
-                voice = gr.Dropdown(
-                    choices=list(VOICE_CHOICES.items()),
-                    value="af_heart",
-                    label="Voice",
-                    info="Quality and availability vary by language",
-                    filterable=False,
-                    allow_custom_value=False,
-                )
-                hardware = gr.Dropdown(
-                    hardware_choices,
-                    value=default_hardware,
-                    label="Hardware",
-                    info="Select Auto/CPU or a specific visible GPU",
-                )
-            speed = gr.Slider(minimum=0.5, maximum=2, value=1, step=0.1, label="Speed")
-            with gr.Accordion("Audio Controls", open=False):
-                pitch_semitones = gr.Slider(
-                    minimum=-12,
-                    maximum=12,
-                    value=0,
-                    step=0.5,
-                    label="Pitch",
-                    info="Semitone shift after synthesis. 0 disables pitch processing.",
-                )
-                tempo = gr.Slider(
-                    minimum=0.5,
-                    maximum=2,
-                    value=1,
-                    step=0.05,
-                    label="Tempo",
-                    info="Post-synthesis tempo multiplier. 1 disables tempo processing.",
-                )
-                volume = gr.Slider(
-                    minimum=0,
-                    maximum=2,
-                    value=1,
-                    step=0.05,
-                    label="Volume",
-                    info="Output volume multiplier. 1 disables volume processing.",
-                )
-                normalize = gr.Checkbox(
-                    value=False,
-                    label="Normalize Loudness",
-                    info="Apply ffmpeg loudness normalization after synthesis.",
-                )
-            output_format = gr.Dropdown(
-                choices=[(config["label"], key) for key, config in OUTPUT_FORMATS.items()],
-                value="mp3",
-                label="Output Format",
-                info="WAV preserves existing API/UI behavior; other formats are encoded with ffmpeg",
-            )
-            random_btn = gr.Button("🎲 Random Quote 💬", variant="secondary")
-        with gr.Column():
-            gr.TabbedInterface([generate_tab, stream_tab], ["Generate", "Stream"])
-
-    random_btn.click(fn=get_random_quote, inputs=[voice], outputs=[text])
-    voice.change(fn=refresh_text_for_language_change, inputs=[voice, voice_language_state], outputs=[text, voice_language_state])
-    generate_btn.click(
-        fn=synthesize_file,
-        inputs=[text, voice, speed, hardware, output_format, pitch_semitones, tempo, volume, normalize],
-        outputs=[out_audio, out_ps],
-    )
-    tokenize_btn.click(fn=tokenize_first, inputs=[text, voice], outputs=[out_ps])
-    stream_btn.click(fn=stop_active_stream, outputs=[out_stream], queue=False)
-    stream_event = stream_btn.click(
-        fn=generate_all,
-        inputs=[text, voice, speed, hardware, pitch_semitones, tempo, volume, normalize],
-        outputs=[out_stream],
-        trigger_mode="always_last",
-    )
-    stop_btn.click(fn=stop_active_stream, outputs=[out_stream], cancels=[stream_event], queue=False)
-    predict_btn.click(fn=predict, inputs=[text, voice, speed], outputs=[out_audio])
 
 api = FastAPI(
     title="TTS Service API",
@@ -847,7 +592,8 @@ def iter_stream_audio(payload: StreamingTTSRequest, stream_format: str):
     model = get_model(resolved_device)
     for _, ps, _ in pipeline(payload.text, payload.voice, payload.speed):
         ref_s = pack[len(ps) - 1]
-        audio = to_int16_audio(model(ps, ref_s, payload.speed).numpy())
+        generated = run_model_with_fallback(model, ps, ref_s, payload.speed, resolved_device)
+        audio = to_int16_audio(generated.numpy())
         audio = apply_audio_effects(
             audio,
             SAMPLE_RATE,
@@ -914,6 +660,18 @@ def languages() -> dict:
     return {"languages": LANGUAGE_CHOICES, "loaded_languages": list(LANGUAGE_CHOICES)}
 
 
+@api.get("/tts/samples")
+def samples(
+    language: str = Query("a", description="Kokoro language prefix."),
+    random_sample: bool = Query(False, alias="random", description="Return a random sample instead of the intro."),
+) -> dict:
+    if language not in LANGUAGE_CHOICES:
+        raise HTTPException(status_code=404, detail="Language not found")
+    voice = get_voice_choices_for_language(language)[0]
+    text = get_random_quote(voice) if random_sample else get_intro_text(voice)
+    return {"language": language, "language_name": LANGUAGE_CHOICES[language], "text": text, "random": random_sample}
+
+
 @api.get("/tts/speakers")
 def speakers(language: str = Query("a", description="Kokoro language prefix.")) -> dict:
     if language not in LANGUAGE_CHOICES:
@@ -931,13 +689,33 @@ def metrics(payload: MetricsRequest = Body(...)) -> dict:
     return {"voice": payload.voice, "language": get_voice_language(payload.voice), "metrics": get_text_metrics(payload.text, payload.voice)}
 
 
+@api.post("/tts/tokenize")
+def tokenize(payload: MetricsRequest = Body(...)) -> dict:
+    try:
+        segments = get_phoneme_segments(payload.text, payload.voice)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return {
+        "voice": payload.voice,
+        "language": get_voice_language(payload.voice),
+        "segments": segments,
+        "phonemes": "\n".join(segments),
+        "metrics": {
+            "characters": len(payload.text or ""),
+            "words": len((payload.text or "").split()),
+            "segments": len(segments),
+            "phoneme_characters": sum(len(segment) for segment in segments),
+        },
+    }
+
+
 @api.post("/tts/generate")
 def generate_tts(payload: TTSRequest = Body(...)) -> StreamingResponse:
     return stream_audio_response(payload, "/tts/generate")
 
 
 @api.post("/tts/stream")
-def stream_tts(payload: StreamingTTSRequest = Body(...)) -> StreamingResponse:
+async def stream_tts(request: Request, payload: StreamingTTSRequest = Body(...)) -> StreamingResponse:
     if not payload.text.strip():
         raise HTTPException(status_code=400, detail="Text must not be empty")
     if payload.voice not in VOICE_CHOICES.values():
@@ -952,8 +730,21 @@ def stream_tts(payload: StreamingTTSRequest = Body(...)) -> StreamingResponse:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     format_config = STREAM_FORMATS[stream_format]
     media_type = format_config["media_type"].format(sample_rate=SAMPLE_RATE)
+
+    async def disconnected_stream():
+        iterator = iter(iter_stream_audio(payload, stream_format))
+        try:
+            async for chunk in iterate_in_threadpool(iterator):
+                if await request.is_disconnected():
+                    break
+                yield chunk
+        finally:
+            close = getattr(iterator, "close", None)
+            if close is not None:
+                close()
+
     return StreamingResponse(
-        iter_stream_audio(payload, stream_format),
+        disconnected_stream(),
         media_type=media_type,
         headers={
             "Content-Disposition": f"attachment; filename=kokorotts_{payload.voice}_stream.{format_config['extension']}",
@@ -989,7 +780,7 @@ def convert(payload: TTSRequest = Body(...)) -> StreamingResponse:
 
 
 
-app = gr.mount_gradio_app(api, ui, path="/")
+app = create_ui_app(api_app=api)
 
 
 if __name__ == "__main__":

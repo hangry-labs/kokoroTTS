@@ -4,6 +4,7 @@
 .github
 .idea
 .ai/
+AGENTS.md
 
 # Python cache/artifacts
 __pycache__/

@@ -26,6 +26,7 @@ FROM language-builder AS app-builder
 
 COPY pyproject.toml README.md LICENSE VERSION /app/
 COPY kokorotts /app/kokorotts
+COPY hangrylabs /app/hangrylabs
 
 RUN python -m pip install -e . --no-deps
 

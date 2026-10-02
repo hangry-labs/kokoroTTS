@@ -11,7 +11,7 @@ Easy-to-run Kokoro text-to-speech Docker images with a browser UI and HTTP API i
 This Hangry Labs fork is made for ease of use. The aim is that anyone should be able to run text to speech without fighting Python environments, missing model files, or unclear setup: a person trying it at home, a developer wiring it into an app, or a professional evaluating it for a production environment. Install Docker, run one command from Quick Start, open the local link, and start generating speech.
 
 You get:
-- A browser UI for manual text-to-speech generation
+- A responsive browser audio workspace for generation, streaming, playback, and downloads
 - An HTTP API for your own applications and tools
 - No manual Python, model, or audio dependency setup
 - 54 Kokoro-82M voices exposed across 9 language prefixes
@@ -153,9 +153,11 @@ Useful discovery endpoints:
 - `GET /tts/formats`
 - `GET /tts/stream-formats`
 - `GET /tts/languages`
+- `GET /tts/samples?language=a`
 - `GET /tts/speakers?language=a`
 - `GET /tts/voices`
 - `POST /tts/metrics`
+- `POST /tts/tokenize`
 - `POST /tts/stream`
 - `POST /tts/purge`
 
@@ -203,7 +205,7 @@ If you encounter bugs, have feature requests, or need help using Hangry Labs Kok
 - Default full image with prefetched Kokoro model, config, voice assets, and Japanese UniDic data
 - Optional tiny image tag that skips baked Hugging Face model/voice assets and warms a persistent cache volume on first run
 - GPU acceleration when available
-- HTTP API + web UI in one container
+- HTTP API + standalone web audio workspace in one container
 - Offline-friendly runtime flags
 - Full Kokoro-82M voice set exposed in the UI/API
 
@@ -268,14 +270,24 @@ task release SKIP_VALIDATION=1
 
 ### v0.4 Snapshot
 
-Planned work:
+Completed in the current snapshot:
 
-1. Replace Gradio with the tested standalone audio workspace from Hangry Labs Qwen3-ASR-STT, adapted for KokoroTTS generation and streaming workflows.
-2. Upgrade the runtime and dependency workflow from Python 3.11 to Python 3.13, using the validated Qwen3-ASR-STT dependency baseline where packages are shared and independently verifying Kokoro-specific dependencies.
-3. Review and reorganize the KokoroTTS implementation, remove code and dependencies that no longer serve the Docker UI/API product, and improve internal boundaries while preserving behavior.
-4. Add repeatable automated performance benchmarks and optimize GitHub Actions caching around expensive reusable dependency and language-data work without duplicating complete full and tiny image caches.
-5. Add German language and voice support using the newly available compatible model assets.
-6. Standardize the API surface, including an OpenAI-compatible speech endpoint, while retaining the existing `/tts/*` endpoints for backward compatibility.
+- Replaced Gradio with a responsive standalone audio workspace based on the tested Hangry Labs Qwen3-ASR-STT interface.
+- Added dedicated Generate, Stream, API, and System views with live runtime status, language and voice discovery, audio controls, WaveSurfer playback, and direct downloads.
+- Refined the Generate workflow into a clear text-to-action-to-audio sequence, moved voice controls into the settings column, added precise numeric control entry, disabled volume while normalization is active, and associated output format with the generated audio area.
+- Added one-click voice-control reset, aligned Stream actions with the same top-to-bottom workflow, and replaced raw API/System output with collapsible syntax-highlighted JSON trees.
+- Added a responsive System-tab GPU monitor with live NVIDIA load, VRAM, temperature, power, and recent utilization history.
+- Added browser stream cancellation using `AbortController` plus server-side disconnect handling, so Stop cancels the current request and a new stream always uses the latest text.
+- Added server-owned language sample and phoneme inspection endpoints while preserving all existing `/tts/*` defaults and compatibility routes.
+- Removed the Gradio runtime dependency from the application and Docker dependency set.
+
+Planned next:
+
+1. Upgrade the runtime and dependency workflow from Python 3.11 to Python 3.13, using the validated Qwen3-ASR-STT dependency baseline where packages are shared and independently verifying Kokoro-specific dependencies.
+2. Review and reorganize the KokoroTTS implementation, remove code and dependencies that no longer serve the Docker UI/API product, and improve internal boundaries while preserving behavior.
+3. Add repeatable automated performance benchmarks and optimize GitHub Actions caching around expensive reusable dependency and language-data work without duplicating complete full and tiny image caches.
+4. Add German language and voice support using the newly available compatible model assets.
+5. Standardize the API surface, including an OpenAI-compatible speech endpoint, while retaining the existing `/tts/*` endpoints for backward compatibility.
 
 ### v0.3
 

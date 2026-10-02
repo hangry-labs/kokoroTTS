@@ -63,6 +63,10 @@ class KokoroTTSClient:
     def languages(self) -> dict[str, Any]:
         return self._json("GET", "/tts/languages")
 
+    def sample(self, language: str = "a", random_sample: bool = False) -> dict[str, Any]:
+        query = urlencode({"language": language, "random": str(random_sample).lower()})
+        return self._json("GET", f"/tts/samples?{query}")
+
     def speakers(self, language: str = "a") -> dict[str, Any]:
         return self._json("GET", f"/tts/speakers?{urlencode({'language': language})}")
 
@@ -71,6 +75,9 @@ class KokoroTTSClient:
 
     def metrics(self, text: str, voice: str = "af_heart") -> dict[str, Any]:
         return self._json("POST", "/tts/metrics", {"text": text, "voice": voice})
+
+    def tokenize(self, text: str, voice: str = "af_heart") -> dict[str, Any]:
+        return self._json("POST", "/tts/tokenize", {"text": text, "voice": voice})
 
     def purge(self, device: str | None = None) -> dict[str, Any]:
         payload = {} if device is None else {"device": device}
