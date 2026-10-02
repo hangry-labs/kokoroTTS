@@ -1,9 +1,11 @@
-fastapi==0.136.1
+--extra-index-url https://download.pytorch.org/whl/cu130
+
+fastapi==0.136.3
 huggingface-hub==0.36.2
 loguru==0.7.3
-misaki[en,ja,zh]==0.9.4
-numpy==2.4.4
+misaki[en,ja,zh] @ https://github.com/hexgrad/misaki/archive/fba1236595f2d2bf21d414ba6e57d25256afada3.tar.gz
+numpy==2.2.6
 setuptools==79.0.1
 torch==2.11.0
 transformers==4.57.6
-uvicorn[standard]==0.46.0
+uvicorn[standard]==0.51.0

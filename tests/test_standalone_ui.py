@@ -92,6 +92,8 @@ class StandaloneUiTests(unittest.TestCase):
         self.assertIn("labs-badge-orbit", stylesheet.text)
         self.assertIn("offset-path", stylesheet.text)
         self.assertIn(".runtime-copy span { display: block", stylesheet.text)
+        self.assertIn("@media (min-width: 1101px)", stylesheet.text)
+        self.assertIn(".brand-hero { height: 237px; min-height: 237px; }", stylesheet.text)
         self.assertEqual(audio_editor.status_code, 200)
         self.assertIn("WaveSurfer", audio_editor.text)
         self.assertEqual(product_logo.status_code, 200)

@@ -266,14 +266,14 @@ docker run -p 7860:7860 --gpus all -v kokorotts_hf_cache:/app/.cache/huggingface
 - Added browser stream cancellation using `AbortController` plus server-side disconnect handling, so Stop cancels the current request and a new stream always uses the latest text.
 - Added server-owned language sample and phoneme inspection endpoints while preserving all existing `/tts/*` defaults and compatibility routes.
 - Removed the Gradio runtime dependency from the application and Docker dependency set.
+- Upgraded the Docker runtime and dependency workflow to Python 3.13 with the Qwen3-ASR-STT-proven Torch 2.11/CUDA 13 baseline, while independently pinning Kokoro's language and model dependencies.
 
 #### Planned Work
 
-1. Upgrade the runtime and dependency workflow from Python 3.11 to Python 3.13, using the validated Qwen3-ASR-STT dependency baseline where packages are shared and independently verifying Kokoro-specific dependencies.
-2. Review and reorganize the KokoroTTS implementation, remove code and dependencies that no longer serve the Docker UI/API product, and improve internal boundaries while preserving behavior.
-3. Add repeatable automated performance benchmarks and optimize GitHub Actions caching around expensive reusable dependency and language-data work without duplicating complete full and tiny image caches.
-4. Add German language and voice support using the newly available compatible model assets.
-5. Standardize the API surface, including an OpenAI-compatible speech endpoint, while retaining the existing `/tts/*` endpoints for backward compatibility.
+1. Review and reorganize the KokoroTTS implementation, remove code and dependencies that no longer serve the Docker UI/API product, and improve internal boundaries while preserving behavior.
+2. Add repeatable automated performance benchmarks and optimize GitHub Actions caching around expensive reusable dependency and language-data work without duplicating complete full and tiny image caches.
+3. Add German language and voice support using the newly available compatible model assets.
+4. Standardize the API surface, including an OpenAI-compatible speech endpoint, while retaining the existing `/tts/*` endpoints for backward compatibility.
 
 ### v0.3
 

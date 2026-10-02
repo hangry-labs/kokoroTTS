@@ -314,6 +314,10 @@ pre { margin: 10px 0 0; white-space: pre-wrap; overflow-wrap: anywhere; }
 .toast { position: fixed; right: 20px; bottom: 20px; z-index: 20; max-width: min(440px, calc(100vw - 40px)); padding: 12px 14px; border: 1px solid #7f3d43; border-radius: 5px; background: #371b1e; color: #ffd0d3; box-shadow: 0 16px 44px rgba(0, 0, 0, 0.45); font-size: 0.8rem; overflow-wrap: anywhere; }
 .toast[data-tone="success"] { border-color: #397b58; background: #173324; color: #bcebd2; }
 
+@media (min-width: 1101px) {
+  .brand-hero { height: 237px; min-height: 237px; }
+}
+
 @media (min-width: 921px) and (max-width: 1100px) {
   .brand-copy { top: 72px; width: 480px; transform: translateX(calc(-50% - 30px)); }
 }

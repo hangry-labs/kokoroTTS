@@ -1,4 +1,4 @@
-FROM python:3.11-slim AS base
+FROM python:3.13-slim AS base
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -15,7 +15,7 @@ RUN apt-get update \
 COPY requirements.txt /app/
 
 RUN python -m pip install --upgrade pip setuptools wheel \
-    && python -m pip install -r /app/requirements.txt \
+    && python -m pip install --extra-index-url https://download.pytorch.org/whl/cu130 -r /app/requirements.txt \
     && python -m pip install https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl
 
 FROM base AS language-builder
@@ -34,7 +34,7 @@ FROM app-builder AS baked-builder
 
 RUN python -u /app/kokorotts/prefetch_assets.py
 
-FROM python:3.11-slim AS runtime-base
+FROM python:3.13-slim AS runtime-base
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
