@@ -267,13 +267,19 @@ docker run -p 7860:7860 --gpus all -v kokorotts_hf_cache:/app/.cache/huggingface
 - Added server-owned language sample and phoneme inspection endpoints while preserving all existing `/tts/*` defaults and compatibility routes.
 - Removed the Gradio runtime dependency from the application and Docker dependency set.
 - Upgraded the Docker runtime and dependency workflow to Python 3.13 with the Qwen3-ASR-STT-proven Torch 2.11/CUDA 13 baseline, while independently pinning Kokoro's language and model dependencies.
+- Reorganized the server into focused API, audio, catalog, schema, runtime, and launcher modules while preserving the existing `/tts/*` contracts and intentionally eager preparation of all advertised voices.
+- Fixed long non-English input handling so multilingual sentence punctuation and punctuation-free text are split into model-safe phoneme segments without silently dropping content.
+- Added concurrency-safe model initialization without serializing normal inference, made model purge wait for active use and release Python/PyTorch CUDA caches, and limited CPU fallback to CUDA-class failures with headers, status metadata, and server warnings.
+- Replaced the duplicate-initialization script startup with a lightweight Uvicorn launcher, reducing the development reload supervisor from roughly 1 GB to about 33 MB RSS in local measurements.
+- Added a genuinely incremental Python streaming client while retaining the buffered `stream()` compatibility method, made the default package install client-only with an optional full server dependency set, and stopped package imports from modifying host Loguru configuration.
 
 #### Planned Work
 
-1. Review and reorganize the KokoroTTS implementation, remove code and dependencies that no longer serve the Docker UI/API product, and improve internal boundaries while preserving behavior.
-2. Add repeatable automated performance benchmarks and optimize GitHub Actions caching around expensive reusable dependency and language-data work without duplicating complete full and tiny image caches.
-3. Add German language and voice support using the newly available compatible model assets.
-4. Standardize the API surface, including an OpenAI-compatible speech endpoint, while retaining the existing `/tts/*` endpoints for backward compatibility.
+1. Add repeatable automated performance benchmarks and optimize GitHub Actions caching around expensive reusable dependency and language-data work without duplicating complete full and tiny image caches.
+2. Add German language and voice support using the newly available compatible model assets.
+3. Standardize the API surface, including an OpenAI-compatible speech endpoint, while retaining the existing `/tts/*` endpoints for backward compatibility.
+4. Prove whether the system `espeak-ng` package can be removed in favor of the bundled `espeakng-loader` runtime without reducing language support or offline reliability.
+5. Investigate a local-network UniDic artifact/cache so repeated Docker builds do not depend on downloading the largest language-data layer from the public source.
 
 ### v0.3
 

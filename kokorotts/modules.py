@@ -2,7 +2,6 @@
 from .istftnet import AdainResBlk1d
 from torch.nn.utils.parametrizations import weight_norm
 from transformers import AlbertModel
-import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F

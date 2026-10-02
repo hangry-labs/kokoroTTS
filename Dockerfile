@@ -56,7 +56,7 @@ RUN apt-get update \
 
 EXPOSE 7860
 
-CMD ["python", "-u", "kokorotts/app.py"]
+CMD ["python", "-u", "-m", "kokorotts.server"]
 
 FROM runtime-base AS tiny
 

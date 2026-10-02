@@ -1,4 +1,3 @@
-from attr import attr
 import numpy as np
 import torch
 import torch.nn as nn
@@ -151,9 +150,6 @@ class CustomSTFT(nn.Module):
         # conv_transpose wants shape (B, freq_bins, frames). We'll treat "frames" as time dimension
         # so we do (B, freq_bins, frames) => (B, freq_bins, frames)
         # But PyTorch conv_transpose1d expects (B, in_channels, input_length)
-        real_part = real_part  # (B, freq_bins, frames)
-        imag_part = imag_part
-
         # real iSTFT => convolve with "backward_real", "backward_imag", and sum
         # We'll do 2 conv_transpose calls, each giving (B, 1, time),
         # then add them => (B, 1, time).

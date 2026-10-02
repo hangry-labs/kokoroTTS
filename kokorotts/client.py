@@ -3,9 +3,10 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Iterator
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, BinaryIO, Self
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
@@ -38,6 +39,39 @@ class AudioResponse:
         return output_path
 
 
+class AudioStream:
+    """Incremental audio response that owns the underlying HTTP connection."""
+
+    def __init__(
+        self,
+        response: BinaryIO,
+        media_type: str,
+        headers: dict[str, str],
+        chunk_size: int,
+    ) -> None:
+        self._response = response
+        self.media_type = media_type
+        self.headers = headers
+        self.chunk_size = chunk_size
+
+    def __iter__(self) -> Iterator[bytes]:
+        read_chunk = getattr(self._response, "read1", self._response.read)
+        while chunk := read_chunk(self.chunk_size):
+            yield chunk
+
+    def read(self) -> bytes:
+        return self._response.read()
+
+    def close(self) -> None:
+        self._response.close()
+
+    def __enter__(self) -> Self:
+        return self
+
+    def __exit__(self, *_args: object) -> None:
+        self.close()
+
+
 class KokoroTTSClient:
     """Python client for a running KokoroTTS UI/API server."""
 
@@ -63,7 +97,9 @@ class KokoroTTSClient:
     def languages(self) -> dict[str, Any]:
         return self._json("GET", "/tts/languages")
 
-    def sample(self, language: str = "a", random_sample: bool = False) -> dict[str, Any]:
+    def sample(
+        self, language: str = "a", random_sample: bool = False
+    ) -> dict[str, Any]:
         query = urlencode({"language": language, "random": str(random_sample).lower()})
         return self._json("GET", f"/tts/samples?{query}")
 
@@ -149,6 +185,39 @@ class KokoroTTSClient:
         volume: float = 1.0,
         normalize: bool = False,
     ) -> AudioResponse:
+        with self.iter_stream(
+            text=text,
+            voice=voice,
+            speed=speed,
+            device=device,
+            stream_format=stream_format,
+            pitch_semitones=pitch_semitones,
+            tempo=tempo,
+            volume=volume,
+            normalize=normalize,
+        ) as stream:
+            return AudioResponse(
+                content=b"".join(stream),
+                media_type=stream.media_type,
+                headers=stream.headers,
+            )
+
+    def iter_stream(
+        self,
+        text: str,
+        voice: str = "af_heart",
+        speed: float = 1.0,
+        device: str = "auto",
+        stream_format: str = "pcm_s16le",
+        pitch_semitones: float = 0.0,
+        tempo: float = 1.0,
+        volume: float = 1.0,
+        normalize: bool = False,
+        chunk_size: int = 64 * 1024,
+    ) -> AudioStream:
+        """Open a streaming request and yield bytes as they arrive."""
+        if chunk_size < 1:
+            raise ValueError("chunk_size must be at least 1")
         payload = self._tts_payload(
             text,
             voice,
@@ -161,7 +230,10 @@ class KokoroTTSClient:
             normalize,
         )
         payload["stream_format"] = stream_format
-        return self._audio("/tts/stream", payload)
+        response, media_type, headers = self._open_with_headers(
+            "POST", "/tts/stream", payload
+        )
+        return AudioStream(response, media_type, headers, chunk_size)
 
     def _tts_payload(
         self,
@@ -187,7 +259,9 @@ class KokoroTTSClient:
             "normalize": normalize,
         }
 
-    def _json(self, method: str, path: str, payload: dict[str, Any] | None = None) -> dict[str, Any]:
+    def _json(
+        self, method: str, path: str, payload: dict[str, Any] | None = None
+    ) -> dict[str, Any]:
         response = self._request(method, path, payload)
         if not response:
             return {}
@@ -197,7 +271,9 @@ class KokoroTTSClient:
         content, media_type, headers = self._request_with_headers("POST", path, payload)
         return AudioResponse(content=content, media_type=media_type, headers=headers)
 
-    def _request(self, method: str, path: str, payload: dict[str, Any] | None = None) -> bytes:
+    def _request(
+        self, method: str, path: str, payload: dict[str, Any] | None = None
+    ) -> bytes:
         content, _, _ = self._request_with_headers(method, path, payload)
         return content
 
@@ -207,6 +283,18 @@ class KokoroTTSClient:
         path: str,
         payload: dict[str, Any] | None = None,
     ) -> tuple[bytes, str, dict[str, str]]:
+        response, media_type, response_headers = self._open_with_headers(
+            method, path, payload
+        )
+        with response:
+            return response.read(), media_type, response_headers
+
+    def _open_with_headers(
+        self,
+        method: str,
+        path: str,
+        payload: dict[str, Any] | None = None,
+    ) -> tuple[BinaryIO, str, dict[str, str]]:
         url = f"{self.base_url}{path}"
         data = None
         headers = {"Accept": "*/*"}
@@ -216,14 +304,24 @@ class KokoroTTSClient:
 
         request = Request(url, data=data, headers=headers, method=method)
         try:
-            with urlopen(request, timeout=self.timeout) as response:
-                response_headers = {key.lower(): value for key, value in response.headers.items()}
-                media_type = response_headers.get("content-type", "application/octet-stream").split(";", 1)[0]
-                return response.read(), media_type, response_headers
+            response = urlopen(request, timeout=self.timeout)
+            response_headers = {
+                key.lower(): value for key, value in response.headers.items()
+            }
+            media_type = response_headers.get(
+                "content-type", "application/octet-stream"
+            ).split(";", 1)[0]
+            return response, media_type, response_headers
         except HTTPError as exc:
             detail = exc.read().decode("utf-8", errors="replace")
-            raise KokoroTTSClientError(f"KokoroTTS API error {exc.code}: {detail}") from exc
+            raise KokoroTTSClientError(
+                f"KokoroTTS API error {exc.code}: {detail}"
+            ) from exc
         except URLError as exc:
-            raise KokoroTTSClientError(f"Could not reach KokoroTTS API at {url}: {exc.reason}") from exc
+            raise KokoroTTSClientError(
+                f"Could not reach KokoroTTS API at {url}: {exc.reason}"
+            ) from exc
         except TimeoutError as exc:
-            raise KokoroTTSClientError(f"Timed out waiting for KokoroTTS API at {url}") from exc
+            raise KokoroTTSClientError(
+                f"Timed out waiting for KokoroTTS API at {url}"
+            ) from exc

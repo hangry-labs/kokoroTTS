@@ -1,5 +1,6 @@
 from .istftnet import Decoder
 from .modules import CustomAlbert, ProsodyPredictor, TextEncoder
+from .catalog import DEFAULT_MODEL_REPO_ID, MODEL_FILES
 from dataclasses import dataclass
 from huggingface_hub import hf_hub_download
 from loguru import logger
@@ -23,10 +24,7 @@ class KModel(torch.nn.Module):
     so there is no need to repeatedly download config.json outside of KModel.
     '''
 
-    MODEL_NAMES = {
-        'hexgrad/Kokoro-82M': 'kokoro-v1_0.pth',
-        'hexgrad/Kokoro-82M-v1.1-zh': 'kokoro-v1_1-zh.pth',
-    }
+    MODEL_NAMES = MODEL_FILES
 
     def __init__(
         self,
@@ -37,7 +35,7 @@ class KModel(torch.nn.Module):
     ):
         super().__init__()
         if repo_id is None:
-            repo_id = 'hexgrad/Kokoro-82M'
+            repo_id = DEFAULT_MODEL_REPO_ID
             print(f"WARNING: Defaulting repo_id to {repo_id}. Pass repo_id='{repo_id}' to suppress this warning.")
         self.repo_id = repo_id
         if not isinstance(config, dict):
@@ -69,7 +67,7 @@ class KModel(torch.nn.Module):
             assert hasattr(self, key), key
             try:
                 getattr(self, key).load_state_dict(state_dict)
-            except:
+            except RuntimeError:
                 logger.debug(f"Did not load {key} from state_dict")
                 state_dict = {k[7:]: v for k, v in state_dict.items()}
                 getattr(self, key).load_state_dict(state_dict, strict=False)

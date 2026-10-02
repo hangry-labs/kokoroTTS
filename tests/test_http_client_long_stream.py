@@ -36,6 +36,16 @@ LONG_SPANISH_TEXT = (
     "aplicacion pueda reproducir o guardar el resultado sin sorpresas. "
 ) * 4
 
+LONG_JAPANESE_TEXT = (
+    "KokoroTTSは長い日本語の文章を最後まで読み上げられるか確認しています。"
+    "文章は自然な区切りで分けられ、どの部分も失われてはいけません。"
+) * 30
+
+LONG_CHINESE_TEXT = (
+    "KokoroTTS正在测试一段较长的中文内容，确认每一部分都能被正确处理。"
+    "即使文本超过单个模型片段的长度，后面的内容也不应该被截断。"
+) * 30
+
 
 class HttpClientServerSmokeTest(unittest.TestCase):
     @classmethod
@@ -104,11 +114,36 @@ class HttpClientServerSmokeTest(unittest.TestCase):
         self.assertGreater(len(tokens["segments"]), 0)
         self.assertGreater(tokens["metrics"]["phoneme_characters"], 0)
 
+    def test_tts_tokenize_preserves_long_japanese_text(self) -> None:
+        tokens = self.client.tokenize(LONG_JAPANESE_TEXT, voice="jf_alpha")
+
+        self.assertGreater(len(tokens["segments"]), 1)
+        self.assertGreater(tokens["metrics"]["phoneme_characters"], 510)
+        self.assertTrue(all(len(segment) <= 510 for segment in tokens["segments"]))
+
+    def test_tts_tokenize_preserves_long_chinese_text(self) -> None:
+        tokens = self.client.tokenize(LONG_CHINESE_TEXT, voice="zf_xiaobei")
+
+        self.assertGreater(len(tokens["segments"]), 1)
+        self.assertGreater(tokens["metrics"]["phoneme_characters"], 510)
+        self.assertTrue(all(len(segment) <= 510 for segment in tokens["segments"]))
+
     def test_tts_purge_rejects_invalid_device_without_purging(self) -> None:
         with self.assertRaises(KokoroTTSClientError) as error:
             self.client.purge("cuda:999")
 
         self.assertIn("400", str(error.exception))
+
+    def test_tts_purge_releases_loaded_models(self) -> None:
+        self.client.generate("Load a model before testing purge.", output_format="mp3")
+        loaded = self.client.status()["loaded_model_devices"]
+        self.assertGreater(len(loaded), 0)
+
+        result = self.client.purge()
+
+        self.assertGreater(len(result["purged"]), 0)
+        self.assertEqual(result["remaining_model_devices"], [])
+        self.assertEqual(self.client.status()["loaded_model_devices"], [])
 
     def test_tts_generate_mp3_with_audio_controls(self) -> None:
         audio = self.client.generate(
@@ -153,19 +188,27 @@ class HttpClientServerSmokeTest(unittest.TestCase):
         self.assertEqual(audio.headers["x-kokorotts-stream-format"], "mp3")
 
     def test_tts_stream_mp3_long_english_text(self) -> None:
-        audio = self.client.stream(
+        with self.client.iter_stream(
             LONG_ENGLISH_TEXT,
             voice="af_heart",
             stream_format="mp3",
             tempo=1.05,
             pitch_semitones=1,
-        )
+            chunk_size=32 * 1024,
+        ) as stream:
+            chunks = list(stream)
+            media_type = stream.media_type
+            headers = stream.headers
+        content = b"".join(chunks)
 
-        self.assertEqual(audio.media_type, "audio/mpeg")
-        self.assertGreater(len(audio.content), 100_000)
+        self.assertEqual(media_type, "audio/mpeg")
+        self.assertEqual(headers["x-kokorotts-stream-format"], "mp3")
+        self.assertGreater(len(chunks), 1)
+        self.assertGreater(len(content), 100_000)
 
         with tempfile.TemporaryDirectory() as temp_dir:
-            output_path = audio.save(Path(temp_dir) / "long-english.mp3")
+            output_path = Path(temp_dir) / "long-english.mp3"
+            output_path.write_bytes(content)
             self.assertGreater(output_path.stat().st_size, 100_000)
 
     def test_tts_stream_pcm_long_spanish_text(self) -> None:

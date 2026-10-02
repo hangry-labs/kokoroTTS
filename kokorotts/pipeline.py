@@ -1,3 +1,4 @@
+from .catalog import DEFAULT_MODEL_REPO_ID, LANGUAGE_ALIASES, PIPELINE_LANGUAGE_CODES
 from .model import KModel
 from dataclasses import dataclass
 from huggingface_hub import hf_hub_download
@@ -8,36 +9,8 @@ import re
 import torch
 import os
 
-ALIASES = {
-    'en-us': 'a',
-    'en-gb': 'b',
-    'es': 'e',
-    'fr-fr': 'f',
-    'hi': 'h',
-    'it': 'i',
-    'pt-br': 'p',
-    'ja': 'j',
-    'zh': 'z',
-}
-
-LANG_CODES = dict(
-    # pip install misaki[en]
-    a='American English',
-    b='British English',
-
-    # espeak-ng
-    e='es',
-    f='fr-fr',
-    h='hi',
-    i='it',
-    p='pt-br',
-
-    # pip install misaki[ja]
-    j='Japanese',
-
-    # pip install misaki[zh]
-    z='Mandarin Chinese',
-)
+ALIASES = LANGUAGE_ALIASES
+LANG_CODES = PIPELINE_LANGUAGE_CODES
 
 class KPipeline:
     '''
@@ -81,7 +54,7 @@ class KPipeline:
                    If 'cuda' and not available, will explicitly raise an error
         """
         if repo_id is None:
-            repo_id = 'hexgrad/Kokoro-82M'
+            repo_id = DEFAULT_MODEL_REPO_ID
             print(f"WARNING: Defaulting repo_id to {repo_id}. Pass repo_id='{repo_id}' to suppress this warning.")
         self.repo_id = repo_id
         lang_code = lang_code.lower()
@@ -396,46 +369,59 @@ class KPipeline:
             
             # Non-English processing with chunking
             else:
-                # Split long text into smaller chunks (roughly 400 characters each)
-                # Using sentence boundaries when possible
-                chunk_size = 400
-                chunks = []
-                
-                # Try to split on sentence boundaries first
-                sentences = re.split(r'([.!?]+)', graphemes)
-                current_chunk = ""
-                
-                for i in range(0, len(sentences), 2):
-                    sentence = sentences[i]
-                    # Add the punctuation back if it exists
-                    if i + 1 < len(sentences):
-                        sentence += sentences[i + 1]
-                        
-                    if len(current_chunk) + len(sentence) <= chunk_size:
-                        current_chunk += sentence
-                    else:
-                        if current_chunk:
-                            chunks.append(current_chunk.strip())
-                        current_chunk = sentence
-                
-                if current_chunk:
-                    chunks.append(current_chunk.strip())
-                
-                # If no chunks were created (no sentence boundaries), fall back to character-based chunking
-                if not chunks:
-                    chunks = [graphemes[i:i+chunk_size] for i in range(0, len(graphemes), chunk_size)]
-                
-                # Process each chunk
-                for chunk in chunks:
-                    if not chunk.strip():
-                        continue
-                        
-                    ps, _ = self.g2p(chunk)
-                    if not ps:
-                        continue
-                    elif len(ps) > 510:
-                        logger.warning(f'Truncating len(ps) == {len(ps)} > 510')
-                        ps = ps[:510]
-                        
+                for chunk, ps in self._phonemize_non_english(graphemes):
                     output = KPipeline.infer(model, ps, pack, speed) if model else None
                     yield self.Result(graphemes=chunk, phonemes=ps, output=output, text_index=graphemes_index)
+
+    @staticmethod
+    def _split_graphemes(text: str, max_characters: int = 400) -> List[str]:
+        """Split on multilingual sentence boundaries, then enforce a hard size cap."""
+        sentences = re.findall(r".*?(?:[.!?。！？；;]+\s*|$)", text, flags=re.DOTALL)
+        chunks: List[str] = []
+        current = ""
+
+        for sentence in (part for part in sentences if part):
+            if len(current) + len(sentence) <= max_characters:
+                current += sentence
+                continue
+            if current:
+                chunks.append(current)
+                current = ""
+            while len(sentence) > max_characters:
+                split_at = KPipeline._preferred_split(sentence, max_characters)
+                chunks.append(sentence[:split_at])
+                sentence = sentence[split_at:]
+            current = sentence
+
+        if current:
+            chunks.append(current)
+        return chunks
+
+    @staticmethod
+    def _preferred_split(text: str, limit: int) -> int:
+        window = text[:limit]
+        candidates = [window.rfind(character) for character in " \t\n,:，、"]
+        split_at = max(candidates, default=-1)
+        return split_at + 1 if split_at >= limit // 2 else limit
+
+    def _phonemize_non_english(self, text: str) -> Generator[Tuple[str, str], None, None]:
+        """Yield complete text as model-safe phoneme chunks without truncation."""
+        pending = self._split_graphemes(text)
+        while pending:
+            chunk = pending.pop(0)
+            if not chunk.strip():
+                continue
+            ps, _ = self.g2p(chunk)
+            if not ps:
+                continue
+            if len(ps) <= 510:
+                yield chunk, ps
+                continue
+
+            if len(chunk) <= 1:
+                logger.warning(f"Unable to split single grapheme with {len(ps)} phonemes; truncating to 510")
+                yield chunk, ps[:510]
+                continue
+
+            split_at = self._preferred_split(chunk, max(1, len(chunk) // 2))
+            pending[0:0] = [chunk[:split_at], chunk[split_at:]]

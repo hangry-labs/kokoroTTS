@@ -2,26 +2,21 @@ import os
 
 from huggingface_hub import hf_hub_download
 
-from kokorotts.voices import voice_ids
+from kokorotts.catalog import DEFAULT_MODEL_REPO_ID, MODEL_FILES, voice_ids
 
-REPO_ID = os.getenv("KOKORO_REPO_ID", "hexgrad/Kokoro-82M")
-
-MODEL_FILE_BY_REPO = {
-    "hexgrad/Kokoro-82M": "kokoro-v1_0.pth",
-    "hexgrad/Kokoro-82M-v1.1-zh": "kokoro-v1_1-zh.pth",
-}
+REPO_ID = os.getenv("KOKORO_REPO_ID", DEFAULT_MODEL_REPO_ID)
 
 VOICE_IDS = voice_ids()
 
 
 def main() -> None:
-    if REPO_ID not in MODEL_FILE_BY_REPO:
-        supported = ", ".join(sorted(MODEL_FILE_BY_REPO.keys()))
+    if REPO_ID not in MODEL_FILES:
+        supported = ", ".join(sorted(MODEL_FILES))
         raise ValueError(f"Unsupported KOKORO_REPO_ID '{REPO_ID}'. Supported: {supported}")
 
     files = [
         "config.json",
-        MODEL_FILE_BY_REPO[REPO_ID],
+        MODEL_FILES[REPO_ID],
         *[f"voices/{voice_id}.pt" for voice_id in VOICE_IDS],
     ]
 

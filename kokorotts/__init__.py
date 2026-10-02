@@ -17,35 +17,11 @@ def _read_version() -> str:
 
 __version__ = _read_version()
 
-import sys
-try:
-    from loguru import logger
-except ImportError:
-    import logging
-
-    logger = logging.getLogger("kokorotts")
-    if not logger.handlers:
-        handler = logging.StreamHandler(sys.stderr)
-        handler.setFormatter(logging.Formatter("%(asctime)s | %(name)s:%(lineno)d | %(levelname)s | %(message)s"))
-        logger.addHandler(handler)
-    logger.setLevel(logging.INFO)
-else:
-    # Replace the default logger format with concise module:line context.
-    logger.remove()
-    logger.add(
-        sys.stderr,
-        format="<green>{time:HH:mm:ss}</green> | <cyan>{module:>16}:{line}</cyan> | <level>{level: >8}</level> | <level>{message}</level>",
-        colorize=True,
-        level="INFO",
-    )
-
-if hasattr(logger, "disable"):
-    logger.disable("kokorotts")
-
-from .client import AudioResponse, KokoroTTSClient, KokoroTTSClientError
+from .client import AudioResponse, AudioStream, KokoroTTSClient, KokoroTTSClientError
 
 __all__ = [
     "AudioResponse",
+    "AudioStream",
     "KModel",
     "KPipeline",
     "KokoroTTSClient",
