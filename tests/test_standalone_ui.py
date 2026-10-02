@@ -30,6 +30,8 @@ class StandaloneUiTests(unittest.TestCase):
                 script = client.get("/static/app.js")
                 stylesheet = client.get("/static/styles.css")
                 audio_editor = client.get("/static/audio-editor.js")
+                icon_stylesheet = client.get("/static/vendor/lucide/lucide.css")
+                icon_font = client.get("/static/vendor/lucide/lucide.woff2")
                 product_logo = client.get("/assets/kokoro_logo_horizontal.webp")
                 favicon = client.get("/assets/kokoro_favicon.webp")
                 labs_logo = client.get("/assets/hangrylabs_logo_horizontal.webp")
@@ -83,6 +85,8 @@ class StandaloneUiTests(unittest.TestCase):
         self.assertIn("GPU_HISTORY_RETENTION_MS = 10 * 60 * 1000", script.text)
         self.assertIn("GPU_POLL_INTERVAL_MS = 1000", script.text)
         self.assertIn("function renderGpuMonitor(", script.text)
+        self.assertIn("Array.isArray(payload.gpus) ? payload.gpus : []", script.text)
+        self.assertIn("renderGpuMonitor(state.gpuStats)", script.text)
         self.assertIn("function addGpuChartGrid(", script.text)
         self.assertIn("function attachGpuChartHover(", script.text)
         self.assertIn("function stopGpuMonitor(", script.text)
@@ -96,6 +100,17 @@ class StandaloneUiTests(unittest.TestCase):
         self.assertIn(".brand-hero { height: 237px; min-height: 237px; }", stylesheet.text)
         self.assertEqual(audio_editor.status_code, 200)
         self.assertIn("WaveSurfer", audio_editor.text)
+        self.assertEqual(icon_stylesheet.status_code, 200)
+        for icon in (
+            "activity", "audio-lines", "audio-waveform", "book-open", "boxes", "braces", "check",
+            "chevron-down", "chevron-up", "download", "fast-forward", "file-audio", "git-branch",
+            "message-square-text", "pause", "play", "radio", "refresh-cw", "rewind", "rotate-ccw",
+            "scissors", "share-2", "shuffle", "sliders-horizontal", "sparkles", "square", "volume-2", "x",
+        ):
+            self.assertIn(f".icon-{icon}::before", icon_stylesheet.text)
+        self.assertNotIn(".icon-alarm-clock::before", icon_stylesheet.text)
+        self.assertEqual(icon_font.status_code, 200)
+        self.assertEqual(icon_font.headers["content-type"], "font/woff2")
         self.assertEqual(product_logo.status_code, 200)
         self.assertEqual(product_logo.headers["content-type"], "image/webp")
         self.assertEqual(favicon.status_code, 200)

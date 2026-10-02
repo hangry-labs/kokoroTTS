@@ -19,6 +19,7 @@ REPO_ROOT = PACKAGE_DIR.parents[1]
 ASSET_DIR = REPO_ROOT / "assets"
 
 mimetypes.add_type("image/webp", ".webp")
+mimetypes.add_type("font/woff2", ".woff2")
 
 
 def _read_version_file() -> str:

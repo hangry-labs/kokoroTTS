@@ -272,6 +272,7 @@ docker run -p 7860:7860 --gpus all -v kokorotts_hf_cache:/app/.cache/huggingface
 - Added concurrency-safe model initialization without serializing normal inference, made model purge wait for active use and release Python/PyTorch CUDA caches, and limited CPU fallback to CUDA-class failures with headers, status metadata, and server warnings.
 - Replaced the duplicate-initialization script startup with a lightweight Uvicorn launcher, reducing the development reload supervisor from roughly 1 GB to about 33 MB RSS in local measurements.
 - Added a genuinely incremental Python streaming client while retaining the buffered `stream()` compatibility method, made the default package install client-only with an optional full server dependency set, and stopped package imports from modifying host Loguru configuration.
+- Ported shared UI hardening from Qwen3-ASR-STT: malformed GPU responses no longer break the System view, the icon font is served with the correct MIME type, and Lucide is reduced to the glyphs the Kokoro workspace actually uses.
 
 #### Planned Work
 

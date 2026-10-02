@@ -808,9 +808,9 @@ async function refreshGpuMonitor() {
   state.gpuRefreshActive = true
   try {
     const payload = await fetchJson('/system/gpu')
-    state.gpuStats = payload.gpus
+    state.gpuStats = Array.isArray(payload.gpus) ? payload.gpus : []
     mergeGpuHistory(payload.history)
-    if (!state.gpuHovering) renderGpuMonitor(payload.gpus)
+    if (!state.gpuHovering) renderGpuMonitor(state.gpuStats)
   } catch {
     if (!state.gpuHovering) renderGpuMonitor(state.gpuStats)
   } finally {
