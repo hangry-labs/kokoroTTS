@@ -259,7 +259,7 @@ task release
 
 ## Version History
 
-### v0.3 Snapshot
+### v0.3
 
 - Added a dependency-free Python HTTP client for using KokoroTTS endpoints from application code.
 - Made package imports lightweight so the HTTP client can be used without importing the local inference stack, with package metadata as a safe version fallback.
