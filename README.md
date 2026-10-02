@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://nuggies.website/">
-    <img src="logo.jpg" alt="Hangry Labs KokoroTTS logo" width="720">
+    <img src="assets/kokoro_logo_horizontal.webp" alt="Hangry Labs KokoroTTS logo" width="900">
   </a>
 </p>
 
@@ -14,86 +14,52 @@ You get:
 - A responsive browser audio workspace for generation, streaming, playback, and downloads
 - An HTTP API for your own applications and tools
 - No manual Python, model, or audio dependency setup
-- 54 Kokoro-82M voices exposed across 9 language prefixes
+- 54 Kokoro-82M voices across 9 supported languages
 - WAV, MP3, FLAC, and OGG output
 - Offline-friendly usage: download an image once, keep it, and run it later without relying on live model downloads
 
 Official Docker images are published here: [hangrylabs/kokorotts on Docker Hub](https://hub.docker.com/r/hangrylabs/kokorotts/tags).
 
-Voice examples are available here: [hangry-labs.github.io/kokoroTTS/examples](https://hangry-labs.github.io/kokoroTTS/examples/).
+Examples and voice previews: [hangry-labs.github.io/kokoroTTS/examples](https://hangry-labs.github.io/kokoroTTS/examples/).
 
 Hangry Labs home: [nuggies.website](https://nuggies.website/).
 
+## Contents
+
+- [Listen and Have a Look](#listen-and-have-a-look)
+- [Quick Start](#quick-start)
+- [API Usage](#api-usage)
+  - [Use From Python](#use-from-python)
+- [About This Fork](#about-this-fork)
+- [Support & Issues](#support--issues)
+- [Docker Images](#docker-images)
+- [Local Development](#local-development)
+- [Version History](#version-history)
+- [License](#license)
+
 ---
 
-## Voice Examples
+## Listen and Have a Look
 
-Preview multilingual product-intro MP3 samples from the full KokoroTTS image:
+Hear all 54 voices in their supported languages on the interactive examples page. Choose a language, compare speakers, and listen directly in the browser:
 
-[Open the voice examples page](https://hangry-labs.github.io/kokoroTTS/examples/)
+**[Open the KokoroTTS examples page](https://hangry-labs.github.io/kokoroTTS/examples/)**
 
-GitHub does not render embedded audio players directly in README files, so direct MP3 links are also provided below.
+The included interface provides generation and streaming workflows, precise voice controls, waveform playback and downloads, live API information, and runtime/GPU monitoring.
 
-| Language | Voice | Sample |
-| --- | --- | --- |
-| American English | `af_heart` | [Listen to MP3](examples/kokorotts-af_heart.mp3) |
-| American English | `af_bella` | [Listen to MP3](examples/kokorotts-af_bella.mp3) |
-| American English | `af_nicole` | [Listen to MP3](examples/kokorotts-af_nicole.mp3) |
-| American English | `af_aoede` | [Listen to MP3](examples/kokorotts-af_aoede.mp3) |
-| American English | `af_kore` | [Listen to MP3](examples/kokorotts-af_kore.mp3) |
-| American English | `af_sarah` | [Listen to MP3](examples/kokorotts-af_sarah.mp3) |
-| American English | `af_nova` | [Listen to MP3](examples/kokorotts-af_nova.mp3) |
-| American English | `af_sky` | [Listen to MP3](examples/kokorotts-af_sky.mp3) |
-| American English | `af_alloy` | [Listen to MP3](examples/kokorotts-af_alloy.mp3) |
-| American English | `af_jessica` | [Listen to MP3](examples/kokorotts-af_jessica.mp3) |
-| American English | `af_river` | [Listen to MP3](examples/kokorotts-af_river.mp3) |
-| American English | `am_michael` | [Listen to MP3](examples/kokorotts-am_michael.mp3) |
-| American English | `am_fenrir` | [Listen to MP3](examples/kokorotts-am_fenrir.mp3) |
-| American English | `am_puck` | [Listen to MP3](examples/kokorotts-am_puck.mp3) |
-| American English | `am_echo` | [Listen to MP3](examples/kokorotts-am_echo.mp3) |
-| American English | `am_eric` | [Listen to MP3](examples/kokorotts-am_eric.mp3) |
-| American English | `am_liam` | [Listen to MP3](examples/kokorotts-am_liam.mp3) |
-| American English | `am_onyx` | [Listen to MP3](examples/kokorotts-am_onyx.mp3) |
-| American English | `am_santa` | [Listen to MP3](examples/kokorotts-am_santa.mp3) |
-| American English | `am_adam` | [Listen to MP3](examples/kokorotts-am_adam.mp3) |
-| British English | `bf_emma` | [Listen to MP3](examples/kokorotts-bf_emma.mp3) |
-| British English | `bf_isabella` | [Listen to MP3](examples/kokorotts-bf_isabella.mp3) |
-| British English | `bf_alice` | [Listen to MP3](examples/kokorotts-bf_alice.mp3) |
-| British English | `bf_lily` | [Listen to MP3](examples/kokorotts-bf_lily.mp3) |
-| British English | `bm_george` | [Listen to MP3](examples/kokorotts-bm_george.mp3) |
-| British English | `bm_fable` | [Listen to MP3](examples/kokorotts-bm_fable.mp3) |
-| British English | `bm_lewis` | [Listen to MP3](examples/kokorotts-bm_lewis.mp3) |
-| British English | `bm_daniel` | [Listen to MP3](examples/kokorotts-bm_daniel.mp3) |
-| Japanese | `jf_alpha` | [Listen to MP3](examples/kokorotts-jf_alpha.mp3) |
-| Japanese | `jf_gongitsune` | [Listen to MP3](examples/kokorotts-jf_gongitsune.mp3) |
-| Japanese | `jf_nezumi` | [Listen to MP3](examples/kokorotts-jf_nezumi.mp3) |
-| Japanese | `jf_tebukuro` | [Listen to MP3](examples/kokorotts-jf_tebukuro.mp3) |
-| Japanese | `jm_kumo` | [Listen to MP3](examples/kokorotts-jm_kumo.mp3) |
-| Mandarin Chinese | `zf_xiaobei` | [Listen to MP3](examples/kokorotts-zf_xiaobei.mp3) |
-| Mandarin Chinese | `zf_xiaoni` | [Listen to MP3](examples/kokorotts-zf_xiaoni.mp3) |
-| Mandarin Chinese | `zf_xiaoxiao` | [Listen to MP3](examples/kokorotts-zf_xiaoxiao.mp3) |
-| Mandarin Chinese | `zf_xiaoyi` | [Listen to MP3](examples/kokorotts-zf_xiaoyi.mp3) |
-| Mandarin Chinese | `zm_yunjian` | [Listen to MP3](examples/kokorotts-zm_yunjian.mp3) |
-| Mandarin Chinese | `zm_yunxi` | [Listen to MP3](examples/kokorotts-zm_yunxi.mp3) |
-| Mandarin Chinese | `zm_yunxia` | [Listen to MP3](examples/kokorotts-zm_yunxia.mp3) |
-| Mandarin Chinese | `zm_yunyang` | [Listen to MP3](examples/kokorotts-zm_yunyang.mp3) |
-| Spanish | `ef_dora` | [Listen to MP3](examples/kokorotts-ef_dora.mp3) |
-| Spanish | `em_alex` | [Listen to MP3](examples/kokorotts-em_alex.mp3) |
-| Spanish | `em_santa` | [Listen to MP3](examples/kokorotts-em_santa.mp3) |
-| French | `ff_siwis` | [Listen to MP3](examples/kokorotts-ff_siwis.mp3) |
-| Hindi | `hf_alpha` | [Listen to MP3](examples/kokorotts-hf_alpha.mp3) |
-| Hindi | `hf_beta` | [Listen to MP3](examples/kokorotts-hf_beta.mp3) |
-| Hindi | `hm_omega` | [Listen to MP3](examples/kokorotts-hm_omega.mp3) |
-| Hindi | `hm_psi` | [Listen to MP3](examples/kokorotts-hm_psi.mp3) |
-| Italian | `if_sara` | [Listen to MP3](examples/kokorotts-if_sara.mp3) |
-| Italian | `im_nicola` | [Listen to MP3](examples/kokorotts-im_nicola.mp3) |
-| Brazilian Portuguese | `pf_dora` | [Listen to MP3](examples/kokorotts-pf_dora.mp3) |
-| Brazilian Portuguese | `pm_alex` | [Listen to MP3](examples/kokorotts-pm_alex.mp3) |
-| Brazilian Portuguese | `pm_santa` | [Listen to MP3](examples/kokorotts-pm_santa.mp3) |
+<p align="center">
+  <a href="https://hangry-labs.github.io/kokoroTTS/examples/">
+    <img src="assets/ui.webp" alt="KokoroTTS browser interface with text generation and audio controls">
+  </a>
+</p>
 
 ---
 
 ## Quick Start
+
+### Stable Release
+
+Use the versioned `v0.3` image for a repeatable installation:
 
 ```bash
 docker run -p 7860:7860 --gpus all hangrylabs/kokorotts:v0.3
@@ -111,11 +77,25 @@ Run on a specific GPU (example: GPU index `1`):
 docker run -p 7860:7860 --gpus "device=1" -e CUDA_VISIBLE_DEVICES=1 hangrylabs/kokorotts:v0.3
 ```
 
+### Current Snapshot
+
+Use `latest` to try the current `v0.4` snapshot from the main development line. This moving tag can change between releases:
+
+```bash
+docker run -p 7860:7860 --gpus all hangrylabs/kokorotts:latest
+```
+
+Run the current snapshot on CPU:
+
+```bash
+docker run -p 7860:7860 hangrylabs/kokorotts:latest
+```
+
 Then open: **[http://localhost:7860](http://localhost:7860)**
 
 ---
 
-## API Usage Example
+## API Usage
 
 ```bash
 curl -X POST "http://localhost:7860/tts/generate" \
@@ -146,7 +126,7 @@ curl -X POST "http://localhost:7860/tts/generate" \
   -o output.mp3
 ```
 
-Useful discovery endpoints:
+Useful API endpoints:
 
 - `GET /tts/status`
 - `GET /tts/defaults`
@@ -163,7 +143,13 @@ Useful discovery endpoints:
 
 ### Use From Python
 
-Install this package in a Python project and point the client at a running KokoroTTS server:
+Install the stable HTTP client directly from the Git tag without the local inference dependencies:
+
+```bash
+pip install --no-deps "kokorotts @ git+https://github.com/Hangry-Labs/kokoroTTS.git@v0.3"
+```
+
+Then point it at a running KokoroTTS server:
 
 ```python
 from kokorotts import KokoroTTSClient
@@ -200,29 +186,16 @@ If you encounter bugs, have feature requests, or need help using Hangry Labs Kok
 
 ---
 
-## Docker Features
+## Docker Images
 
-- Default full image with prefetched Kokoro model, config, voice assets, and Japanese UniDic data
-- Optional tiny image tag that skips baked Hugging Face model/voice assets and warms a persistent cache volume on first run
-- GPU acceleration when available
-- HTTP API + standalone web audio workspace in one container
-- Offline-friendly runtime flags
-- Full Kokoro-82M voice set exposed in the UI/API
+All published images are available on [Docker Hub](https://hub.docker.com/r/hangrylabs/kokorotts/tags).
 
----
+- Full images contain the Kokoro model, all 54 voices, configuration, and Japanese UniDic data. They are ready for offline use after the image has been pulled.
+- Tiny images contain the complete runtime but download Hugging Face model and voice assets on first use. Mount `/app/.cache/huggingface` as a named volume to preserve those downloads across containers.
+- Versioned tags such as `v0.3` and `v0.3_tiny` are fixed releases suitable for repeatable deployments.
+- Moving tags `latest` and `latest_tiny` follow the current `v0.4` snapshot built from `main`.
 
-## Docker Hub
-
-You can explore all available Hangry Labs KokoroTTS container images on [Docker Hub](https://hub.docker.com/r/hangrylabs/kokorotts/tags).
-
-This is useful if you want to:
-- Select a specific version of KokoroTTS for compatibility
-- Check available versioned builds before pulling
-- Verify image tags for deployment
-
-Current tag pattern:
-- Full image: `v0.3`, future versions as `vX.Y`
-- Tiny image: `v0.3_tiny`, future versions as `vX.Y_tiny`
+Exact commands for every release and the current snapshot are kept in [Version History](#version-history).
 
 ---
 
@@ -270,9 +243,22 @@ task release SKIP_VALIDATION=1
 
 ### v0.4 Snapshot
 
-Completed in the current snapshot:
+#### Docker
+
+The current development snapshot is published through the moving `latest` and `latest_tiny` tags:
+
+```bash
+docker run -p 7860:7860 --gpus all hangrylabs/kokorotts:latest
+docker run -p 7860:7860 hangrylabs/kokorotts:latest
+docker run -p 7860:7860 --gpus "device=1" -e CUDA_VISIBLE_DEVICES=1 hangrylabs/kokorotts:latest
+docker run -p 7860:7860 --gpus all -v kokorotts_hf_cache:/app/.cache/huggingface hangrylabs/kokorotts:latest_tiny
+```
+
+#### Included Changes
 
 - Replaced Gradio with a responsive standalone audio workspace based on the tested Hangry Labs Qwen3-ASR-STT interface.
+- Replaced the animated product text and oversized Hangry Labs banner with a viewport-bounded KokoroTTS brand hero, added a compact-mode Hangry Labs badge and mascot browser icon, and introduced an animated persistent compact header that restores before first paint.
+- Restored loaded-model details in the inference status, linked the displayed UI version to GitHub Releases, consolidated UI, examples, and GitHub Pages artwork under `assets/`, and refreshed the documentation screenshot as an optimized WebP.
 - Added dedicated Generate, Stream, API, and System views with live runtime status, language and voice discovery, audio controls, WaveSurfer playback, and direct downloads.
 - Refined the Generate workflow into a clear text-to-action-to-audio sequence, moved voice controls into the settings column, added precise numeric control entry, disabled volume while normalization is active, and associated output format with the generated audio area.
 - Added one-click voice-control reset, aligned Stream actions with the same top-to-bottom workflow, and replaced raw API/System output with collapsible syntax-highlighted JSON trees.
@@ -281,7 +267,7 @@ Completed in the current snapshot:
 - Added server-owned language sample and phoneme inspection endpoints while preserving all existing `/tts/*` defaults and compatibility routes.
 - Removed the Gradio runtime dependency from the application and Docker dependency set.
 
-Planned next:
+#### Planned Work
 
 1. Upgrade the runtime and dependency workflow from Python 3.11 to Python 3.13, using the validated Qwen3-ASR-STT dependency baseline where packages are shared and independently verifying Kokoro-specific dependencies.
 2. Review and reorganize the KokoroTTS implementation, remove code and dependencies that no longer serve the Docker UI/API product, and improve internal boundaries while preserving behavior.
@@ -290,6 +276,19 @@ Planned next:
 5. Standardize the API surface, including an OpenAI-compatible speech endpoint, while retaining the existing `/tts/*` endpoints for backward compatibility.
 
 ### v0.3
+
+#### Docker
+
+Use the full image for baked, offline-friendly model assets, or the tiny image with a persistent cache volume:
+
+```bash
+docker run -p 7860:7860 --gpus all hangrylabs/kokorotts:v0.3
+docker run -p 7860:7860 hangrylabs/kokorotts:v0.3
+docker run -p 7860:7860 --gpus "device=1" -e CUDA_VISIBLE_DEVICES=1 hangrylabs/kokorotts:v0.3
+docker run -p 7860:7860 --gpus all -v kokorotts_hf_cache:/app/.cache/huggingface hangrylabs/kokorotts:v0.3_tiny
+```
+
+#### Changes
 
 - Added a dependency-free Python HTTP client for using KokoroTTS endpoints from application code.
 - Made package imports lightweight so the HTTP client can be used without importing the local inference stack, with package metadata as a safe version fallback.
@@ -307,6 +306,16 @@ Planned next:
 
 ### v0.2
 
+#### Docker
+
+```bash
+docker run -p 7860:7860 --gpus all hangrylabs/kokorotts:v0.2
+docker run -p 7860:7860 hangrylabs/kokorotts:v0.2
+docker run -p 7860:7860 --gpus "device=1" -e CUDA_VISIBLE_DEVICES=1 hangrylabs/kokorotts:v0.2
+```
+
+#### Changes
+
 - Moved public project direction under Hangry Labs.
 - Added a root `VERSION` file for the app/runtime release label.
 - Kept Python package metadata on a PEP 440-compatible development version for reliable builds.
@@ -319,14 +328,26 @@ Planned next:
 - Added multilingual Docker prefetch support, including UniDic for offline Japanese synthesis.
 - Added `task imageapi-voice` and `task imageapi-format` for practical smoke tests.
 
-Run with:
+### v0.0.1
+
+#### Docker
+
+An official `v0.0.1` image is not currently available on Docker Hub. Build the historical Git tag locally:
 
 ```bash
-docker run -p 7860:7860 --gpus all hangrylabs/kokorotts:v0.2
-docker run -p 7860:7860 --gpus "device=1" -e CUDA_VISIBLE_DEVICES=1 hangrylabs/kokorotts:v0.2
+git clone --branch v0.0.1 --depth 1 https://github.com/Hangry-Labs/kokoroTTS.git kokorotts-v0.0.1
+docker build -t kokorotts:v0.0.1-local kokorotts-v0.0.1
 ```
 
-### v0.0.1
+Then run it with GPU, CPU, or a specific GPU:
+
+```bash
+docker run -p 7860:7860 --gpus all kokorotts:v0.0.1-local
+docker run -p 7860:7860 kokorotts:v0.0.1-local
+docker run -p 7860:7860 --gpus "device=1" -e CUDA_VISIBLE_DEVICES=1 kokorotts:v0.0.1-local
+```
+
+#### Changes
 
 - Initial release of the KokoroTTS Docker image.
 - Trimmed the image to keep it practical for deployment.

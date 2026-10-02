@@ -77,7 +77,7 @@ tasks:
       - cmd /c docker rm -f {{.CONTAINER}} >nul 2>&1
       - cmd /c docker rm -f {{.CONTAINER_LOCAL}} >nul 2>&1
       - task: cache-init
-      - cmd /c docker run -d --name {{.CONTAINER_LOCAL}} -p {{.PORT}}:7860 --gpus all -e CUDA_VISIBLE_DEVICES={{.GPU_DEVICE}} -e KOKOROTTS_DEVICE={{.APP_DEVICE}} -e KOKOROTTS_UI_DEV=1 -e PORT=7860 -e UVICORN_RELOAD=1 -e HF_TOKEN={{.HF_TOKEN}} -e HF_HUB_OFFLINE={{.HF_HUB_OFFLINE}} -e TRANSFORMERS_OFFLINE={{.TRANSFORMERS_OFFLINE}} -v {{.HF_CACHE_VOLUME}}:/app/.cache/huggingface -v "{{.TASKFILE_DIR}}\kokorotts:/app/kokorotts" -v "{{.TASKFILE_DIR}}\hangrylabs:/app/hangrylabs:ro" {{.IMAGE}}
+      - cmd /c docker run -d --name {{.CONTAINER_LOCAL}} -p {{.PORT}}:7860 --gpus all -e CUDA_VISIBLE_DEVICES={{.GPU_DEVICE}} -e KOKOROTTS_DEVICE={{.APP_DEVICE}} -e KOKOROTTS_UI_DEV=1 -e PORT=7860 -e UVICORN_RELOAD=1 -e HF_TOKEN={{.HF_TOKEN}} -e HF_HUB_OFFLINE={{.HF_HUB_OFFLINE}} -e TRANSFORMERS_OFFLINE={{.TRANSFORMERS_OFFLINE}} -v {{.HF_CACHE_VOLUME}}:/app/.cache/huggingface -v "{{.TASKFILE_DIR}}\kokorotts:/app/kokorotts" -v "{{.TASKFILE_DIR}}\assets:/app/assets:ro" {{.IMAGE}}
       - cmd /c docker ps --filter "name={{.CONTAINER_LOCAL}}"
 
   localrun-tiny:
@@ -86,7 +86,7 @@ tasks:
       - cmd /c docker rm -f {{.CONTAINER}} >nul 2>&1
       - cmd /c docker rm -f {{.CONTAINER_LOCAL}} >nul 2>&1
       - cmd /c docker volume create {{.HF_CACHE_VOLUME}} >nul
-      - cmd /c docker run -d --name {{.CONTAINER_LOCAL}} -p {{.PORT}}:7860 --gpus all -e CUDA_VISIBLE_DEVICES={{.GPU_DEVICE}} -e KOKOROTTS_DEVICE={{.APP_DEVICE}} -e KOKOROTTS_UI_DEV=1 -e PORT=7860 -e UVICORN_RELOAD=1 -e HF_TOKEN={{.HF_TOKEN}} -e HF_HUB_OFFLINE=0 -e TRANSFORMERS_OFFLINE=0 -v {{.HF_CACHE_VOLUME}}:/app/.cache/huggingface -v "{{.TASKFILE_DIR}}\kokorotts:/app/kokorotts" -v "{{.TASKFILE_DIR}}\hangrylabs:/app/hangrylabs:ro" {{.TINY_IMAGE}}
+      - cmd /c docker run -d --name {{.CONTAINER_LOCAL}} -p {{.PORT}}:7860 --gpus all -e CUDA_VISIBLE_DEVICES={{.GPU_DEVICE}} -e KOKOROTTS_DEVICE={{.APP_DEVICE}} -e KOKOROTTS_UI_DEV=1 -e PORT=7860 -e UVICORN_RELOAD=1 -e HF_TOKEN={{.HF_TOKEN}} -e HF_HUB_OFFLINE=0 -e TRANSFORMERS_OFFLINE=0 -v {{.HF_CACHE_VOLUME}}:/app/.cache/huggingface -v "{{.TASKFILE_DIR}}\kokorotts:/app/kokorotts" -v "{{.TASKFILE_DIR}}\assets:/app/assets:ro" {{.TINY_IMAGE}}
       - cmd /c docker ps --filter "name={{.CONTAINER_LOCAL}}"
 
   imageweb:
@@ -131,7 +131,7 @@ tasks:
   ui-test:
     desc: Run standalone UI route and cache-policy tests inside the local image
     cmds:
-      - 'cmd /c docker run --rm --entrypoint python -v "{{.TASKFILE_DIR}}\kokorotts:/app/kokorotts:ro" -v "{{.TASKFILE_DIR}}\hangrylabs:/app/hangrylabs:ro" -v "{{.TASKFILE_DIR}}\tests:/app/tests:ro" {{.IMAGE}} -m unittest tests.test_standalone_ui -v'
+      - 'cmd /c docker run --rm --entrypoint python -v "{{.TASKFILE_DIR}}\kokorotts:/app/kokorotts:ro" -v "{{.TASKFILE_DIR}}\assets:/app/assets:ro" -v "{{.TASKFILE_DIR}}\tests:/app/tests:ro" {{.IMAGE}} -m unittest tests.test_standalone_ui -v'
 
   imagestop:
     desc: Stop running KokoroTTS containers

@@ -42,7 +42,9 @@ artifacts = [
 ]
 
 [tool.hatch.build.targets.wheel.force-include]
-"hangrylabs" = "hangrylabs"
+"assets/kokoro_favicon.webp" = "assets/kokoro_favicon.webp"
+"assets/kokoro_logo_horizontal.webp" = "assets/kokoro_logo_horizontal.webp"
+"assets/hangrylabs_logo_horizontal.webp" = "assets/hangrylabs_logo_horizontal.webp"
 
 [project.urls]
 Homepage = "https://github.com/Hangry-Labs/kokoroTTS"

@@ -1,6 +1,6 @@
 <p>
   <a href="https://hangry-labs.github.io/kokoroTTS/examples/">
-    <img src="https://github.com/Hangry-Labs/kokoroTTS/raw/main/logo.jpg" alt="Hangry Labs KokoroTTS logo">
+    <img src="https://github.com/Hangry-Labs/kokoroTTS/raw/main/assets/kokoro_logo_horizontal.webp" alt="Hangry Labs KokoroTTS logo">
   </a>
 </p>
 
@@ -75,7 +75,7 @@ The container includes the web UI and the HTTP API on the same port.
 ## What You Get
 
 <p>
-  <img src="https://github.com/Hangry-Labs/kokoroTTS/raw/main/assets/ui.jpg" alt="KokoroTTS browser interface">
+  <img src="https://github.com/Hangry-Labs/kokoroTTS/raw/main/assets/ui.webp" alt="KokoroTTS browser interface">
 </p>
 
 - Responsive browser audio workspace with Generate, Stream, API, and System views

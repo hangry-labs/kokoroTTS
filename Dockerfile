@@ -26,7 +26,7 @@ FROM language-builder AS app-builder
 
 COPY pyproject.toml README.md LICENSE VERSION /app/
 COPY kokorotts /app/kokorotts
-COPY hangrylabs /app/hangrylabs
+COPY assets/kokoro_favicon.webp assets/kokoro_logo_horizontal.webp assets/hangrylabs_logo_horizontal.webp /app/assets/
 
 RUN python -m pip install -e . --no-deps
 

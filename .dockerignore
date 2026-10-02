@@ -26,7 +26,6 @@ env/
 todo/
 
 # Large or non-runtime directories
-assets/
 tests/
 examples/
 demo/

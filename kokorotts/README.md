@@ -44,7 +44,7 @@ task client-test
 ```
 
 `localrun` mounts the full local `kokorotts/` directory into `/app/kokorotts` and enables auto-reload via `UVICORN_RELOAD=1`.
-It also enables `KOKOROTTS_UI_DEV=1`, which disables browser caching for the standalone UI and brand assets during development.
+It also enables `KOKOROTTS_UI_DEV=1`, which disables browser caching for the standalone UI and `/assets` files during development.
 Both `imagerun` and `localrun` mount the named Docker volume `kokorotts_hf_cache` at `/app/.cache/huggingface`, so lazy-downloaded Hugging Face assets survive container and image rebuilds. Baked run tasks seed missing files from the full image into the volume before startup; tiny run tasks keep runtime/language dependencies but skip baked Hugging Face model/voice assets and run online on first use to warm the same cache. `task nuke` removes that volume for true from-scratch tests.
 
 Optional runtime env vars:

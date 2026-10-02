@@ -5,6 +5,7 @@ const $$ = (selector, root = document) => [...root.querySelectorAll(selector)]
 
 const state = {
   activeTab: 'generate',
+  headerCollapsed: false,
   defaults: null,
   status: null,
   voices: [],
@@ -16,6 +17,7 @@ const state = {
   gpuTimer: null,
   gpuRefreshActive: false,
   gpuHovering: false,
+  headerAnimation: null,
 }
 
 const GPU_HISTORY_RETENTION_MS = 10 * 60 * 1000
@@ -84,6 +86,7 @@ function persistUiSession() {
   try {
     sessionStorage.setItem(UI_SESSION_KEY, JSON.stringify({
       activeTab: state.activeTab,
+      headerCollapsed: state.headerCollapsed,
       gpuWindowMs: state.gpuWindowMs,
     }))
   } catch {
@@ -106,6 +109,7 @@ function persistGpuSession() {
 function restoreSessionState() {
   const ui = readSessionJson(UI_SESSION_KEY)
   if (['generate', 'stream', 'api', 'system'].includes(ui?.activeTab)) state.activeTab = ui.activeTab
+  if (typeof ui?.headerCollapsed === 'boolean') state.headerCollapsed = ui.headerCollapsed
   if ([60 * 1000, 10 * 60 * 1000].includes(ui?.gpuWindowMs)) state.gpuWindowMs = ui.gpuWindowMs
 
   const cached = readSessionJson(GPU_SESSION_KEY)
@@ -120,6 +124,44 @@ function restoreSessionState() {
     if (recent.length) state.gpuHistory.set(Number(index), recent)
   })
 }
+
+function setHeroCollapsed(collapsed, persist = true, animate = true) {
+  const hero = $('#brand-hero')
+  const toggle = $('#hero-toggle')
+  state.headerAnimation?.cancel()
+  const startHeight = hero.getBoundingClientRect().height
+
+  state.headerCollapsed = collapsed
+  const action = collapsed ? 'Expand header' : 'Collapse header'
+  document.documentElement.dataset.headerCollapsed = String(collapsed)
+  hero.dataset.collapsed = String(collapsed)
+  toggle.setAttribute('aria-expanded', String(!collapsed))
+  toggle.setAttribute('aria-label', action)
+  toggle.title = action
+  toggle.querySelector('i').className = collapsed ? 'icon-chevron-down' : 'icon-chevron-up'
+
+  const endHeight = hero.getBoundingClientRect().height
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  if (animate && !reducedMotion && Math.abs(startHeight - endHeight) > 1) {
+    hero.classList.add('is-rolling')
+    const animation = hero.animate(
+      [{ height: `${startHeight}px` }, { height: `${endHeight}px` }],
+      { duration: 320, easing: 'cubic-bezier(0.22, 1, 0.36, 1)', fill: 'both' },
+    )
+    state.headerAnimation = animation
+    animation.finished
+      .catch(() => {})
+      .finally(() => {
+        if (state.headerAnimation !== animation) return
+        hero.classList.remove('is-rolling')
+        state.headerAnimation = null
+        animation.cancel()
+      })
+  }
+  if (persist) persistUiSession()
+}
+
+$('#hero-toggle').addEventListener('click', () => setHeroCollapsed(!state.headerCollapsed))
 
 function activateTab(name) {
   state.activeTab = name
@@ -866,6 +908,7 @@ function updateRuntime(status) {
   badge.dataset.state = 'ready'
   badge.querySelector('strong').textContent = 'Inference ready'
   $('#runtime-model').textContent = `${status.repo_id} / ${status.runtime}`
+  badge.title = `${status.repo_id} / ${status.runtime}`
   const devices = status.hardware || [
     { value: 'auto', label: 'Auto' },
     { value: 'cpu', label: 'CPU' },
@@ -918,6 +961,7 @@ async function pollReadiness() {
     badge.dataset.state = 'starting'
     badge.querySelector('strong').textContent = 'Inference starting'
     $('#runtime-model').textContent = 'Waiting for inference service'
+    badge.title = 'Waiting for inference service'
   }
   setTimeout(pollReadiness, 15000)
 }
@@ -937,6 +981,7 @@ window.addEventListener('beforeunload', () => {
 })
 
 restoreSessionState()
+setHeroCollapsed(state.headerCollapsed, false, false)
 loadWorkspace()
   .then(() => activateTab(state.activeTab))
   .catch((error) => {

@@ -5,20 +5,27 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="dark">
   <title>KokoroTTS</title>
-  <link rel="icon" href="/brand/favicon_small.png">
+  <link rel="icon" type="image/webp" sizes="128x128" href="/assets/kokoro_favicon.webp">
+  <script>
+    try {
+      const savedUi = JSON.parse(sessionStorage.getItem('kokorotts-ui-state-v1') || 'null')
+      if (savedUi?.headerCollapsed) document.documentElement.dataset.headerCollapsed = 'true'
+    } catch {
+      // Session storage may be unavailable in privacy-restricted browsers.
+    }
+  </script>
   <link rel="stylesheet" href="/static/vendor/lucide/lucide.css">
   <link rel="stylesheet" href="/static/styles.css">
   <script type="module" src="/static/app.js"></script>
 </head>
 <body>
-  <header class="brand-hero">
-    <img class="brand-backdrop" src="/brand/banner.jpg" alt="" aria-hidden="true">
-    <div class="brand-shade"></div>
+  <header class="brand-hero" id="brand-hero" data-collapsed="false">
+    <img class="collapsed-mascot" src="/assets/kokoro_favicon.webp" alt="KokoroTTS mascot">
     <nav class="brand-nav" aria-label="Application links">
-      <div class="brand-lockup">
-        <img src="/brand/logo_small.png" alt="Hangry Labs">
-        <div><strong>Hangry Labs</strong><span>Local speech infrastructure</span></div>
-      </div>
+      <a class="labs-badge" href="https://nuggies.website/" target="_blank" rel="noreferrer" aria-label="Hangry Labs" title="Hangry Labs">
+        <img src="/assets/hangrylabs_logo_horizontal.webp" alt="Hangry Labs">
+        <span class="labs-badge-shine" aria-hidden="true"></span>
+      </a>
       <div class="brand-links">
         <a class="primary-link" href="https://hangry-labs.github.io/kokoroTTS/examples/" target="_blank" rel="noreferrer"><i class="icon-sparkles"></i>Examples</a>
         <a href="/tts/docs"><i class="icon-book-open"></i>API docs</a>
@@ -27,14 +34,14 @@
       </div>
     </nav>
     <div class="brand-copy">
-      <h1><span class="product-highlight" data-text="KokoroTTS">KokoroTTS</span></h1>
-      <p>Multilingual speech synthesis with local browser and HTTP API access.</p>
+      <h1><img class="product-logo" src="/assets/kokoro_logo_horizontal.webp" alt="KokoroTTS - Text-to-Speech That Sounds Natural"></h1>
     </div>
     <div class="runtime-badge" id="runtime-badge" data-state="starting">
       <i class="icon-activity"></i>
       <div class="runtime-copy"><strong>Inference starting</strong><span id="runtime-model">Waiting for inference service</span></div>
-      <span class="runtime-version">UI v{{UI_VERSION}}</span>
+      <a class="runtime-version" href="https://github.com/hangry-labs/kokoroTTS/releases" target="_blank" rel="noreferrer" title="Open KokoroTTS releases">UI v{{UI_VERSION}}</a>
     </div>
+    <button class="hero-toggle" id="hero-toggle" type="button" aria-controls="brand-hero" aria-expanded="true" aria-label="Collapse header" title="Collapse header"><i class="icon-chevron-up"></i></button>
   </header>
 
   <div class="app-tabs" role="tablist" aria-label="Workspace views">

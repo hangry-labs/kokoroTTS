@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import html
+import mimetypes
 import os
 from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
@@ -15,7 +16,9 @@ from kokorotts.standalone_ui.gpu import GPU_MONITOR
 PACKAGE_DIR = Path(__file__).resolve().parent
 STATIC_DIR = PACKAGE_DIR / "static"
 REPO_ROOT = PACKAGE_DIR.parents[1]
-BRAND_DIR = REPO_ROOT / "hangrylabs"
+ASSET_DIR = REPO_ROOT / "assets"
+
+mimetypes.add_type("image/webp", ".webp")
 
 
 def _read_version_file() -> str:
@@ -43,14 +46,14 @@ def create_app(*, api_app: FastAPI) -> FastAPI:
         if development_assets and (
             request.url.path == "/"
             or request.url.path.startswith("/static/")
-            or request.url.path.startswith("/brand/")
+            or request.url.path.startswith("/assets/")
         ):
             response.headers["Cache-Control"] = "no-store"
         return response
 
     api_app.mount("/static", StaticFiles(directory=STATIC_DIR), name="ui-static")
-    if BRAND_DIR.is_dir():
-        api_app.mount("/brand", StaticFiles(directory=BRAND_DIR), name="ui-brand")
+    if ASSET_DIR.is_dir():
+        api_app.mount("/assets", StaticFiles(directory=ASSET_DIR), name="ui-assets")
 
     @api_app.get("/", include_in_schema=False)
     async def index() -> HTMLResponse:
