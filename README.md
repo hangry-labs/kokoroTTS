@@ -18,7 +18,7 @@ You get:
 - WAV, MP3, FLAC, OGG Vorbis, Opus, AAC, and raw PCM output
 - Offline-friendly usage: download an image once, keep it, and run it later without relying on live model downloads
 
-Official Docker images are published here: [hangrylabs/kokorotts on Docker Hub](https://hub.docker.com/r/hangrylabs/kokorotts/tags).
+Official container images are published to both [Docker Hub](https://hub.docker.com/r/hangrylabs/kokorotts/tags) and [GitHub Container Registry](https://github.com/Hangry-Labs/kokoroTTS/pkgs/container/kokorotts).
 
 Examples and voice previews: [hangry-labs.github.io/kokoroTTS/examples](https://hangry-labs.github.io/kokoroTTS/examples/).
 
@@ -88,6 +88,12 @@ Run the full image with NVIDIA GPU support and persistent models and settings:
 
 ```bash
 docker run -p 7860:7860 --gpus all -v kokorotts_data:/app/persistent hangrylabs/kokorotts:latest
+```
+
+The same image is also available from GitHub Container Registry:
+
+```bash
+docker run -p 7860:7860 --gpus all -v kokorotts_data:/app/persistent ghcr.io/hangry-labs/kokorotts:latest
 ```
 
 Run the full image on CPU with persistent models and settings:
@@ -269,7 +275,7 @@ If you encounter bugs, have feature requests, or need help using Hangry Labs Kok
 
 ## Docker Images
 
-All published images are available on [Docker Hub](https://hub.docker.com/r/hangrylabs/kokorotts/tags).
+All published tags are mirrored on [Docker Hub](https://hub.docker.com/r/hangrylabs/kokorotts/tags) and [GitHub Container Registry](https://github.com/Hangry-Labs/kokoroTTS/pkgs/container/kokorotts). Replace `hangrylabs/kokorotts` in any command below with `ghcr.io/hangry-labs/kokorotts` to use GHCR.
 
 - Full images contain the standard Kokoro model, both dedicated German checkpoints, the dedicated Vietnamese checkpoint, all 70 voice packs, configuration, and required language data. They are ready for offline use after the image has been pulled.
 - Tiny images contain the complete runtime but download Hugging Face model and voice assets on first use. Mount the optional `/app/persistent` data volume to preserve downloads and settings across containers.
@@ -321,6 +327,8 @@ When the release candidate has already completed full validation and should not 
 task release DRY_RUN=1 SKIP_VALIDATION=1
 task release SKIP_VALIDATION=1
 ```
+
+The release task creates the release commit, annotated `vX.Y` Git tag, and next-snapshot commit locally; it does not push them. Push the two refs printed by the task when the release is ready. Pushing `main` publishes the moving `latest` and `latest_tiny` images to Docker Hub and GHCR. Pushing the release tag publishes immutable `vX.Y` and `vX.Y_tiny` images from the tagged release commit. A GitHub Release page entry is separate from the Git tag and can be created from that existing tag without rebuilding the images.
 
 ---
 
@@ -420,6 +428,7 @@ The data volume is recommended but optional. Without it, the same files are stor
 - Added a third-party notice covering the upstream Kokoro implementation, language processing dependencies, model and voice assets, bundled browser libraries, and Docker runtime components.
 - Added a checksum-verified UniDic download override for fast local-network builds while retaining the public upstream source as the portable default.
 - Replaced the separate full/tiny `mode=max` GitHub Actions caches with one shared, checksum-verified cache containing only the immutable UniDic archive. Complete Docker build graphs and model layers are no longer imported or exported through the Actions cache.
+- Added GitHub Container Registry as an official mirror. The existing full and tiny workflows publish identical tags to Docker Hub and GHCR from the same build: `main` owns the moving `latest`/`latest_tiny` tags, while a release tag owns immutable `vX.Y`/`vX.Y_tiny` images.
 - Added persisted deployment model-pack settings to the System tab and HTTP API. Operators can enable independently loaded checkpoints while voices that share the same weights remain together, making each choice meaningful for downloads and VRAM without changing the backward-compatible all-models default.
 - Added a unified optional `/app/persistent` Docker data location for downloaded model assets and operator settings. A named volume preserves both across image upgrades, while unmounted containers continue to work with local ephemeral storage.
 

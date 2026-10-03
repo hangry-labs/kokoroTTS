@@ -50,6 +50,8 @@ RUN python -u /app/kokorotts/prefetch_assets.py
 
 FROM python:3.13-slim AS runtime-base
 
+LABEL org.opencontainers.image.source="https://github.com/Hangry-Labs/kokoroTTS"
+
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \
