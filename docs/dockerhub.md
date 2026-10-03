@@ -199,4 +199,4 @@ Vietnamese synthesis uses the Apache-2.0 ContextBoxAI Kokoro Vietnamese model an
 - https://huggingface.co/contextboxai/Kokoro-Vietnamese
 - https://github.com/iamdinhthuan/Kokoro-Vietnamese
 
-License and attribution are preserved in the repository. Original Kokoro copyright remains with the upstream authors; Hangry Labs maintains the Docker packaging, web UI/API integration, examples page, documentation, release tooling, and other modifications in this fork.
+License and attribution are preserved in the repository's `LICENSE` and `THIRD_PARTY_NOTICES.md` files. Original Kokoro copyright remains with the upstream authors; Hangry Labs maintains the Docker packaging, web UI/API integration, examples page, documentation, release tooling, and other modifications in this fork.

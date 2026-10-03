@@ -193,7 +193,8 @@ German synthesis uses the Apache-2.0 Kokoro-compatible [Kikiri German Martin](ht
 
 Vietnamese synthesis uses the Apache-2.0 [ContextBoxAI Kokoro Vietnamese](https://huggingface.co/contextboxai/Kokoro-Vietnamese) checkpoint and fourteen voice packs from [Kokoro-Vietnamese](https://github.com/iamdinhthuan/Kokoro-Vietnamese). All Vietnamese voices share one fine-tuned checkpoint and use `vig2p` for Vietnamese text normalization and phonemization.
 
-License and attribution are preserved in [`LICENSE`](LICENSE).
+License and attribution are preserved in [`LICENSE`](LICENSE) and
+[`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
 
 ## Support & Issues
 
@@ -347,6 +348,8 @@ The data volume is recommended but optional. Without it, the same files are stor
 - Added a separate isolated-container VRAM benchmark that records memory before runtime initialization, after voice preparation, after model loading, and during every voice. It reports exact Kokoro-process PyTorch peaks alongside sampled whole-device peaks without changing the public API.
 - Added German synthesis with dedicated Misaki normalization/G2P, Martin and Victoria voice packs, and their matching Kokoro-compatible checkpoints. The full image bakes only deployable inference assets; each model family remains lazy in CPU/GPU memory.
 - Added Vietnamese synthesis using the ContextBoxAI Kokoro Vietnamese checkpoint, its custom vocabulary, all fourteen upstream voice packs, and pinned `vig2p`/`sea-g2p` phonemization. The shared Vietnamese weights appear as one independently selectable model pack and the unused ONNX export is not baked into the image.
+- Added a third-party notice covering the upstream Kokoro implementation, language processing dependencies, model and voice assets, bundled browser libraries, and Docker runtime components.
+- Added a checksum-verified UniDic download override for fast local-network builds while retaining the public upstream source as the portable default.
 - Added persisted deployment model-pack settings to the System tab and HTTP API. Operators can enable independently loaded checkpoints while voices that share the same weights remain together, making each choice meaningful for downloads and VRAM without changing the backward-compatible all-models default.
 - Added a unified optional `/app/persistent` Docker data location for downloaded model assets and operator settings. A named volume preserves both across image upgrades, while unmounted containers continue to work with local ephemeral storage.
 
@@ -355,7 +358,7 @@ The data volume is recommended but optional. Without it, the same files are stor
 1. Record the official VRAM baseline on a quiet GPU using the new lifecycle, per-language, and per-voice benchmark.
 2. Standardize the API surface, including an OpenAI-compatible speech endpoint, while retaining the existing `/tts/*` endpoints for backward compatibility.
 3. Prove whether the system `espeak-ng` package can be removed in favor of the bundled `espeakng-loader` runtime without reducing language support or offline reliability.
-4. Benchmark and optimize Docker and GitHub Actions build times, including a local-network UniDic mirror, selective caching for expensive dependency and language-data layers, and a measured replacement for duplicated complete full and tiny image caches.
+4. Benchmark and optimize Docker and GitHub Actions build times, including selective caching for expensive dependency and language-data layers and a measured replacement for duplicated complete full and tiny image caches. The checksum-verified local-network UniDic mirror is implemented for development builds.
 
 ### v0.3
 
@@ -463,3 +466,6 @@ docker run -p 7860:7860 --gpus "device=1" -e CUDA_VISIBLE_DEVICES=1 kokorotts:v0
 This fork is licensed under the [Apache License 2.0](LICENSE).
 
 Original work by [hexgrad](https://github.com/hexgrad) in [Kokoro](https://github.com/hexgrad/kokoro).
+
+Third-party components, model assets, and their respective licenses are listed
+in [Third-Party Notices](THIRD_PARTY_NOTICES.md).

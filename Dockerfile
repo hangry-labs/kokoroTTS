@@ -21,11 +21,21 @@ RUN python -m pip install --upgrade pip setuptools wheel \
 
 FROM base AS language-builder
 
-RUN python -m unidic download
+ARG UNIDIC_VERSION=3.1.0+2021-08-31
+ARG UNIDIC_DOWNLOAD_URL=https://cotonoha-dic.s3-ap-northeast-1.amazonaws.com/unidic-3.1.0.zip
+ARG UNIDIC_SHA256=638718c4c63625ab300de4c92c67925d54c0e9e3830009eaa992f29819d59c43
+
+COPY scripts/install_unidic.py /tmp/install_unidic.py
+
+RUN python /tmp/install_unidic.py \
+        --version "${UNIDIC_VERSION}" \
+        --url "${UNIDIC_DOWNLOAD_URL}" \
+        --sha256 "${UNIDIC_SHA256}" \
+    && rm /tmp/install_unidic.py
 
 FROM language-builder AS app-builder
 
-COPY pyproject.toml README.md LICENSE VERSION /app/
+COPY pyproject.toml README.md LICENSE THIRD_PARTY_NOTICES.md VERSION /app/
 COPY kokorotts /app/kokorotts
 COPY assets/kokoro_favicon.webp assets/kokoro_logo_horizontal.webp assets/hangrylabs_logo_horizontal.webp /app/assets/
 
