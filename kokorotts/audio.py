@@ -33,6 +33,25 @@ OUTPUT_FORMATS = {
         "media_type": "audio/ogg",
         "ffmpeg_args": ["-f", "ogg", "-codec:a", "libvorbis", "-q:a", "5"],
     },
+    "opus": {
+        "label": "Opus",
+        "extension": "opus",
+        "media_type": "audio/ogg",
+        "ffmpeg_args": ["-f", "opus", "-codec:a", "libopus", "-b:a", "96k"],
+    },
+    "aac": {
+        "label": "AAC",
+        "extension": "aac",
+        "media_type": "audio/aac",
+        "ffmpeg_args": ["-f", "adts", "-codec:a", "aac", "-b:a", "192k"],
+    },
+    "pcm": {
+        "label": "Raw PCM 16-bit little-endian",
+        "extension": "pcm",
+        "media_type": "audio/pcm",
+        "ffmpeg_args": None,
+        "browser_playback": False,
+    },
 }
 
 FORMAT_ALIASES = {
@@ -40,8 +59,14 @@ FORMAT_ALIASES = {
     ".mp3": "mp3",
     ".flac": "flac",
     ".ogg": "ogg",
+    ".opus": "opus",
+    ".aac": "aac",
+    ".pcm": "pcm",
     "mpeg": "mp3",
     "vorbis": "ogg",
+    "pcm_s16le": "pcm",
+    "s16le": "pcm",
+    "raw": "pcm",
 }
 
 STREAM_FORMATS = {
@@ -89,9 +114,12 @@ def normalize_stream_format(stream_format: str | None) -> str:
     return normalized
 
 
-def get_supported_output_formats() -> dict[str, dict[str, str]]:
+def get_supported_output_formats() -> dict[str, dict[str, str | bool]]:
     return {
-        key: {name: config[name] for name in ("label", "extension", "media_type")}
+        key: {
+            **{name: config[name] for name in ("label", "extension", "media_type")},
+            "browser_playback": config.get("browser_playback", True),
+        }
         for key, config in OUTPUT_FORMATS.items()
     }
 
@@ -219,6 +247,8 @@ def encode_audio_bytes(
     audio: np.ndarray, output_format: str = "wav", sample_rate: int = SAMPLE_RATE
 ) -> bytes:
     normalized_format = normalize_output_format(output_format)
+    if normalized_format == "pcm":
+        return encode_pcm_s16le(audio)
     wav_bytes = audio_to_wav_bytes(audio, sample_rate)
     ffmpeg_args = OUTPUT_FORMATS[normalized_format]["ffmpeg_args"]
     if ffmpeg_args is None:

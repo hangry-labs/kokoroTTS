@@ -7,6 +7,8 @@ import numpy as np
 from kokorotts.audio import (
     audio_to_wav_bytes,
     build_audio_effect_filters,
+    encode_audio_bytes,
+    get_supported_output_formats,
     normalize_output_format,
     normalize_stream_format,
 )
@@ -15,6 +17,7 @@ from kokorotts.audio import (
 class AudioTest(unittest.TestCase):
     def test_format_aliases_preserve_compatibility(self) -> None:
         self.assertEqual(normalize_output_format(".mp3"), "mp3")
+        self.assertEqual(normalize_output_format("raw"), "pcm")
         self.assertEqual(normalize_output_format(None), "wav")
         self.assertEqual(normalize_stream_format("raw"), "pcm_s16le")
 
@@ -33,6 +36,24 @@ class AudioTest(unittest.TestCase):
 
         self.assertEqual(encoded[:4], b"RIFF")
         self.assertEqual(encoded[8:12], b"WAVE")
+
+    def test_openai_compatibility_encoders_produce_expected_containers(self) -> None:
+        audio = np.array([0, 1000, -1000] * 800, dtype=np.int16)
+
+        opus = encode_audio_bytes(audio, "opus")
+        aac = encode_audio_bytes(audio, "aac")
+        pcm = encode_audio_bytes(audio, "pcm")
+
+        self.assertEqual(opus[:4], b"OggS")
+        self.assertEqual(aac[0], 0xFF)
+        self.assertIn(aac[1] & 0xF6, (0xF0, 0xF2, 0xF4, 0xF6))
+        self.assertEqual(pcm, audio.astype("<i2", copy=False).tobytes())
+
+    def test_raw_pcm_is_marked_non_playable_for_browser_ui(self) -> None:
+        formats = get_supported_output_formats()
+
+        self.assertFalse(formats["pcm"]["browser_playback"])
+        self.assertTrue(formats["opus"]["browser_playback"])
 
 
 if __name__ == "__main__":

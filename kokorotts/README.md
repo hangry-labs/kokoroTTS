@@ -13,10 +13,13 @@ python kokorotts/app.py
 ```
 
 - UI: `http://localhost:7860/`
+- OpenAI-compatible synthesis: `POST /v1/audio/speech`
+- OpenAI-compatible models: `GET /v1/models`
+- Health/readiness: `GET /health/ready`
 - API ping: `GET /tts/ping`
-- API synthesis: `POST /tts/generate`
-- API streaming: `POST /tts/stream`
-- Backward-compatible API synthesis alias: `POST /tts/convert`
+- Native synthesis: `POST /tts/generate`
+- Native streaming: `POST /tts/stream`
+- Backward-compatible native synthesis alias: `POST /tts/convert`
 
 ## Docker and Task workflow
 
@@ -52,6 +55,7 @@ Optional runtime env vars:
 - `HF_TOKEN`: Hugging Face access token for higher hub rate limits.
 - `KOKORO_REPO_ID`: override model repo (default `hexgrad/Kokoro-82M`).
 - `KOKOROTTS_DEVICE`: default hardware (`auto`, `cpu`, `cuda:0`, ...).
+- `KOKOROTTS_API_KEY`: optional bearer key required only for `/v1/*` routes.
 
 ## Model and offline mode
 
@@ -64,7 +68,25 @@ Optional runtime env vars:
 
 API payload also supports explicit hardware selection with `device` (and keeps legacy `use_gpu` for compatibility).
 
-## Python API client
+## OpenAI-compatible Python client
+
+Use the official OpenAI client with the local base URL:
+
+```python
+from openai import OpenAI
+
+client = OpenAI(base_url="http://localhost:7860/v1", api_key="local")
+audio = client.audio.speech.create(
+    model="kokoro",
+    input="Hello from Python.",
+    voice="af_heart",
+)
+audio.write_to_file("hello.mp3")
+```
+
+The OpenAI-compatible route defaults to MP3 and supports `mp3`, `opus`, `aac`, `flac`, `wav`, and `pcm`.
+
+## Native Python client
 
 Use `KokoroTTSClient` when your Python code should call a running KokoroTTS server:
 

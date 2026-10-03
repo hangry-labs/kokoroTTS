@@ -6,6 +6,7 @@ vars:
   PORT: '7860'
   GPU_DEVICE: '0'
   APP_DEVICE: 'auto'
+  KOKOROTTS_API_KEY: ''
   HF_TOKEN: ''
   DATA_VOLUME: kokorotts_data
   LEGACY_HF_CACHE_VOLUME: kokorotts_hf_cache
@@ -79,7 +80,7 @@ tasks:
       - cmd /c docker rm -f {{.CONTAINER}} >nul 2>&1
       - cmd /c docker rm -f {{.CONTAINER_LOCAL}} >nul 2>&1
       - task: data-init
-      - cmd /c docker run -d --name {{.CONTAINER}} -p {{.PORT}}:7860 --gpus all -e CUDA_VISIBLE_DEVICES={{.GPU_DEVICE}} -e KOKOROTTS_DEVICE={{.APP_DEVICE}} -e PORT=7860 -e HF_TOKEN={{.HF_TOKEN}} -e HF_HUB_OFFLINE={{.HF_HUB_OFFLINE}} -e TRANSFORMERS_OFFLINE={{.TRANSFORMERS_OFFLINE}} -v {{.DATA_VOLUME}}:/app/persistent {{.IMAGE}}
+      - cmd /c docker run -d --name {{.CONTAINER}} -p {{.PORT}}:7860 --gpus all -e CUDA_VISIBLE_DEVICES={{.GPU_DEVICE}} -e KOKOROTTS_DEVICE={{.APP_DEVICE}} -e KOKOROTTS_API_KEY={{.KOKOROTTS_API_KEY}} -e PORT=7860 -e HF_TOKEN={{.HF_TOKEN}} -e HF_HUB_OFFLINE={{.HF_HUB_OFFLINE}} -e TRANSFORMERS_OFFLINE={{.TRANSFORMERS_OFFLINE}} -v {{.DATA_VOLUME}}:/app/persistent {{.IMAGE}}
       - cmd /c docker ps --filter "name={{.CONTAINER}}"
 
   imagerun-tiny:
@@ -88,7 +89,7 @@ tasks:
       - cmd /c docker rm -f {{.CONTAINER}} >nul 2>&1
       - cmd /c docker rm -f {{.CONTAINER_LOCAL}} >nul 2>&1
       - cmd /c docker volume create {{.DATA_VOLUME}} >nul
-      - cmd /c docker run -d --name {{.CONTAINER}} -p {{.PORT}}:7860 --gpus all -e CUDA_VISIBLE_DEVICES={{.GPU_DEVICE}} -e KOKOROTTS_DEVICE={{.APP_DEVICE}} -e PORT=7860 -e HF_TOKEN={{.HF_TOKEN}} -e HF_HUB_OFFLINE=0 -e TRANSFORMERS_OFFLINE=0 -v {{.DATA_VOLUME}}:/app/persistent {{.TINY_IMAGE}}
+      - cmd /c docker run -d --name {{.CONTAINER}} -p {{.PORT}}:7860 --gpus all -e CUDA_VISIBLE_DEVICES={{.GPU_DEVICE}} -e KOKOROTTS_DEVICE={{.APP_DEVICE}} -e KOKOROTTS_API_KEY={{.KOKOROTTS_API_KEY}} -e PORT=7860 -e HF_TOKEN={{.HF_TOKEN}} -e HF_HUB_OFFLINE=0 -e TRANSFORMERS_OFFLINE=0 -v {{.DATA_VOLUME}}:/app/persistent {{.TINY_IMAGE}}
       - cmd /c docker ps --filter "name={{.CONTAINER}}"
 
   localrun:
@@ -97,7 +98,7 @@ tasks:
       - cmd /c docker rm -f {{.CONTAINER}} >nul 2>&1
       - cmd /c docker rm -f {{.CONTAINER_LOCAL}} >nul 2>&1
       - task: data-init
-      - cmd /c docker run -d --name {{.CONTAINER_LOCAL}} -p {{.PORT}}:7860 --gpus all -e CUDA_VISIBLE_DEVICES={{.GPU_DEVICE}} -e KOKOROTTS_DEVICE={{.APP_DEVICE}} -e KOKOROTTS_UI_DEV=1 -e PORT=7860 -e UVICORN_RELOAD=1 -e HF_TOKEN={{.HF_TOKEN}} -e HF_HUB_OFFLINE={{.HF_HUB_OFFLINE}} -e TRANSFORMERS_OFFLINE={{.TRANSFORMERS_OFFLINE}} -v {{.DATA_VOLUME}}:/app/persistent -v "{{.TASKFILE_DIR}}\kokorotts:/app/kokorotts" -v "{{.TASKFILE_DIR}}\assets:/app/assets:ro" {{.IMAGE}}
+      - cmd /c docker run -d --name {{.CONTAINER_LOCAL}} -p {{.PORT}}:7860 --gpus all -e CUDA_VISIBLE_DEVICES={{.GPU_DEVICE}} -e KOKOROTTS_DEVICE={{.APP_DEVICE}} -e KOKOROTTS_API_KEY={{.KOKOROTTS_API_KEY}} -e KOKOROTTS_UI_DEV=1 -e PORT=7860 -e UVICORN_RELOAD=1 -e HF_TOKEN={{.HF_TOKEN}} -e HF_HUB_OFFLINE={{.HF_HUB_OFFLINE}} -e TRANSFORMERS_OFFLINE={{.TRANSFORMERS_OFFLINE}} -v {{.DATA_VOLUME}}:/app/persistent -v "{{.TASKFILE_DIR}}\kokorotts:/app/kokorotts" -v "{{.TASKFILE_DIR}}\assets:/app/assets:ro" {{.IMAGE}}
       - cmd /c docker ps --filter "name={{.CONTAINER_LOCAL}}"
 
   localrun-tiny:
@@ -106,7 +107,7 @@ tasks:
       - cmd /c docker rm -f {{.CONTAINER}} >nul 2>&1
       - cmd /c docker rm -f {{.CONTAINER_LOCAL}} >nul 2>&1
       - cmd /c docker volume create {{.DATA_VOLUME}} >nul
-      - cmd /c docker run -d --name {{.CONTAINER_LOCAL}} -p {{.PORT}}:7860 --gpus all -e CUDA_VISIBLE_DEVICES={{.GPU_DEVICE}} -e KOKOROTTS_DEVICE={{.APP_DEVICE}} -e KOKOROTTS_UI_DEV=1 -e PORT=7860 -e UVICORN_RELOAD=1 -e HF_TOKEN={{.HF_TOKEN}} -e HF_HUB_OFFLINE=0 -e TRANSFORMERS_OFFLINE=0 -v {{.DATA_VOLUME}}:/app/persistent -v "{{.TASKFILE_DIR}}\kokorotts:/app/kokorotts" -v "{{.TASKFILE_DIR}}\assets:/app/assets:ro" {{.TINY_IMAGE}}
+      - cmd /c docker run -d --name {{.CONTAINER_LOCAL}} -p {{.PORT}}:7860 --gpus all -e CUDA_VISIBLE_DEVICES={{.GPU_DEVICE}} -e KOKOROTTS_DEVICE={{.APP_DEVICE}} -e KOKOROTTS_API_KEY={{.KOKOROTTS_API_KEY}} -e KOKOROTTS_UI_DEV=1 -e PORT=7860 -e UVICORN_RELOAD=1 -e HF_TOKEN={{.HF_TOKEN}} -e HF_HUB_OFFLINE=0 -e TRANSFORMERS_OFFLINE=0 -v {{.DATA_VOLUME}}:/app/persistent -v "{{.TASKFILE_DIR}}\kokorotts:/app/kokorotts" -v "{{.TASKFILE_DIR}}\assets:/app/assets:ro" {{.TINY_IMAGE}}
       - cmd /c docker ps --filter "name={{.CONTAINER_LOCAL}}"
 
   imageweb:
@@ -163,10 +164,17 @@ tasks:
       - 'cmd /c del /f /q {{.TEMP_AUDIO}}.{{.API_FORMAT}}'
 
   client-test:
-    desc: Run server-backed KokoroTTS Python client API tests
+    desc: Run native and OpenAI SDK server-backed API tests
     cmds:
       - 'cmd /c curl.exe -sS --retry 30 --retry-delay 2 --retry-all-errors http://localhost:{{.PORT}}/tts/ping >nul'
       - 'cmd /c "set KOKOROTTS_TEST_BASE_URL=http://localhost:{{.PORT}}&& python tests/run_client_tests.py"'
+      - 'cmd /c "set KOKOROTTS_TEST_BASE_URL=http://localhost:{{.PORT}}&& set KOKOROTTS_TEST_API_KEY={{.KOKOROTTS_API_KEY}}&& uv run --no-project --with openai==3.24.0 python tests/run_openai_client_tests.py"'
+
+  openai-client-test:
+    desc: Run OpenAI-compatible API tests through the official Python SDK
+    cmds:
+      - 'cmd /c curl.exe -sS --retry 30 --retry-delay 2 --retry-all-errors http://localhost:{{.PORT}}/health/ready >nul'
+      - 'cmd /c "set KOKOROTTS_TEST_BASE_URL=http://localhost:{{.PORT}}&& set KOKOROTTS_TEST_API_KEY={{.KOKOROTTS_API_KEY}}&& uv run --no-project --with openai==3.24.0 python tests/run_openai_client_tests.py"'
 
   benchmark-smoke:
     desc: Run two voice-generation performance cases without updating benchmark history
@@ -203,7 +211,7 @@ tasks:
   unit-test:
     desc: Run focused runtime, chunking, audio, benchmark, and standalone UI tests in Docker
     cmds:
-      - 'cmd /c docker run --rm --entrypoint python -v "{{.TASKFILE_DIR}}\kokorotts:/app/kokorotts:ro" -v "{{.TASKFILE_DIR}}\assets:/app/assets:ro" -v "{{.TASKFILE_DIR}}\benchmarks:/app/benchmarks:ro" -v "{{.TASKFILE_DIR}}\examples:/app/examples:ro" -v "{{.TASKFILE_DIR}}\tests:/app/tests:ro" {{.IMAGE}} -m unittest tests.test_audio tests.test_benchmark tests.test_vram_benchmark tests.test_german_support tests.test_vietnamese_support tests.test_pipeline_chunking tests.test_runtime tests.test_settings tests.test_standalone_ui -v'
+      - 'cmd /c docker run --rm --entrypoint python -v "{{.TASKFILE_DIR}}\kokorotts:/app/kokorotts:ro" -v "{{.TASKFILE_DIR}}\assets:/app/assets:ro" -v "{{.TASKFILE_DIR}}\benchmarks:/app/benchmarks:ro" -v "{{.TASKFILE_DIR}}\examples:/app/examples:ro" -v "{{.TASKFILE_DIR}}\tests:/app/tests:ro" {{.IMAGE}} -m unittest tests.test_audio tests.test_benchmark tests.test_vram_benchmark tests.test_german_support tests.test_vietnamese_support tests.test_openai_api tests.test_pipeline_chunking tests.test_runtime tests.test_settings tests.test_standalone_ui -v'
 
   imagestop:
     desc: Stop running KokoroTTS containers

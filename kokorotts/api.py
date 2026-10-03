@@ -6,11 +6,19 @@ import io
 import os
 from collections.abc import Iterator
 from dataclasses import dataclass
+from typing import Any
 
 import numpy as np
 import torch
-from fastapi import FastAPI, HTTPException, Query, Request
-from fastapi.responses import StreamingResponse
+from fastapi import Depends, FastAPI, HTTPException, Query, Request
+from fastapi.exception_handlers import (
+    http_exception_handler,
+    request_validation_exception_handler,
+)
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse, StreamingResponse
+from loguru import logger
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.concurrency import iterate_in_threadpool
 
 from . import __version__ as KOKORO_VERSION
@@ -36,10 +44,20 @@ from .catalog import (
     voice_language,
     voices_for_language,
 )
+from .openai_compat import (
+    OPENAI_MODEL_ID,
+    OpenAIAPIError,
+    openai_error_response,
+    openai_speed_controls,
+    openai_tts_request,
+    require_openai_api_key,
+    resolve_openai_model,
+)
 from .runtime import InferenceRuntime, SynthesisResult
 from .sample_texts import get_initial_text, get_intro_text, get_random_quote
 from .schemas import (
     MetricsRequest,
+    OpenAISpeechRequest,
     PurgeRequest,
     ServedModelFamiliesRequest,
     ServedVoicesRequest,
@@ -247,16 +265,124 @@ def get_phoneme_segments(text: str, voice: str = "af_heart") -> list[str]:
 
 
 api = FastAPI(
-    title="TTS Service API",
-    description="API documentation for the KokoroTTS service",
+    title="KokoroTTS API",
+    description="OpenAI-compatible speech and native KokoroTTS APIs",
     version=KOKORO_VERSION,
     openapi_url="/tts/openapi.json",
     docs_url="/tts/docs",
     redoc_url="/tts/redoc",
+    openapi_tags=[
+        {
+            "name": "OpenAI-compatible API",
+            "description": "Speech generation and model discovery for OpenAI clients.",
+        },
+        {"name": "Health", "description": "Container liveness and readiness."},
+        {
+            "name": "KokoroTTS native API",
+            "description": "Full Kokoro controls, streaming, discovery, and diagnostics.",
+        },
+        {"name": "System", "description": "Deployment and model lifecycle controls."},
+    ],
 )
 
 
-@api.get("/tts/ping")
+@api.exception_handler(OpenAIAPIError)
+async def openai_api_error_handler(
+    _request: Request, exc: OpenAIAPIError
+) -> JSONResponse:
+    return openai_error_response(
+        exc.message,
+        status_code=exc.status_code,
+        error_type=exc.error_type,
+        param=exc.param,
+        code=exc.code,
+        headers=exc.headers,
+    )
+
+
+@api.exception_handler(RequestValidationError)
+async def validation_error_handler(
+    request: Request, exc: RequestValidationError
+):
+    if not request.url.path.startswith("/v1/"):
+        return await request_validation_exception_handler(request, exc)
+    first_error: dict[str, Any] = exc.errors()[0] if exc.errors() else {}
+    location = [str(part) for part in first_error.get("loc", ()) if part != "body"]
+    param = ".".join(location) or None
+    message = first_error.get("msg", "Invalid request")
+    if param:
+        message = f"Invalid '{param}': {message}"
+    return openai_error_response(
+        message,
+        status_code=400,
+        param=param,
+        code="invalid_parameter",
+    )
+
+
+@api.exception_handler(StarletteHTTPException)
+async def http_error_handler(request: Request, exc: StarletteHTTPException):
+    if not request.url.path.startswith("/v1/"):
+        return await http_exception_handler(request, exc)
+    detail = exc.detail if isinstance(exc.detail, str) else str(exc.detail)
+    return openai_error_response(
+        detail,
+        status_code=exc.status_code,
+        headers=exc.headers,
+    )
+
+
+def health_payload() -> dict[str, Any]:
+    served_voices = RUNTIME.served_voices
+    return {
+        "status": "ok" if served_voices else "not_ready",
+        "service": "KokoroTTS",
+        "version": APP_VERSION,
+        "voices": len(served_voices),
+    }
+
+
+@api.get("/health/live", tags=["Health"])
+def health_live() -> dict[str, str]:
+    return {"status": "ok", "service": "KokoroTTS", "version": APP_VERSION}
+
+
+@api.get("/health", tags=["Health"])
+@api.get("/health/ready", tags=["Health"])
+def health_ready() -> JSONResponse:
+    payload = health_payload()
+    return JSONResponse(payload, status_code=200 if payload["status"] == "ok" else 503)
+
+
+@api.get(
+    "/v1/models",
+    tags=["OpenAI-compatible API"],
+    dependencies=[Depends(require_openai_api_key)],
+)
+def openai_models() -> dict[str, Any]:
+    return {
+        "object": "list",
+        "data": [
+            {
+                "id": OPENAI_MODEL_ID,
+                "object": "model",
+                "owned_by": "hangry-labs",
+            }
+        ],
+    }
+
+
+@api.get(
+    "/v1/models/{requested_model:path}",
+    tags=["OpenAI-compatible API"],
+    dependencies=[Depends(require_openai_api_key)],
+)
+def openai_model(requested_model: str) -> dict[str, str]:
+    model = resolve_openai_model(requested_model)
+    return {"id": model, "object": "model", "owned_by": "hangry-labs"}
+
+
+@api.get("/tts/ping", tags=["KokoroTTS native API"])
 def ping() -> dict:
     return {
         "msg": "pong",
@@ -266,7 +392,7 @@ def ping() -> dict:
     }
 
 
-@api.get("/tts/status")
+@api.get("/tts/status", tags=["KokoroTTS native API"])
 def status() -> dict:
     served_voices = RUNTIME.served_voices
     served_languages = list(dict.fromkeys(voice_language(voice) for voice in served_voices))
@@ -295,7 +421,7 @@ def status() -> dict:
     }
 
 
-@api.get("/tts/defaults")
+@api.get("/tts/defaults", tags=["KokoroTTS native API"])
 def defaults() -> dict:
     served_voices = RUNTIME.served_voices
     default_voice = "af_heart" if "af_heart" in served_voices else served_voices[0]
@@ -318,7 +444,7 @@ def defaults() -> dict:
     }
 
 
-@api.get("/tts/formats")
+@api.get("/tts/formats", tags=["KokoroTTS native API"])
 def formats() -> dict:
     return {
         "default": "wav",
@@ -327,7 +453,7 @@ def formats() -> dict:
     }
 
 
-@api.get("/tts/stream-formats")
+@api.get("/tts/stream-formats", tags=["KokoroTTS native API"])
 def stream_formats() -> dict:
     return {
         "default": "pcm_s16le",
@@ -341,7 +467,7 @@ def stream_formats() -> dict:
     }
 
 
-@api.get("/tts/languages")
+@api.get("/tts/languages", tags=["KokoroTTS native API"])
 def languages() -> dict:
     served_languages = list(
         dict.fromkeys(voice_language(voice) for voice in RUNTIME.served_voices)
@@ -352,7 +478,7 @@ def languages() -> dict:
     return {"languages": languages, "loaded_languages": served_languages}
 
 
-@api.get("/tts/samples")
+@api.get("/tts/samples", tags=["KokoroTTS native API"])
 def samples(
     language: str = Query("a", description="Kokoro language prefix."),
     random_sample: bool = Query(
@@ -374,7 +500,7 @@ def samples(
     }
 
 
-@api.get("/tts/speakers")
+@api.get("/tts/speakers", tags=["KokoroTTS native API"])
 def speakers(language: str = Query("a", description="Kokoro language prefix.")) -> dict:
     available = voices_for_language(language, RUNTIME.served_voices)
     if language not in LANGUAGE_CHOICES or not available:
@@ -386,12 +512,12 @@ def speakers(language: str = Query("a", description="Kokoro language prefix.")) 
     }
 
 
-@api.get("/tts/voices")
+@api.get("/tts/voices", tags=["KokoroTTS native API"])
 def voices() -> dict:
     return {"voices": voice_inventory(RUNTIME.served_voices)}
 
 
-@api.get("/system/settings")
+@api.get("/system/settings", tags=["System"])
 def system_settings() -> dict:
     return deployment_settings_payload()
 
@@ -408,7 +534,7 @@ def deployment_settings_payload() -> dict:
     }
 
 
-@api.put("/system/settings/model-families")
+@api.put("/system/settings/model-families", tags=["System"])
 def update_served_model_families(payload: ServedModelFamiliesRequest) -> dict:
     try:
         RUNTIME.set_served_model_families(payload.model_families)
@@ -417,7 +543,7 @@ def update_served_model_families(payload: ServedModelFamiliesRequest) -> dict:
     return deployment_settings_payload()
 
 
-@api.put("/system/settings/voices")
+@api.put("/system/settings/voices", tags=["System"])
 def update_served_voices(payload: ServedVoicesRequest) -> dict:
     try:
         RUNTIME.set_served_voices(payload.voices)
@@ -426,7 +552,7 @@ def update_served_voices(payload: ServedVoicesRequest) -> dict:
     return deployment_settings_payload()
 
 
-@api.post("/tts/metrics")
+@api.post("/tts/metrics", tags=["KokoroTTS native API"])
 def metrics(payload: MetricsRequest) -> dict:
     if not RUNTIME.serves_voice(payload.voice):
         raise HTTPException(
@@ -440,7 +566,7 @@ def metrics(payload: MetricsRequest) -> dict:
     }
 
 
-@api.post("/tts/tokenize")
+@api.post("/tts/tokenize", tags=["KokoroTTS native API"])
 def tokenize(payload: MetricsRequest) -> dict:
     try:
         segments = get_phoneme_segments(payload.text, payload.voice)
@@ -460,12 +586,35 @@ def tokenize(payload: MetricsRequest) -> dict:
     }
 
 
-@api.post("/tts/generate")
+@api.post(
+    "/v1/audio/speech",
+    tags=["OpenAI-compatible API"],
+    dependencies=[Depends(require_openai_api_key)],
+)
+def openai_speech(payload: OpenAISpeechRequest) -> StreamingResponse:
+    tts_payload = openai_tts_request(payload, RUNTIME.serves_voice)
+    try:
+        response = audio_response(tts_payload, "/v1/audio/speech")
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.exception("OpenAI-compatible speech generation failed")
+        raise OpenAIAPIError(
+            "Speech generation failed.",
+            status_code=500,
+            error_type="server_error",
+            code="generation_failed",
+        ) from exc
+    response.headers["X-KokoroTTS-Model"] = OPENAI_MODEL_ID
+    return response
+
+
+@api.post("/tts/generate", tags=["KokoroTTS native API"])
 def generate_tts(payload: TTSRequest) -> StreamingResponse:
     return audio_response(payload, "/tts/generate")
 
 
-@api.post("/tts/stream")
+@api.post("/tts/stream", tags=["KokoroTTS native API"])
 async def stream_tts(
     request: Request, payload: StreamingTTSRequest
 ) -> StreamingResponse:
@@ -497,7 +646,8 @@ async def stream_tts(
     )
 
 
-@api.post("/tts/purge")
+@api.post("/system/models/purge", tags=["System"])
+@api.post("/tts/purge", tags=["KokoroTTS native API"], deprecated=True)
 def purge_models(payload: PurgeRequest | None = None) -> dict:
     requested_device = payload.device if payload else None
     if requested_device:
@@ -509,6 +659,6 @@ def purge_models(payload: PurgeRequest | None = None) -> dict:
     return {"purged": purged, "remaining_model_devices": remaining}
 
 
-@api.post("/tts/convert")
+@api.post("/tts/convert", tags=["KokoroTTS native API"], deprecated=True)
 def convert(payload: TTSRequest) -> StreamingResponse:
     return audio_response(payload, "/tts/convert")

@@ -644,11 +644,18 @@ $('#stream-stop').addEventListener('click', () => {
 
 async function refreshApiStatus() {
   $('#api-output').textContent = 'Loading...'
-  const paths = ['/tts/ping', '/tts/defaults', '/tts/formats', '/tts/stream-formats', '/tts/languages']
-  const values = await Promise.all(paths.map(async (path) => {
-    try { return [path, await fetchJson(path)] } catch (error) { return [path, { error: errorMessage(error) }] }
-  }))
-  renderJsonTree($('#api-output'), Object.fromEntries(values))
+  const groups = {
+    'OpenAI-compatible API': ['/health/ready', '/v1/models'],
+    'KokoroTTS native API': ['/tts/ping', '/tts/defaults', '/tts/formats', '/tts/stream-formats', '/tts/languages'],
+  }
+  const output = {}
+  for (const [group, paths] of Object.entries(groups)) {
+    const values = await Promise.all(paths.map(async (path) => {
+      try { return [path, await fetchJson(path)] } catch (error) { return [path, { error: errorMessage(error) }] }
+    }))
+    output[group] = Object.fromEntries(values)
+  }
+  renderJsonTree($('#api-output'), output)
 }
 
 async function refreshSystem() {
@@ -1034,7 +1041,9 @@ async function loadWorkspace() {
   refreshVoiceOptions(defaults.voice)
   setSelectOptions(
     $('#output-format'),
-    Object.entries(formats.formats).map(([value, config]) => ({ value, label: config.label })),
+    Object.entries(formats.formats)
+      .filter(([, config]) => config.browser_playback !== false)
+      .map(([value, config]) => ({ value, label: config.label })),
     formats.formats.mp3 ? 'mp3' : formats.default,
   )
 

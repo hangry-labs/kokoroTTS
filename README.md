@@ -12,10 +12,10 @@ This Hangry Labs fork is made for ease of use. The aim is that anyone should be 
 
 You get:
 - A responsive browser audio workspace for generation, streaming, playback, and downloads
-- An HTTP API for your own applications and tools
+- OpenAI-compatible and KokoroTTS-native HTTP APIs for applications and tools
 - No manual Python, model, or audio dependency setup
 - 70 voices across 11 supported languages, including dedicated German and Vietnamese checkpoints
-- WAV, MP3, FLAC, and OGG output
+- WAV, MP3, FLAC, OGG Vorbis, Opus, AAC, and raw PCM output
 - Offline-friendly usage: download an image once, keep it, and run it later without relying on live model downloads
 
 Official Docker images are published here: [hangrylabs/kokorotts on Docker Hub](https://hub.docker.com/r/hangrylabs/kokorotts/tags).
@@ -29,7 +29,9 @@ Hangry Labs home: [nuggies.website](https://nuggies.website/).
 - [Listen and Have a Look](#listen-and-have-a-look)
 - [Quick Start](#quick-start)
 - [API Usage](#api-usage)
-  - [Use From Python](#use-from-python)
+  - [OpenAI-Compatible API](#openai-compatible-api)
+  - [KokoroTTS Native API](#kokorotts-native-api)
+  - [Native Python Client](#native-python-client)
 - [About This Fork](#about-this-fork)
 - [Support & Issues](#support--issues)
 - [Docker Images](#docker-images)
@@ -108,6 +110,63 @@ Then open: **[http://localhost:7860](http://localhost:7860)**
 
 ## API Usage
 
+Interactive OpenAPI documentation for both API families is available at **[http://localhost:7860/tts/docs](http://localhost:7860/tts/docs)**.
+
+### OpenAI-Compatible API
+
+Use this API when an application or SDK already supports OpenAI text to speech. The compatibility endpoint follows the OpenAI request shape and defaults to MP3:
+
+```bash
+curl -X POST "http://localhost:7860/v1/audio/speech" \
+  -H "Content-Type: application/json" \
+  -d '{"model":"kokoro","input":"Hello from KokoroTTS.","voice":"af_heart"}' \
+  -o output.mp3
+```
+
+The official OpenAI Python client works by changing only its base URL and using any non-empty local key:
+
+```python
+from openai import OpenAI
+
+client = OpenAI(base_url="http://localhost:7860/v1", api_key="local")
+
+audio = client.audio.speech.create(
+    model="kokoro",
+    input="Hello from my Python app.",
+    voice="af_heart",
+    response_format="mp3",
+)
+audio.write_to_file("hello.mp3")
+```
+
+The canonical model id is `kokoro`; `kokoro-82m`, `kokorotts`, and `hexgrad/Kokoro-82M` are accepted aliases. Use Kokoro voice ids from `GET /tts/voices`. Exact-name aliases are also available for `alloy`, `echo`, `fable`, `nova`, and `onyx`. Supported OpenAI response formats are `mp3`, `opus`, `aac`, `flac`, `wav`, and raw 24 kHz signed 16-bit little-endian `pcm`. Speed accepts the OpenAI range from `0.25` to `4.0`.
+
+Kokoro does not support natural-language `instructions` or OpenAI SSE speech events. Non-empty `instructions` and `stream_format: "sse"` return explicit OpenAI-shaped errors instead of being ignored.
+
+OpenAI-compatible endpoints:
+
+- `GET /v1/models`
+- `GET /v1/models/{model}`
+- `POST /v1/audio/speech`
+- `GET /health`
+- `GET /health/live`
+- `GET /health/ready`
+
+Authentication is disabled by default for simple local use. Set `KOKOROTTS_API_KEY` to require `Authorization: Bearer <key>` on `/v1/*` routes:
+
+```bash
+docker run -p 7860:7860 --gpus all \
+  -e KOKOROTTS_API_KEY="replace-with-a-secret" \
+  -v kokorotts_data:/app/persistent \
+  hangrylabs/kokorotts:latest
+```
+
+Health routes remain public for Docker and orchestration probes.
+
+### KokoroTTS Native API
+
+Use the native API for the complete Kokoro feature set: device selection, true pipeline-segment streaming, pitch, tempo, volume, normalization, discovery, phoneme inspection, and model lifecycle controls. Its existing defaults remain backward compatible.
+
 ```bash
 curl -X POST "http://localhost:7860/tts/generate" \
   -H "Content-Type: application/json" \
@@ -118,7 +177,7 @@ curl -X POST "http://localhost:7860/tts/generate" \
 The modern synthesis endpoint is `POST /tts/generate`; `POST /tts/convert` remains available for older clients.
 When `output_format` is omitted, the API returns WAV audio as before.
 The web UI defaults to MP3 downloads because it is a more practical size for interactive use.
-To request a smaller response, add `output_format` with one of `mp3`, `flac`, or `ogg`:
+Native output formats are `wav`, `mp3`, `flac`, `ogg`, `opus`, `aac`, and `pcm`. To request a smaller response, set `output_format` to `mp3`:
 
 ```bash
 curl -X POST "http://localhost:7860/tts/generate" \
@@ -137,8 +196,11 @@ curl -X POST "http://localhost:7860/tts/generate" \
   -o output.mp3
 ```
 
-Useful API endpoints:
+Native and system endpoints:
 
+- `POST /tts/generate`
+- `POST /tts/stream`
+- `POST /tts/convert` (backward-compatible alias)
 - `GET /tts/status`
 - `GET /tts/defaults`
 - `GET /tts/formats`
@@ -150,12 +212,12 @@ Useful API endpoints:
 - `GET /system/settings`
 - `PUT /system/settings/model-families`
 - `PUT /system/settings/voices` (compatibility endpoint; selected voices expand to complete model families)
+- `POST /system/models/purge`
 - `POST /tts/metrics`
 - `POST /tts/tokenize`
-- `POST /tts/stream`
-- `POST /tts/purge`
+- `POST /tts/purge` (backward-compatible alias)
 
-### Use From Python
+#### Native Python Client
 
 Install the stable HTTP client directly from the Git tag without the local inference dependencies:
 
@@ -227,6 +289,8 @@ task imagerun
 task imagerun-tiny
 task imageweb
 task imageapi
+task client-test
+task openai-client-test
 ```
 
 The default image is the full baked image and keeps model, voice, and required language assets inside the container for offline use. The tiny image keeps required runtime/language dependencies but skips baked Hugging Face model/voice assets; run it online once to download the voices you use. Both images work without a mounted volume.
@@ -338,6 +402,8 @@ The data volume is recommended but optional. Without it, the same files are stor
 - Added a compact System-tab GPU monitor with one-second tracking charts for compute load, memory activity, VRAM, temperature, power, fan speed, and graphics/memory clocks. Charts support hover crosshairs with timestamped values, default to one minute, and can switch to ten minutes. An on-demand backend sampler continues for roughly one minute after the last viewer request, while browser session caching restores the active tab and still-valid history after reload.
 - Added browser stream cancellation using `AbortController` plus server-side disconnect handling, so Stop cancels the current request and a new stream always uses the latest text.
 - Added server-owned language sample and phoneme inspection endpoints while preserving all existing `/tts/*` defaults and compatibility routes.
+- Added an OpenAI-compatible `POST /v1/audio/speech` API with model discovery, standard health routes, OpenAI error envelopes, optional bearer authentication, official SDK compatibility, exact-name voice aliases, the full `0.25`-`4.0` speed range, and MP3 defaults without changing native API behavior.
+- Expanded complete-file output with OpenAI-compatible Opus, AAC, and raw 24 kHz PCM while retaining native OGG Vorbis support.
 - Removed the Gradio runtime dependency from the application and Docker dependency set.
 - Upgraded the Docker runtime and dependency workflow to Python 3.13 with the Qwen3-ASR-STT-proven Torch 2.11/CUDA 13 baseline, while independently pinning Kokoro's language and model dependencies.
 - Reorganized the server into focused API, audio, catalog, schema, runtime, and launcher modules while preserving the existing `/tts/*` contracts and intentionally eager preparation of all advertised voices.
@@ -359,9 +425,8 @@ The data volume is recommended but optional. Without it, the same files are stor
 
 #### Planned Work
 
-1. Standardize the API surface, including an OpenAI-compatible speech endpoint, while retaining the existing `/tts/*` endpoints for backward compatibility.
-2. Prove whether the system `espeak-ng` package can be removed in favor of the bundled `espeakng-loader` runtime without reducing language support or offline reliability.
-3. Record fresh Docker and GitHub Actions build baselines with only the immutable UniDic archive cached. Add another selective cache only when measurements show that restoring and saving it is faster than downloading or rebuilding it. The checksum-verified local-network UniDic mirror is implemented for development builds; complete full/tiny BuildKit graphs must not be cached again.
+1. Prove whether the system `espeak-ng` package can be removed in favor of the bundled `espeakng-loader` runtime without reducing language support or offline reliability.
+2. Record fresh Docker and GitHub Actions build baselines with only the immutable UniDic archive cached. Add another selective cache only when measurements show that restoring and saving it is faster than downloading or rebuilding it. The checksum-verified local-network UniDic mirror is implemented for development builds; complete full/tiny BuildKit graphs must not be cached again.
 
 ### v0.3
 

@@ -99,18 +99,33 @@ The container includes the web UI and the HTTP API on the same port.
 
 - Responsive browser audio workspace with Generate, Stream, API, and System views
 - Waveform playback, seeking, download controls, and cancellable MP3 streaming
-- HTTP API for applications and automation
+- OpenAI-compatible and Kokoro-native HTTP APIs for applications and automation
 - MP3 output from the UI by default
-- Backward-compatible WAV API responses unless `output_format` or `format` is requested
-- WAV, MP3, FLAC, and OGG output support
+- OpenAI-compatible MP3 defaults plus backward-compatible WAV defaults on the native API
+- WAV, MP3, FLAC, OGG Vorbis, Opus, AAC, and raw PCM output support
 - Full 70-voice catalog exposed in the UI and API, including dedicated German and Vietnamese models
 - Persistent System controls for choosing independently loaded model packs and their served voices
 - GPU support when Docker/NVIDIA support is available
 - Offline-friendly usage with the standard full image once it is available locally
 
-## API Example
+## API Examples
 
-Default API behavior returns WAV for backward compatibility:
+### OpenAI-Compatible API
+
+Use this endpoint with applications and SDKs that support OpenAI text to speech. It returns MP3 by default:
+
+```bash
+curl -X POST "http://localhost:7860/v1/audio/speech" \
+  -H "Content-Type: application/json" \
+  -d '{"model":"kokoro","input":"Hello from Hangry Labs KokoroTTS","voice":"af_heart"}' \
+  -o hello.mp3
+```
+
+Point the official Python client at `http://localhost:7860/v1`, use `kokoro` as the model, and use a voice id from `GET /tts/voices`. This API supports MP3, Opus, AAC, FLAC, WAV, and raw PCM. Optional authentication can be enabled by setting `KOKOROTTS_API_KEY` on the container; it is disabled by default for local use.
+
+### KokoroTTS Native API
+
+Use the native API for pitch, tempo, volume, normalization, device selection, discovery, and segment streaming. It returns WAV by default for backward compatibility:
 
 ```bash
 curl -X POST "http://localhost:7860/tts/generate" \
@@ -151,8 +166,10 @@ curl -X POST "http://localhost:7860/tts/generate" \
 Health check:
 
 ```bash
-curl http://localhost:7860/tts/ping
+curl http://localhost:7860/health/ready
 ```
+
+`GET /tts/ping` remains available for native API clients. Interactive API documentation is served at `http://localhost:7860/tts/docs`.
 
 ## Image Tags
 

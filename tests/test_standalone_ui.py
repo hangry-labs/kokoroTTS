@@ -79,6 +79,8 @@ class StandaloneUiTests(unittest.TestCase):
         self.assertIn("AbortController", script.text)
         self.assertIn("/tts/generate", script.text)
         self.assertIn("/tts/stream", script.text)
+        self.assertIn("'OpenAI-compatible API': ['/health/ready', '/v1/models']", script.text)
+        self.assertIn("config.browser_playback !== false", script.text)
         self.assertIn("volume: normalize ? 1", script.text)
         self.assertIn("$('#volume').disabled = normalized", script.text)
         self.assertIn("function resetVoiceControls()", script.text)

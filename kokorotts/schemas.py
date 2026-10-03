@@ -51,6 +51,26 @@ class StreamingTTSRequest(TTSRequest):
     )
 
 
+class OpenAISpeechRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    model: str = Field(..., min_length=1, description="OpenAI-compatible model id.")
+    input: str = Field(..., min_length=1, description="Text to synthesize.")
+    voice: str | dict[str, str] = Field(
+        ..., description="Kokoro voice id or a supported exact-name alias."
+    )
+    response_format: str = Field(
+        "mp3", description="Supported: mp3, opus, aac, flac, wav, pcm."
+    )
+    speed: float = Field(1.0, ge=0.25, le=4.0)
+    instructions: str | None = Field(
+        None, description="Reserved for OpenAI compatibility; not supported by Kokoro."
+    )
+    stream_format: str = Field(
+        "audio", description="Only the OpenAI audio stream format is supported."
+    )
+
+
 class MetricsRequest(BaseModel):
     text: str = Field("", description="Text to inspect.")
     voice: str = Field(
