@@ -110,6 +110,18 @@ SAMPLE_TEXTS = {
         "Esta frase é leve, útil e pronta para soar de um jeito simpático.",
         "Clique em Gerar, escute o resultado e escolha a voz que combina melhor com seu texto.",
     ],
+    "d": [
+        "Wählen Sie eine Stimme, passen Sie bei Bedarf das Tempo an und klicken Sie auf Erzeugen. Kokoro macht daraus eine Audiodatei, bevor der Kaffee misstrauisch wird.",
+        "Ein guter Testsatz klingt klar, natürlich und nimmt sich selbst nicht zu ernst.",
+        "Dieser Text prüft die deutsche Aussprache, Pausen und den Rhythmus der Stimme.",
+        "Wenn eine Katze einen Podcast hätte, würde sie zuerst einen bequemeren Stuhl verlangen.",
+        "Beginnen Sie mit einem kurzen Satz und probieren Sie danach einen längeren Absatz.",
+        "Wenn die Stimme gut klingt, wirkt sogar die Einkaufsliste wie eine wichtige Durchsage.",
+        "Heute ist ein guter Tag, um geschriebenen Text ohne Umwege hörbar zu machen.",
+        "Ist das Tempo zu hoch, stellen Sie es etwas langsamer; gute Geschichten müssen nicht rennen.",
+        "Dieser Satz ist freundlich, nützlich und bereit für einen gründlichen Hörtest.",
+        "Klicken Sie auf Erzeugen, hören Sie das Ergebnis an und wählen Sie Ihre Lieblingsstimme.",
+    ],
 }
 
 def get_language_code_for_voice(voice="af_heart") -> str:

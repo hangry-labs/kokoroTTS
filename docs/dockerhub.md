@@ -16,7 +16,7 @@ Voice examples are available here:
 
 https://hangry-labs.github.io/kokoroTTS/examples/
 
-The examples page includes MP3 previews for all 54 Kokoro voices across American English, British English, Japanese, Mandarin Chinese, Spanish, French, Hindi, Italian, and Brazilian Portuguese. Selecting a language filters the examples and switches the page text to that language.
+The examples page includes MP3 previews for all 56 voices across American English, British English, Japanese, Mandarin Chinese, Spanish, French, Hindi, Italian, Brazilian Portuguese, and German. Selecting a language filters the examples and switches the page text to that language.
 
 ## Project Links
 
@@ -58,9 +58,9 @@ The tiny image is smaller, but it downloads model and voice files after startup 
 ### Latest image:
 
 ```bash
-docker run -p 7860:7860 --gpus all hangrylabs/kokorotts:latest
-docker run -p 7860:7860 hangrylabs/kokorotts:latest
-docker run -p 7860:7860 --gpus "device=1" -e CUDA_VISIBLE_DEVICES=1 hangrylabs/kokorotts:latest
+docker run -p 7860:7860 --gpus all -v kokorotts_hf_cache:/app/.cache/huggingface hangrylabs/kokorotts:latest
+docker run -p 7860:7860 -v kokorotts_hf_cache:/app/.cache/huggingface hangrylabs/kokorotts:latest
+docker run -p 7860:7860 --gpus "device=1" -e CUDA_VISIBLE_DEVICES=1 -v kokorotts_hf_cache:/app/.cache/huggingface hangrylabs/kokorotts:latest
 docker run -p 7860:7860 --gpus all -v kokorotts_hf_cache:/app/.cache/huggingface hangrylabs/kokorotts:latest_tiny
 ```
 
@@ -78,13 +78,14 @@ The container includes the web UI and the HTTP API on the same port.
   <img src="https://github.com/Hangry-Labs/kokoroTTS/raw/main/assets/ui.webp" alt="KokoroTTS browser interface">
 </p>
 
-- Responsive browser audio workspace with Generate, Stream, API, and System views
+- Responsive browser audio workspace with Generate, Stream, API, Settings, and System views
 - Waveform playback, seeking, download controls, and cancellable MP3 streaming
 - HTTP API for applications and automation
 - MP3 output from the UI by default
 - Backward-compatible WAV API responses unless `output_format` or `format` is requested
 - WAV, MP3, FLAC, and OGG output support
-- Full Kokoro-82M voice set exposed in the UI and API
+- Full 56-voice catalog exposed in the UI and API, including dedicated German Martin and Victoria models
+- Persistent Settings controls for choosing which voices a deployment advertises and accepts
 - GPU support when Docker/NVIDIA support is available
 - Offline-friendly usage with the standard full image once it is available locally
 
@@ -148,9 +149,11 @@ docker run -p 7860:7860 --gpus "device=1" -e CUDA_VISIBLE_DEVICES=1 hangrylabs/k
 docker run -p 7860:7860 --gpus all -v kokorotts_hf_cache:/app/.cache/huggingface hangrylabs/kokorotts:v0.3_tiny
 ```
 
-The standard `vX.Y` image is the recommended image for most users. It includes Kokoro model, voices, and required language assets for offline-friendly use after the image is pulled.
+The standard `vX.Y` image is the recommended image for most users. It includes the standard Kokoro model, dedicated German models, voice packs, and required language assets for offline-friendly use after the image is pulled.
 
 Tiny images use the `vX.Y_tiny` tag pattern. They keep runtime and language dependencies, but skip baked Hugging Face model and voice files. Use a persistent volume mounted at `/app/.cache/huggingface` so downloaded assets survive container replacement.
+
+The same volume stores deployment voice settings. All voices are served by default; use the Settings tab to disable voices that are not needed. Models load into CPU/GPU memory on first use, and reducing the served selection releases cached models after active generations finish. With the tiny image, a disabled German checkpoint is not downloaded unless its voice is later enabled and called.
 
 ## Links
 
@@ -166,5 +169,10 @@ Docker Hub comments are not monitored regularly. GitHub Issues are the best plac
 This is an independently maintained fork of the original Kokoro project by hexgrad:
 
 https://github.com/hexgrad/kokoro
+
+German synthesis uses the Apache-2.0 Kikiri German Martin and Victoria releases:
+
+- https://huggingface.co/kikiri-tts/kikiri-german-martin
+- https://huggingface.co/kikiri-tts/kikiri-german-victoria
 
 License and attribution are preserved in the repository. Original Kokoro copyright remains with the upstream authors; Hangry Labs maintains the Docker packaging, web UI/API integration, examples page, documentation, release tooling, and other modifications in this fork.

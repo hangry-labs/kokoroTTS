@@ -376,5 +376,19 @@ window.VOICE_EXAMPLES = [
     "language": "Brazilian Portuguese",
     "file": "kokorotts-pm_santa.mp3",
     "text": "Olá do Kokoro texto para fala. Imagens Docker de text to speech fáceis de executar, feitas para profissionais e para pessoas que não são técnicas. Instale o Docker. Execute um comando. Abra o navegador e use a interface integrada, ou chame a mesma API a partir da sua aplicação. O sistema cria áudio MP3 compacto e funciona direto."
+  },
+  {
+    "name": "Victoria",
+    "voice": "df_victoria",
+    "language": "German",
+    "file": "kokorotts-df_victoria.mp3",
+    "text": "Hallo von Kokoro Text zu Sprache. Einfach auszuführende Text-zu-Sprache-Docker-Images für Profis und für Menschen ohne technische Vorkenntnisse. Installieren Sie Docker. Führen Sie einen Befehl aus. Öffnen Sie den Browser und verwenden Sie die integrierte Oberfläche, oder rufen Sie dieselbe API aus Ihrer eigenen Anwendung auf. Das System erstellt kompakte MP3-Audiodateien und funktioniert sofort."
+  },
+  {
+    "name": "Martin",
+    "voice": "dm_martin",
+    "language": "German",
+    "file": "kokorotts-dm_martin.mp3",
+    "text": "Hallo von Kokoro Text zu Sprache. Einfach auszuführende Text-zu-Sprache-Docker-Images für Profis und für Menschen ohne technische Vorkenntnisse. Installieren Sie Docker. Führen Sie einen Befehl aus. Öffnen Sie den Browser und verwenden Sie die integrierte Oberfläche, oder rufen Sie dieselbe API aus Ihrer eigenen Anwendung auf. Das System erstellt kompakte MP3-Audiodateien und funktioniert sofort."
   }
 ];

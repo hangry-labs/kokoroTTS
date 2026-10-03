@@ -14,7 +14,7 @@ You get:
 - A responsive browser audio workspace for generation, streaming, playback, and downloads
 - An HTTP API for your own applications and tools
 - No manual Python, model, or audio dependency setup
-- 54 Kokoro-82M voices across 9 supported languages
+- 56 voices across 10 supported languages, including Martin and Victoria with dedicated German checkpoints
 - WAV, MP3, FLAC, and OGG output
 - Offline-friendly usage: download an image once, keep it, and run it later without relying on live model downloads
 
@@ -42,7 +42,7 @@ Hangry Labs home: [nuggies.website](https://nuggies.website/).
 
 ## Listen and Have a Look
 
-Hear all 54 voices in their supported languages on the interactive examples page. Choose a language, compare speakers, and listen directly in the browser:
+Hear all 56 voices in their supported languages on the interactive examples page. Choose a language, compare speakers, and listen directly in the browser:
 
 **[Open the KokoroTTS examples page](https://hangry-labs.github.io/kokoroTTS/examples/)**
 
@@ -83,13 +83,13 @@ docker run -p 7860:7860 --gpus "device=1" -e CUDA_VISIBLE_DEVICES=1 hangrylabs/k
 Use `latest` to try the current `v0.4` snapshot from the main development line. This moving tag can change between releases:
 
 ```bash
-docker run -p 7860:7860 --gpus all hangrylabs/kokorotts:latest
+docker run -p 7860:7860 --gpus all -v kokorotts_hf_cache:/app/.cache/huggingface hangrylabs/kokorotts:latest
 ```
 
 Run the current snapshot on CPU:
 
 ```bash
-docker run -p 7860:7860 hangrylabs/kokorotts:latest
+docker run -p 7860:7860 -v kokorotts_hf_cache:/app/.cache/huggingface hangrylabs/kokorotts:latest
 ```
 
 Then open: **[http://localhost:7860](http://localhost:7860)**
@@ -137,6 +137,8 @@ Useful API endpoints:
 - `GET /tts/samples?language=a`
 - `GET /tts/speakers?language=a`
 - `GET /tts/voices`
+- `GET /system/settings`
+- `PUT /system/settings/voices`
 - `POST /tts/metrics`
 - `POST /tts/tokenize`
 - `POST /tts/stream`
@@ -176,6 +178,8 @@ The original work is licensed under the Apache License 2.0, and we thank the aut
 
 While Kokoro is an impressive model/library project, this Hangry Labs fork focuses on making it simple to run and integrate: Docker image, included UI, API support, offline-friendly assets, and practical examples out of the box.
 
+German synthesis uses the Apache-2.0 Kokoro-compatible [Kikiri German Martin](https://huggingface.co/kikiri-tts/kikiri-german-martin) and [Kikiri German Victoria](https://huggingface.co/kikiri-tts/kikiri-german-victoria) model/voice releases. Each voice uses its matching fine-tuned checkpoint.
+
 License and attribution are preserved in [`LICENSE`](LICENSE).
 
 ## Support & Issues
@@ -191,7 +195,7 @@ If you encounter bugs, have feature requests, or need help using Hangry Labs Kok
 
 All published images are available on [Docker Hub](https://hub.docker.com/r/hangrylabs/kokorotts/tags).
 
-- Full images contain the Kokoro model, all 54 voices, configuration, and Japanese UniDic data. They are ready for offline use after the image has been pulled.
+- Full images contain the standard Kokoro model, both dedicated German checkpoints, all 56 voice packs, configuration, and Japanese UniDic data. They are ready for offline use after the image has been pulled.
 - Tiny images contain the complete runtime but download Hugging Face model and voice assets on first use. Mount `/app/.cache/huggingface` as a named volume to preserve those downloads across containers.
 - Versioned tags such as `v0.3` and `v0.3_tiny` are fixed releases suitable for repeatable deployments.
 - Moving tags `latest` and `latest_tiny` follow the current `v0.4` snapshot built from `main`.
@@ -222,7 +226,9 @@ task logs
 task client-test
 ```
 
-`task imagerun` and `task localrun` mount a named Docker volume at `/app/.cache/huggingface` so lazy-downloaded Hugging Face assets survive container and image rebuilds. Baked run tasks seed missing cache files from the full image before startup, so the normal image stays offline-friendly even if the cache volume was first created by a tiny run. Use `task nuke` when you need a true from-scratch cache test.
+`task imagerun` and `task localrun` mount a named Docker volume at `/app/.cache/huggingface` so lazy-downloaded Hugging Face assets and deployment voice settings survive container and image rebuilds. Baked run tasks seed missing cache files from the full image before startup, so the normal image stays offline-friendly even if the cache volume was first created by a tiny run. Use `task nuke` when you need a true from-scratch cache test.
+
+The Settings tab controls which voices the deployment advertises and accepts. All voices remain enabled by default for backward compatibility. Voice packs are prepared when enabled, while the standard and German model weights load into memory only when one of their voices is first used. Reducing the selection releases disabled voice packs and cached models after active generations finish. In the tiny image, disabled German models are not downloaded unless they are later enabled and called.
 
 Release from a clean tree:
 
@@ -280,9 +286,9 @@ The report separates process-specific allocated/reserved VRAM from whole-device 
 The current development snapshot is published through the moving `latest` and `latest_tiny` tags:
 
 ```bash
-docker run -p 7860:7860 --gpus all hangrylabs/kokorotts:latest
-docker run -p 7860:7860 hangrylabs/kokorotts:latest
-docker run -p 7860:7860 --gpus "device=1" -e CUDA_VISIBLE_DEVICES=1 hangrylabs/kokorotts:latest
+docker run -p 7860:7860 --gpus all -v kokorotts_hf_cache:/app/.cache/huggingface hangrylabs/kokorotts:latest
+docker run -p 7860:7860 -v kokorotts_hf_cache:/app/.cache/huggingface hangrylabs/kokorotts:latest
+docker run -p 7860:7860 --gpus "device=1" -e CUDA_VISIBLE_DEVICES=1 -v kokorotts_hf_cache:/app/.cache/huggingface hangrylabs/kokorotts:latest
 docker run -p 7860:7860 --gpus all -v kokorotts_hf_cache:/app/.cache/huggingface hangrylabs/kokorotts:latest_tiny
 ```
 
@@ -305,12 +311,14 @@ docker run -p 7860:7860 --gpus all -v kokorotts_hf_cache:/app/.cache/huggingface
 - Replaced the duplicate-initialization script startup with a lightweight Uvicorn launcher, reducing the development reload supervisor from roughly 1 GB to about 33 MB RSS in local measurements.
 - Added a genuinely incremental Python streaming client while retaining the buffered `stream()` compatibility method, made the default package install client-only with an optional full server dependency set, and stopped package imports from modifying host Loguru configuration.
 - Ported shared UI hardening from Qwen3-ASR-STT: malformed GPU responses no longer break the System view, the icon font is served with the correct MIME type, and Lucide is reduced to the glyphs the Kokoro workspace actually uses.
-- Added a repeatable HTTP voice-generation benchmark sourced directly from the 54 examples in `examples/voices.js`. It warms one voice per language, measures every voice five times, and records overall, per-language, and per-voice latency, audio duration, realtime factor, and realtime speed in machine-readable and Markdown reports.
+- Added a repeatable HTTP voice-generation benchmark sourced directly from the examples in `examples/voices.js`. It warms one voice per language, measures every voice five times, and records overall, per-language, and per-voice latency, audio duration, realtime factor, and realtime speed in machine-readable and Markdown reports.
 - Added a separate isolated-container VRAM benchmark that records memory before runtime initialization, after voice preparation, after model loading, and during every voice. It reports exact Kokoro-process PyTorch peaks alongside sampled whole-device peaks without changing the public API.
+- Added German synthesis with dedicated Misaki normalization/G2P, Martin and Victoria voice packs, and their matching Kokoro-compatible checkpoints. The full image bakes only deployable inference assets; each model family remains lazy in CPU/GPU memory.
+- Added persisted deployment voice settings to the browser UI and HTTP API. Operators can choose which voices are advertised and accepted without changing the backward-compatible all-voices default.
 
 #### Planned Work
 
-1. Add German language and voice support using the newly available compatible model assets.
+1. Record the official VRAM baseline on a quiet GPU using the new lifecycle, per-language, and per-voice benchmark.
 2. Standardize the API surface, including an OpenAI-compatible speech endpoint, while retaining the existing `/tts/*` endpoints for backward compatibility.
 3. Prove whether the system `espeak-ng` package can be removed in favor of the bundled `espeakng-loader` runtime without reducing language support or offline reliability.
 4. Benchmark and optimize Docker and GitHub Actions build times, including a local-network UniDic mirror, selective caching for expensive dependency and language-data layers, and a measured replacement for duplicated complete full and tiny image caches.

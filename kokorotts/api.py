@@ -30,14 +30,20 @@ from .audio import (
 )
 from .catalog import (
     LANGUAGE_CHOICES,
-    VOICE_CHOICES,
+    voice_ids,
     voice_inventory,
     voice_language,
     voices_for_language,
 )
 from .runtime import InferenceRuntime, SynthesisResult
 from .sample_texts import get_initial_text, get_intro_text, get_random_quote
-from .schemas import MetricsRequest, PurgeRequest, StreamingTTSRequest, TTSRequest
+from .schemas import (
+    MetricsRequest,
+    PurgeRequest,
+    ServedVoicesRequest,
+    StreamingTTSRequest,
+    TTSRequest,
+)
 
 APP_VERSION = os.getenv("APP_VERSION", KOKORO_VERSION)
 BUILD_ID = os.getenv("BUILD_ID", "stable")
@@ -124,8 +130,11 @@ def validate_request(
 ) -> tuple[str, str]:
     if not payload.text.strip():
         raise HTTPException(status_code=400, detail="Text must not be empty")
-    if payload.voice not in VOICE_CHOICES.values():
-        raise HTTPException(status_code=400, detail=f"Invalid voice '{payload.voice}'")
+    if not RUNTIME.serves_voice(payload.voice):
+        raise HTTPException(
+            status_code=400,
+            detail=f"Voice '{payload.voice}' is not served by this deployment",
+        )
     try:
         requested_format = (
             normalize_stream_format(payload.stream_format)
@@ -230,8 +239,8 @@ def get_text_metrics(text: str, voice: str = "af_heart") -> dict[str, int | str]
 
 
 def get_phoneme_segments(text: str, voice: str = "af_heart") -> list[str]:
-    if voice not in VOICE_CHOICES.values():
-        raise ValueError(f"Invalid voice '{voice}'")
+    if not RUNTIME.serves_voice(voice):
+        raise ValueError(f"Voice '{voice}' is not served by this deployment")
     return RUNTIME.phoneme_segments(text, voice) if text.strip() else []
 
 
@@ -257,6 +266,8 @@ def ping() -> dict:
 
 @api.get("/tts/status")
 def status() -> dict:
+    served_voices = RUNTIME.served_voices
+    served_languages = list(dict.fromkeys(voice_language(voice) for voice in served_voices))
     return {
         "msg": "pong",
         "type": "KokoroTTS",
@@ -266,10 +277,13 @@ def status() -> dict:
         "device": DEFAULT_DEVICE,
         "repo_id": RUNTIME.repo_id,
         "sample_rate": SAMPLE_RATE,
-        "configured_languages": list(LANGUAGE_CHOICES),
-        "languages": LANGUAGE_CHOICES,
-        "voices": len(VOICE_CHOICES),
+        "configured_languages": served_languages,
+        "languages": {
+            code: name for code, name in LANGUAGE_CHOICES.items() if code in served_languages
+        },
+        "voices": len(served_voices),
         "loaded_model_devices": RUNTIME.loaded_model_devices,
+        "loaded_models": RUNTIME.loaded_models,
         "last_inference_fallback": RUNTIME.last_fallback,
         "hardware": [
             {"label": label, "value": value} for label, value in get_hardware_choices()
@@ -281,9 +295,11 @@ def status() -> dict:
 
 @api.get("/tts/defaults")
 def defaults() -> dict:
+    served_voices = RUNTIME.served_voices
+    default_voice = "af_heart" if "af_heart" in served_voices else served_voices[0]
     return {
         "text": get_initial_text(),
-        "voice": "af_heart",
+        "voice": default_voice,
         "speed": 1.0,
         "device": "auto",
         "audio_controls": {
@@ -325,7 +341,13 @@ def stream_formats() -> dict:
 
 @api.get("/tts/languages")
 def languages() -> dict:
-    return {"languages": LANGUAGE_CHOICES, "loaded_languages": list(LANGUAGE_CHOICES)}
+    served_languages = list(
+        dict.fromkeys(voice_language(voice) for voice in RUNTIME.served_voices)
+    )
+    languages = {
+        code: name for code, name in LANGUAGE_CHOICES.items() if code in served_languages
+    }
+    return {"languages": languages, "loaded_languages": served_languages}
 
 
 @api.get("/tts/samples")
@@ -337,9 +359,10 @@ def samples(
         description="Return a random sample instead of the intro.",
     ),
 ) -> dict:
-    if language not in LANGUAGE_CHOICES:
+    available = voices_for_language(language, RUNTIME.served_voices)
+    if language not in LANGUAGE_CHOICES or not available:
         raise HTTPException(status_code=404, detail="Language not found")
-    voice = voices_for_language(language)[0]
+    voice = available[0]
     text = get_random_quote(voice) if random_sample else get_intro_text(voice)
     return {
         "language": language,
@@ -351,22 +374,53 @@ def samples(
 
 @api.get("/tts/speakers")
 def speakers(language: str = Query("a", description="Kokoro language prefix.")) -> dict:
-    if language not in LANGUAGE_CHOICES:
+    available = voices_for_language(language, RUNTIME.served_voices)
+    if language not in LANGUAGE_CHOICES or not available:
         raise HTTPException(status_code=404, detail="Language not found")
     return {
         "language": language,
         "language_name": LANGUAGE_CHOICES[language],
-        "speakers": voices_for_language(language),
+        "speakers": available,
     }
 
 
 @api.get("/tts/voices")
 def voices() -> dict:
-    return {"voices": voice_inventory()}
+    return {"voices": voice_inventory(RUNTIME.served_voices)}
+
+
+@api.get("/system/settings")
+def system_settings() -> dict:
+    served = RUNTIME.served_voices
+    return {
+        "served_voices": served,
+        "supported_voices": voice_inventory(voice_ids()),
+        "settings_path": str(RUNTIME.settings.path),
+        "model_loading": "lazy",
+    }
+
+
+@api.put("/system/settings/voices")
+def update_served_voices(payload: ServedVoicesRequest) -> dict:
+    try:
+        served = RUNTIME.set_served_voices(payload.voices)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return {
+        "served_voices": served,
+        "supported_voices": voice_inventory(voice_ids()),
+        "settings_path": str(RUNTIME.settings.path),
+        "model_loading": "lazy",
+    }
 
 
 @api.post("/tts/metrics")
 def metrics(payload: MetricsRequest) -> dict:
+    if not RUNTIME.serves_voice(payload.voice):
+        raise HTTPException(
+            status_code=400,
+            detail=f"Voice '{payload.voice}' is not served by this deployment",
+        )
     return {
         "voice": payload.voice,
         "language": voice_language(payload.voice),

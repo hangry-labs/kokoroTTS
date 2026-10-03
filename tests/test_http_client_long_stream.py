@@ -63,7 +63,7 @@ class HttpClientServerSmokeTest(unittest.TestCase):
     def test_tts_status_returns_runtime_metadata(self) -> None:
         status = self.client.status()
         self.assertEqual(status["type"], "KokoroTTS")
-        self.assertGreaterEqual(status["voices"], 54)
+        self.assertGreaterEqual(status["voices"], 56)
 
     def test_tts_defaults_returns_default_request_values(self) -> None:
         defaults = self.client.defaults()
@@ -82,8 +82,9 @@ class HttpClientServerSmokeTest(unittest.TestCase):
 
     def test_tts_languages_lists_loaded_languages(self) -> None:
         languages = self.client.languages()
-        self.assertEqual(len(languages["languages"]), 9)
+        self.assertEqual(len(languages["languages"]), 10)
         self.assertIn("j", languages["loaded_languages"])
+        self.assertIn("d", languages["loaded_languages"])
 
     def test_tts_samples_returns_language_intro(self) -> None:
         sample = self.client.sample("j")
@@ -97,8 +98,16 @@ class HttpClientServerSmokeTest(unittest.TestCase):
 
     def test_tts_voices_lists_all_voice_metadata(self) -> None:
         voices = self.client.voices()
-        self.assertGreaterEqual(len(voices["voices"]), 54)
+        self.assertGreaterEqual(len(voices["voices"]), 56)
         self.assertTrue(any(voice["id"] == "af_heart" for voice in voices["voices"]))
+        self.assertTrue(any(voice["id"] == "dm_martin" for voice in voices["voices"]))
+
+    def test_system_settings_lists_and_preserves_served_voices(self) -> None:
+        settings = self.client.deployment_settings()
+        served = settings["served_voices"]
+
+        self.assertGreaterEqual(len(settings["supported_voices"]), 56)
+        self.assertEqual(self.client.set_served_voices(served)["served_voices"], served)
 
     def test_tts_metrics_basic_text_metrics(self) -> None:
         metrics = self.client.metrics("Hello from the Python client.", voice="af_heart")

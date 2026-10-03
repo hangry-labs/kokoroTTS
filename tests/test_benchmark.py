@@ -9,27 +9,16 @@ from subprocess import CompletedProcess
 from unittest.mock import patch
 
 from benchmarks.tts import run_benchmark
+from kokorotts.catalog import LANGUAGE_CHOICES, voice_ids
 
 
 class BenchmarkTests(unittest.TestCase):
     def test_voice_examples_cover_all_voices_and_languages(self) -> None:
         cases = run_benchmark._load_voice_cases(Path("examples/voices.js"))
 
-        self.assertEqual(len(cases), 54)
-        self.assertEqual(len({case["voice"] for case in cases}), 54)
+        self.assertEqual({case["voice"] for case in cases}, set(voice_ids()))
         self.assertEqual(
-            {case["language"] for case in cases},
-            {
-                "American English",
-                "British English",
-                "Japanese",
-                "Mandarin Chinese",
-                "Spanish",
-                "French",
-                "Hindi",
-                "Italian",
-                "Brazilian Portuguese",
-            },
+            {case["language"] for case in cases}, set(LANGUAGE_CHOICES.values())
         )
         self.assertTrue(all(case["text"] for case in cases))
 

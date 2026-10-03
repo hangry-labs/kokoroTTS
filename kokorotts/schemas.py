@@ -63,3 +63,9 @@ class PurgeRequest(BaseModel):
         None,
         description="Optional cached model device to clear. Omit to clear all cached models.",
     )
+
+
+class ServedVoicesRequest(BaseModel):
+    voices: list[str] = Field(
+        ..., description="Complete list of voice ids this deployment should serve."
+    )

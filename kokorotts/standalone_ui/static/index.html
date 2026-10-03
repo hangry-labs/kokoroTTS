@@ -48,6 +48,7 @@
     <button class="tab-button active" type="button" role="tab" aria-selected="true" data-tab="generate">Generate</button>
     <button class="tab-button" type="button" role="tab" aria-selected="false" data-tab="stream">Stream</button>
     <button class="tab-button" type="button" role="tab" aria-selected="false" data-tab="api">API</button>
+    <button class="tab-button" type="button" role="tab" aria-selected="false" data-tab="settings">Settings</button>
     <button class="tab-button" type="button" role="tab" aria-selected="false" data-tab="system">System</button>
   </div>
 
@@ -119,6 +120,27 @@
       <div class="tab-panel" data-panel="api" hidden>
         <div class="view-heading"><div><h2>API</h2><p>Live discovery responses</p></div><button class="secondary-button" id="api-refresh" type="button"><i class="icon-refresh-cw"></i>Refresh</button></div>
         <div class="data-output json-output" id="api-output"></div>
+      </div>
+
+      <div class="tab-panel" data-panel="settings" hidden>
+        <div class="view-heading"><div><h2>Deployment settings</h2><p>Choose the voices advertised and accepted by this deployment</p></div></div>
+        <section class="deployment-settings" aria-labelledby="served-voices-title">
+          <div class="settings-toolbar">
+            <div>
+              <div class="section-title" id="served-voices-title"><i class="icon-audio-lines"></i><span>Served voices</span></div>
+              <p>Voice packs are prepared when enabled. Model weights load on first use; reducing this list releases cached models after active generations finish.</p>
+            </div>
+            <div class="settings-actions">
+              <button class="secondary-button" id="voices-select-all" type="button">Select all</button>
+              <button class="secondary-button" id="voices-select-none" type="button">Clear</button>
+            </div>
+          </div>
+          <div class="voice-settings-groups" id="voice-settings-groups" aria-live="polite"></div>
+          <div class="settings-save-row">
+            <span id="voice-settings-summary">Loading voice settings</span>
+            <button class="primary-button" id="save-voice-settings" type="button"><i class="icon-check"></i>Save voice settings</button>
+          </div>
+        </section>
       </div>
 
       <div class="tab-panel" data-panel="system" hidden>

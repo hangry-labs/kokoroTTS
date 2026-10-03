@@ -9,6 +9,7 @@ const state = {
   defaults: null,
   status: null,
   voices: [],
+  deploymentSettings: null,
   streamAbort: null,
   streamPlayback: null,
   gpuHistory: new Map(),
@@ -108,7 +109,7 @@ function persistGpuSession() {
 
 function restoreSessionState() {
   const ui = readSessionJson(UI_SESSION_KEY)
-  if (['generate', 'stream', 'api', 'system'].includes(ui?.activeTab)) state.activeTab = ui.activeTab
+  if (['generate', 'stream', 'api', 'settings', 'system'].includes(ui?.activeTab)) state.activeTab = ui.activeTab
   if (typeof ui?.headerCollapsed === 'boolean') state.headerCollapsed = ui.headerCollapsed
   if ([60 * 1000, 10 * 60 * 1000].includes(ui?.gpuWindowMs)) state.gpuWindowMs = ui.gpuWindowMs
 
@@ -177,6 +178,7 @@ function activateTab(name) {
   $('.settings-panel').hidden = !synthesisView
   $('.workspace').dataset.view = name
   if (name === 'api') refreshApiStatus()
+  if (name === 'settings') loadDeploymentSettings()
   if (name === 'system') {
     refreshSystem()
     startGpuMonitor()
@@ -288,6 +290,101 @@ function refreshVoiceOptions(preferredVoice) {
     preferredVoice,
   )
 }
+
+function updateVoiceSettingsSummary() {
+  const checkboxes = $$('#voice-settings-groups input[type="checkbox"]')
+  const selected = checkboxes.filter((checkbox) => checkbox.checked).length
+  $('#voice-settings-summary').textContent = `${selected} of ${checkboxes.length} voices selected`
+}
+
+function renderDeploymentSettings(payload) {
+  state.deploymentSettings = payload
+  const selected = new Set(payload.served_voices || [])
+  const groups = new Map()
+  ;(payload.supported_voices || []).forEach((voice) => {
+    if (!groups.has(voice.language)) groups.set(voice.language, [])
+    groups.get(voice.language).push(voice)
+  })
+  const container = $('#voice-settings-groups')
+  container.replaceChildren()
+  groups.forEach((voices, language) => {
+    const section = document.createElement('section')
+    section.className = 'voice-settings-group'
+    const heading = document.createElement('h3')
+    heading.textContent = voices[0]?.language_name || language
+    const list = document.createElement('div')
+    list.className = 'voice-settings-list'
+    voices.forEach((voice) => {
+      const label = document.createElement('label')
+      label.className = 'voice-setting'
+      const checkbox = document.createElement('input')
+      checkbox.type = 'checkbox'
+      checkbox.value = voice.id
+      checkbox.checked = selected.has(voice.id)
+      checkbox.addEventListener('change', updateVoiceSettingsSummary)
+      const name = document.createElement('span')
+      name.textContent = voiceDisplayName(voice).replace(` (${voice.id})`, '')
+      const id = document.createElement('code')
+      id.textContent = voice.id
+      label.append(checkbox, name, id)
+      list.append(label)
+    })
+    section.append(heading, list)
+    container.append(section)
+  })
+  updateVoiceSettingsSummary()
+}
+
+async function loadDeploymentSettings() {
+  try {
+    renderDeploymentSettings(await fetchJson('/system/settings'))
+  } catch (error) {
+    showToast(errorMessage(error))
+  }
+}
+
+function setAllVoiceSettings(checked) {
+  $$('#voice-settings-groups input[type="checkbox"]').forEach((checkbox) => { checkbox.checked = checked })
+  updateVoiceSettingsSummary()
+}
+
+$('#voices-select-all').addEventListener('click', () => setAllVoiceSettings(true))
+$('#voices-select-none').addEventListener('click', () => setAllVoiceSettings(false))
+
+$('#save-voice-settings').addEventListener('click', async () => {
+  const button = $('#save-voice-settings')
+  const voices = $$('#voice-settings-groups input[type="checkbox"]:checked').map((checkbox) => checkbox.value)
+  button.disabled = true
+  try {
+    const settings = await fetchJson('/system/settings/voices', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ voices }),
+    })
+    renderDeploymentSettings(settings)
+    const [defaults, languages, inventory] = await Promise.all([
+      fetchJson('/tts/defaults'),
+      fetchJson('/tts/languages'),
+      fetchJson('/tts/voices'),
+    ])
+    const previousLanguage = $('#language').value
+    const previousVoice = $('#voice').value
+    state.defaults = defaults
+    state.voices = inventory.voices
+    setSelectOptions(
+      $('#language'),
+      Object.entries(languages.languages).map(([value, label]) => ({ value, label })),
+      languages.languages[previousLanguage] ? previousLanguage : state.voices[0]?.language,
+    )
+    refreshVoiceOptions(state.voices.some((voice) => voice.id === previousVoice) ? previousVoice : defaults.voice)
+    setStatus('Deployment voice settings saved', 'success')
+    showToast('Voice settings saved', 'success')
+  } catch (error) {
+    showToast(errorMessage(error))
+  } finally {
+    button.disabled = false
+  }
+})
 
 async function loadSample(random = false) {
   const language = $('#language').value

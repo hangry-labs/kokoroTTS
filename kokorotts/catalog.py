@@ -17,6 +17,8 @@ LANGUAGE_ALIASES = {
     "pt-br": "p",
     "ja": "j",
     "zh": "z",
+    "de": "d",
+    "de-de": "d",
 }
 
 # Values are the names expected by the corresponding G2P implementation.
@@ -30,6 +32,7 @@ PIPELINE_LANGUAGE_CODES = {
     "p": "pt-br",
     "j": "Japanese",
     "z": "Mandarin Chinese",
+    "d": "de",
 }
 
 # Public names presented by the UI and discovery API.
@@ -43,6 +46,7 @@ LANGUAGE_CHOICES = {
     "h": "Hindi",
     "i": "Italian",
     "p": "Brazilian Portuguese",
+    "d": "German",
 }
 
 VOICE_CHOICES = {
@@ -100,6 +104,27 @@ VOICE_CHOICES = {
     "🇧🇷 🚺 Dora": "pf_dora",
     "🇧🇷 🚹 Alex": "pm_alex",
     "🇧🇷 🚹 Santa": "pm_santa",
+    "🇩🇪 🚺 Victoria": "df_victoria",
+    "🇩🇪 🚹 Martin": "dm_martin",
+}
+
+STANDARD_MODEL_FAMILY = "kokoro-v1.0"
+
+# German voice packs are tied to their fine-tuned checkpoint and cannot use the
+# standard Kokoro weights. Only deployable inference files are listed here.
+CUSTOM_VOICE_ASSETS = {
+    "df_victoria": {
+        "model_family": "kikiri-german-victoria",
+        "repo_id": "kikiri-tts/kikiri-german-victoria",
+        "voice_file": "voices/victoria.pt",
+        "model_file": "kikiri_german_victoria_ep10.pth",
+    },
+    "dm_martin": {
+        "model_family": "kikiri-german-martin",
+        "repo_id": "kikiri-tts/kikiri-german-martin",
+        "voice_file": "voices/martin.pt",
+        "model_file": "kikiri_german_martin_ep10.pth",
+    },
 }
 
 
@@ -113,10 +138,13 @@ def voice_language(voice_id: str) -> str:
     return "a"
 
 
-def voices_for_language(language_code: str) -> list[str]:
+def voices_for_language(
+    language_code: str, available_voices: list[str] | None = None
+) -> list[str]:
+    available = available_voices if available_voices is not None else voice_ids()
     return [
         voice_id
-        for voice_id in voice_ids()
+        for voice_id in available
         if voice_language(voice_id) == language_code
     ]
 
@@ -127,7 +155,13 @@ def voice_label(voice_id: str) -> str:
     )
 
 
-def voice_inventory() -> list[dict[str, str]]:
+def voice_model_family(voice_id: str) -> str:
+    asset = CUSTOM_VOICE_ASSETS.get(voice_id)
+    return asset["model_family"] if asset else STANDARD_MODEL_FAMILY
+
+
+def voice_inventory(available_voices: list[str] | None = None) -> list[dict[str, str]]:
+    available = available_voices if available_voices is not None else voice_ids()
     return [
         {
             "id": voice_id,
@@ -135,5 +169,5 @@ def voice_inventory() -> list[dict[str, str]]:
             "language": voice_language(voice_id),
             "language_name": LANGUAGE_CHOICES[voice_language(voice_id)],
         }
-        for voice_id in voice_ids()
+        for voice_id in available
     ]

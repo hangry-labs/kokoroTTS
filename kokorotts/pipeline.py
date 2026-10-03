@@ -111,6 +111,13 @@ class KPipeline:
             except ImportError:
                 logger.error("You need to `pip install misaki[zh]` to use lang_code='z'")
                 raise
+        elif lang_code == 'd':
+            try:
+                from misaki import de
+                self.g2p = de.DEG2P()
+            except ImportError:
+                logger.error("You need to `pip install misaki[de]` to use lang_code='d'")
+                raise
         else:
             language = LANG_CODES[lang_code]
             self.g2p = espeak.EspeakG2P(language=language)

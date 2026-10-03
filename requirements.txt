@@ -46,7 +46,7 @@ loguru==0.7.3
 markdown-it-py==4.2.0
 markupsafe==3.0.3
 mdurl==0.1.2
-misaki @ https://github.com/hexgrad/misaki/archive/fba1236595f2d2bf21d414ba6e57d25256afada3.tar.gz
+misaki @ https://github.com/hexgrad/misaki/archive/bbaf917e7bf7fbbe830f74f4acda6583ce1c0caf.tar.gz
 mojimoji==0.0.13
 mpmath==1.3.0
 murmurhash==1.0.15

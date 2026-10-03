@@ -17,7 +17,7 @@ task benchmark-smoke
 task benchmark-tts BENCHMARK_COMMENT="baseline"
 ```
 
-`benchmark-smoke` checks the runner with two voices and one measured generation each without changing benchmark history. `benchmark-tts` measures all 54 current voices five times each, following one warmup request per language.
+`benchmark-smoke` checks the runner with two voices and one measured generation each without changing benchmark history. `benchmark-tts` measures all 56 current voices five times each, following one warmup request per language.
 
 Useful overrides:
 
