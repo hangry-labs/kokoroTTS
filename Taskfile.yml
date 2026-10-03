@@ -134,6 +134,14 @@ tasks:
           API_VOICE: df_victoria
           API_TEXT: 'Guten Tag. Das ist Victoria von Kokoro TTS. Diese Stimme verwendet ein eigenes deutsches Modell.'
 
+  vietnamese-test:
+    desc: Generate and play one Vietnamese sample with Diem Trinh
+    cmds:
+      - task: imageapi-voice
+        vars:
+          API_VOICE: diem_trinh
+          API_TEXT: 'Xin chào từ Kokoro TTS. Đây là giọng Diễm Trinh sử dụng mô hình tiếng Việt chuyên dụng.'
+
   imageapi-format:
     desc: Call API for API_FORMAT and verify the output file is non-empty
     cmds:
@@ -184,7 +192,7 @@ tasks:
   unit-test:
     desc: Run focused runtime, chunking, audio, benchmark, and standalone UI tests in Docker
     cmds:
-      - 'cmd /c docker run --rm --entrypoint python -v "{{.TASKFILE_DIR}}\kokorotts:/app/kokorotts:ro" -v "{{.TASKFILE_DIR}}\assets:/app/assets:ro" -v "{{.TASKFILE_DIR}}\benchmarks:/app/benchmarks:ro" -v "{{.TASKFILE_DIR}}\examples:/app/examples:ro" -v "{{.TASKFILE_DIR}}\tests:/app/tests:ro" {{.IMAGE}} -m unittest tests.test_audio tests.test_benchmark tests.test_vram_benchmark tests.test_german_support tests.test_pipeline_chunking tests.test_runtime tests.test_settings tests.test_standalone_ui -v'
+      - 'cmd /c docker run --rm --entrypoint python -v "{{.TASKFILE_DIR}}\kokorotts:/app/kokorotts:ro" -v "{{.TASKFILE_DIR}}\assets:/app/assets:ro" -v "{{.TASKFILE_DIR}}\benchmarks:/app/benchmarks:ro" -v "{{.TASKFILE_DIR}}\examples:/app/examples:ro" -v "{{.TASKFILE_DIR}}\tests:/app/tests:ro" {{.IMAGE}} -m unittest tests.test_audio tests.test_benchmark tests.test_vram_benchmark tests.test_german_support tests.test_vietnamese_support tests.test_pipeline_chunking tests.test_runtime tests.test_settings tests.test_standalone_ui -v'
 
   imagestop:
     desc: Stop running KokoroTTS containers

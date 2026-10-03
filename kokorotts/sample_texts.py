@@ -1,5 +1,7 @@
 import random
 
+from .catalog import voice_language
+
 
 SAMPLE_TEXTS = {
     "a": [
@@ -122,12 +124,25 @@ SAMPLE_TEXTS = {
         "Dieser Satz ist freundlich, nützlich und bereit für einen gründlichen Hörtest.",
         "Klicken Sie auf Erzeugen, hören Sie das Ergebnis an und wählen Sie Ihre Lieblingsstimme.",
     ],
+    "v": [
+        "Hãy chọn một giọng đọc, điều chỉnh tốc độ nếu cần, rồi nhấn Tạo. Kokoro sẽ biến đoạn văn này thành âm thanh trước khi cà phê kịp nguội.",
+        "Một câu thử giọng hay nên rõ ràng, tự nhiên và vui vừa đủ để không làm chiếc micro căng thẳng.",
+        "Đoạn văn này giúp kiểm tra cách phát âm, nhịp điệu và độ ổn định của giọng tiếng Việt.",
+        "Nếu một chú mèo làm podcast, có lẽ việc đầu tiên nó yêu cầu là một chiếc ghế thật êm.",
+        "Hãy bắt đầu bằng một câu ngắn, rồi thử một đoạn dài hơn khi bạn đã chọn được giọng phù hợp.",
+        "Khi giọng đọc nghe thật tự nhiên, ngay cả danh sách đi chợ cũng có vẻ như một bản tin quan trọng.",
+        "Hôm nay là một ngày đẹp để biến chữ viết thành âm thanh mà không cần vật lộn với phần cài đặt.",
+        "Nếu giọng đọc quá nhanh, hãy giảm tốc độ một chút; câu chuyện hay không cần phải chạy đua.",
+        "Câu thử này nhẹ nhàng, hữu ích và sẵn sàng để được đọc bằng một giọng thật thân thiện.",
+        "Nhấn Tạo, nghe kết quả, rồi chọn giọng khiến câu chuyện của bạn trở nên sống động nhất.",
+    ],
 }
 
 def get_language_code_for_voice(voice="af_heart") -> str:
     if not voice:
         return "a"
-    return voice[0] if voice[0] in SAMPLE_TEXTS else "a"
+    language_code = voice_language(voice)
+    return language_code if language_code in SAMPLE_TEXTS else "a"
 
 
 def get_intro_text(voice="af_heart"):

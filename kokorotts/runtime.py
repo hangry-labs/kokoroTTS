@@ -98,12 +98,18 @@ class InferenceRuntime:
             for value in CUSTOM_VOICE_ASSETS.values()
             if value["model_family"] == model_family
         )
-        config_path = hf_hub_download(repo_id=self.repo_id, filename="config.json")
+        config_repo_id = asset.get(
+            "config_repo_id",
+            asset["repo_id"] if "config_file" in asset else self.repo_id,
+        )
+        config_path = hf_hub_download(
+            repo_id=config_repo_id, filename=asset.get("config_file", "config.json")
+        )
         model_path = hf_hub_download(
             repo_id=asset["repo_id"], filename=asset["model_file"]
         )
         return KModel(
-            repo_id=self.repo_id, config=config_path, model=model_path
+            repo_id=asset["repo_id"], config=config_path, model=model_path
         ).to(device).eval()
 
     def _create_pipeline(self, language: str) -> KPipeline:

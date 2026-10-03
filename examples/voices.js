@@ -390,5 +390,103 @@ window.VOICE_EXAMPLES = [
     "language": "German",
     "file": "kokorotts-dm_martin.mp3",
     "text": "Hallo von Kokoro Text zu Sprache. Einfach auszuführende Text-zu-Sprache-Docker-Images für Profis und für Menschen ohne technische Vorkenntnisse. Installieren Sie Docker. Führen Sie einen Befehl aus. Öffnen Sie den Browser und verwenden Sie die integrierte Oberfläche, oder rufen Sie dieselbe API aus Ihrer eigenen Anwendung auf. Das System erstellt kompakte MP3-Audiodateien und funktioniert sofort."
+  },
+  {
+    "name": "Diễm Trinh",
+    "voice": "diem_trinh",
+    "language": "Vietnamese",
+    "file": "kokorotts-diem_trinh.mp3",
+    "text": "Xin chào từ Kokoro text to speech. Đây là bộ Docker chuyển văn bản thành giọng nói, dễ chạy cho cả chuyên gia và người không rành kỹ thuật. Hãy cài Docker, chạy một lệnh rồi mở trình duyệt để dùng giao diện tích hợp, hoặc gọi cùng một API từ ứng dụng của bạn. Hệ thống tạo âm thanh MP3 nhỏ gọn và hoạt động ngay sau khi khởi động."
+  },
+  {
+    "name": "Hưng Thịnh",
+    "voice": "hung_thinh",
+    "language": "Vietnamese",
+    "file": "kokorotts-hung_thinh.mp3",
+    "text": "Xin chào từ Kokoro text to speech. Đây là bộ Docker chuyển văn bản thành giọng nói, dễ chạy cho cả chuyên gia và người không rành kỹ thuật. Hãy cài Docker, chạy một lệnh rồi mở trình duyệt để dùng giao diện tích hợp, hoặc gọi cùng một API từ ứng dụng của bạn. Hệ thống tạo âm thanh MP3 nhỏ gọn và hoạt động ngay sau khi khởi động."
+  },
+  {
+    "name": "Mai Linh",
+    "voice": "mai_linh",
+    "language": "Vietnamese",
+    "file": "kokorotts-mai_linh.mp3",
+    "text": "Xin chào từ Kokoro text to speech. Đây là bộ Docker chuyển văn bản thành giọng nói, dễ chạy cho cả chuyên gia và người không rành kỹ thuật. Hãy cài Docker, chạy một lệnh rồi mở trình duyệt để dùng giao diện tích hợp, hoặc gọi cùng một API từ ứng dụng của bạn. Hệ thống tạo âm thanh MP3 nhỏ gọn và hoạt động ngay sau khi khởi động."
+  },
+  {
+    "name": "Mai Loan",
+    "voice": "mai_loan",
+    "language": "Vietnamese",
+    "file": "kokorotts-mai_loan.mp3",
+    "text": "Xin chào từ Kokoro text to speech. Đây là bộ Docker chuyển văn bản thành giọng nói, dễ chạy cho cả chuyên gia và người không rành kỹ thuật. Hãy cài Docker, chạy một lệnh rồi mở trình duyệt để dùng giao diện tích hợp, hoặc gọi cùng một API từ ứng dụng của bạn. Hệ thống tạo âm thanh MP3 nhỏ gọn và hoạt động ngay sau khi khởi động."
+  },
+  {
+    "name": "Mạnh Dũng",
+    "voice": "manh_dung",
+    "language": "Vietnamese",
+    "file": "kokorotts-manh_dung.mp3",
+    "text": "Xin chào từ Kokoro text to speech. Đây là bộ Docker chuyển văn bản thành giọng nói, dễ chạy cho cả chuyên gia và người không rành kỹ thuật. Hãy cài Docker, chạy một lệnh rồi mở trình duyệt để dùng giao diện tích hợp, hoặc gọi cùng một API từ ứng dụng của bạn. Hệ thống tạo âm thanh MP3 nhỏ gọn và hoạt động ngay sau khi khởi động."
+  },
+  {
+    "name": "Mỹ Yến",
+    "voice": "my_yen",
+    "language": "Vietnamese",
+    "file": "kokorotts-my_yen.mp3",
+    "text": "Xin chào từ Kokoro text to speech. Đây là bộ Docker chuyển văn bản thành giọng nói, dễ chạy cho cả chuyên gia và người không rành kỹ thuật. Hãy cài Docker, chạy một lệnh rồi mở trình duyệt để dùng giao diện tích hợp, hoặc gọi cùng một API từ ứng dụng của bạn. Hệ thống tạo âm thanh MP3 nhỏ gọn và hoạt động ngay sau khi khởi động."
+  },
+  {
+    "name": "Ngọc Huyền",
+    "voice": "ngoc_huyen",
+    "language": "Vietnamese",
+    "file": "kokorotts-ngoc_huyen.mp3",
+    "text": "Xin chào từ Kokoro text to speech. Đây là bộ Docker chuyển văn bản thành giọng nói, dễ chạy cho cả chuyên gia và người không rành kỹ thuật. Hãy cài Docker, chạy một lệnh rồi mở trình duyệt để dùng giao diện tích hợp, hoặc gọi cùng một API từ ứng dụng của bạn. Hệ thống tạo âm thanh MP3 nhỏ gọn và hoạt động ngay sau khi khởi động."
+  },
+  {
+    "name": "Phát Tài",
+    "voice": "phat_tai",
+    "language": "Vietnamese",
+    "file": "kokorotts-phat_tai.mp3",
+    "text": "Xin chào từ Kokoro text to speech. Đây là bộ Docker chuyển văn bản thành giọng nói, dễ chạy cho cả chuyên gia và người không rành kỹ thuật. Hãy cài Docker, chạy một lệnh rồi mở trình duyệt để dùng giao diện tích hợp, hoặc gọi cùng một API từ ứng dụng của bạn. Hệ thống tạo âm thanh MP3 nhỏ gọn và hoạt động ngay sau khi khởi động."
+  },
+  {
+    "name": "Thành Đạt",
+    "voice": "thanh_dat",
+    "language": "Vietnamese",
+    "file": "kokorotts-thanh_dat.mp3",
+    "text": "Xin chào từ Kokoro text to speech. Đây là bộ Docker chuyển văn bản thành giọng nói, dễ chạy cho cả chuyên gia và người không rành kỹ thuật. Hãy cài Docker, chạy một lệnh rồi mở trình duyệt để dùng giao diện tích hợp, hoặc gọi cùng một API từ ứng dụng của bạn. Hệ thống tạo âm thanh MP3 nhỏ gọn và hoạt động ngay sau khi khởi động."
+  },
+  {
+    "name": "Thục Trinh",
+    "voice": "thuc_trinh",
+    "language": "Vietnamese",
+    "file": "kokorotts-thuc_trinh.mp3",
+    "text": "Xin chào từ Kokoro text to speech. Đây là bộ Docker chuyển văn bản thành giọng nói, dễ chạy cho cả chuyên gia và người không rành kỹ thuật. Hãy cài Docker, chạy một lệnh rồi mở trình duyệt để dùng giao diện tích hợp, hoặc gọi cùng một API từ ứng dụng của bạn. Hệ thống tạo âm thanh MP3 nhỏ gọn và hoạt động ngay sau khi khởi động."
+  },
+  {
+    "name": "Tuấn Ngọc",
+    "voice": "tuan_ngoc",
+    "language": "Vietnamese",
+    "file": "kokorotts-tuan_ngoc.mp3",
+    "text": "Xin chào từ Kokoro text to speech. Đây là bộ Docker chuyển văn bản thành giọng nói, dễ chạy cho cả chuyên gia và người không rành kỹ thuật. Hãy cài Docker, chạy một lệnh rồi mở trình duyệt để dùng giao diện tích hợp, hoặc gọi cùng một API từ ứng dụng của bạn. Hệ thống tạo âm thanh MP3 nhỏ gọn và hoạt động ngay sau khi khởi động."
+  },
+  {
+    "name": "Storyvert",
+    "voice": "storyvert",
+    "language": "Vietnamese",
+    "file": "kokorotts-storyvert.mp3",
+    "text": "Xin chào từ Kokoro text to speech. Đây là bộ Docker chuyển văn bản thành giọng nói, dễ chạy cho cả chuyên gia và người không rành kỹ thuật. Hãy cài Docker, chạy một lệnh rồi mở trình duyệt để dùng giao diện tích hợp, hoặc gọi cùng một API từ ứng dụng của bạn. Hệ thống tạo âm thanh MP3 nhỏ gọn và hoạt động ngay sau khi khởi động."
+  },
+  {
+    "name": "Đức An",
+    "voice": "duc_an",
+    "language": "Vietnamese",
+    "file": "kokorotts-duc_an.mp3",
+    "text": "Xin chào từ Kokoro text to speech. Đây là bộ Docker chuyển văn bản thành giọng nói, dễ chạy cho cả chuyên gia và người không rành kỹ thuật. Hãy cài Docker, chạy một lệnh rồi mở trình duyệt để dùng giao diện tích hợp, hoặc gọi cùng một API từ ứng dụng của bạn. Hệ thống tạo âm thanh MP3 nhỏ gọn và hoạt động ngay sau khi khởi động."
+  },
+  {
+    "name": "Đức Duy",
+    "voice": "duc_duy",
+    "language": "Vietnamese",
+    "file": "kokorotts-duc_duy.mp3",
+    "text": "Xin chào từ Kokoro text to speech. Đây là bộ Docker chuyển văn bản thành giọng nói, dễ chạy cho cả chuyên gia và người không rành kỹ thuật. Hãy cài Docker, chạy một lệnh rồi mở trình duyệt để dùng giao diện tích hợp, hoặc gọi cùng một API từ ứng dụng của bạn. Hệ thống tạo âm thanh MP3 nhỏ gọn và hoạt động ngay sau khi khởi động."
   }
 ];

@@ -28,10 +28,12 @@ server = [
     "loguru==0.7.3",
     "misaki[de,en,ja,zh] @ https://github.com/hexgrad/misaki/archive/bbaf917e7bf7fbbe830f74f4acda6583ce1c0caf.tar.gz",
     "numpy==2.2.6",
+    "sea-g2p==0.10.0",
     "setuptools==79.0.1",
     "torch==2.11.0",
     "transformers==4.57.6",
-    "uvicorn[standard]==0.51.0"
+    "uvicorn[standard]==0.51.0",
+    "vig2p==0.1.2"
 ]
 
 [project.scripts]

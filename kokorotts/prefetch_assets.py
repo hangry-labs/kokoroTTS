@@ -33,10 +33,22 @@ def main() -> None:
         print(f"Prefetching {REPO_ID}:{filename}")
         hf_hub_download(repo_id=REPO_ID, filename=filename)
 
+    custom_downloads = []
     for asset in CUSTOM_VOICE_ASSETS.values():
-        for filename in (asset["model_file"], asset["voice_file"]):
-            print(f"Prefetching {asset['repo_id']}:{filename}")
-            hf_hub_download(repo_id=asset["repo_id"], filename=filename)
+        custom_downloads.extend(
+            (
+                (asset["repo_id"], asset["model_file"]),
+                (asset["repo_id"], asset["voice_file"]),
+            )
+        )
+        if "config_file" in asset:
+            custom_downloads.append(
+                (asset.get("config_repo_id", asset["repo_id"]), asset["config_file"])
+            )
+
+    for repo_id, filename in dict.fromkeys(custom_downloads):
+        print(f"Prefetching {repo_id}:{filename}")
+        hf_hub_download(repo_id=repo_id, filename=filename)
 
 
 if __name__ == "__main__":

@@ -14,7 +14,7 @@ You get:
 - A responsive browser audio workspace for generation, streaming, playback, and downloads
 - An HTTP API for your own applications and tools
 - No manual Python, model, or audio dependency setup
-- 56 voices across 10 supported languages, including Martin and Victoria with dedicated German checkpoints
+- 70 voices across 11 supported languages, including dedicated German and Vietnamese checkpoints
 - WAV, MP3, FLAC, and OGG output
 - Offline-friendly usage: download an image once, keep it, and run it later without relying on live model downloads
 
@@ -42,7 +42,7 @@ Hangry Labs home: [nuggies.website](https://nuggies.website/).
 
 ## Listen and Have a Look
 
-Hear all 56 voices in their supported languages on the interactive examples page. Choose a language, compare speakers, and listen directly in the browser:
+Hear all 70 voices in their supported languages on the interactive examples page. Choose a language, compare speakers, and listen directly in the browser:
 
 **[Open the KokoroTTS examples page](https://hangry-labs.github.io/kokoroTTS/examples/)**
 
@@ -191,6 +191,8 @@ While Kokoro is an impressive model/library project, this Hangry Labs fork focus
 
 German synthesis uses the Apache-2.0 Kokoro-compatible [Kikiri German Martin](https://huggingface.co/kikiri-tts/kikiri-german-martin) and [Kikiri German Victoria](https://huggingface.co/kikiri-tts/kikiri-german-victoria) model/voice releases. Each voice uses its matching fine-tuned checkpoint.
 
+Vietnamese synthesis uses the Apache-2.0 [ContextBoxAI Kokoro Vietnamese](https://huggingface.co/contextboxai/Kokoro-Vietnamese) checkpoint and fourteen voice packs from [Kokoro-Vietnamese](https://github.com/iamdinhthuan/Kokoro-Vietnamese). All Vietnamese voices share one fine-tuned checkpoint and use `vig2p` for Vietnamese text normalization and phonemization.
+
 License and attribution are preserved in [`LICENSE`](LICENSE).
 
 ## Support & Issues
@@ -206,7 +208,7 @@ If you encounter bugs, have feature requests, or need help using Hangry Labs Kok
 
 All published images are available on [Docker Hub](https://hub.docker.com/r/hangrylabs/kokorotts/tags).
 
-- Full images contain the standard Kokoro model, both dedicated German checkpoints, all 56 voice packs, configuration, and Japanese UniDic data. They are ready for offline use after the image has been pulled.
+- Full images contain the standard Kokoro model, both dedicated German checkpoints, the dedicated Vietnamese checkpoint, all 70 voice packs, configuration, and required language data. They are ready for offline use after the image has been pulled.
 - Tiny images contain the complete runtime but download Hugging Face model and voice assets on first use. Mount the optional `/app/persistent` data volume to preserve downloads and settings across containers.
 - Versioned tags such as `v0.3` and `v0.3_tiny` are fixed releases suitable for repeatable deployments.
 - Moving tags `latest` and `latest_tiny` follow the current `v0.4` snapshot built from `main`.
@@ -239,7 +241,7 @@ task client-test
 
 `task imagerun` and `task localrun` mount the named `kokorotts_data` volume at `/app/persistent`. It stores downloaded Hugging Face assets under `models/huggingface` and operator settings under `app`, so both survive container and image replacement. Baked run tasks seed missing model files from the full image before startup, preserving offline behavior even if the volume was first created by a tiny run. Direct Docker runs may omit the volume and use the same paths inside the disposable container. Use `task nuke` when you need a true from-scratch data test.
 
-The deployment controls in the System tab operate on the three independently loaded model packs: the shared standard Kokoro checkpoint, German Martin, and German Victoria. All packs remain enabled by default for backward compatibility. The 54 standard voices move together because they share one model and therefore have the same VRAM cost. Model weights load only when one of their voices is first used; disabling a pack releases cached models after active generations finish. In the tiny image, a disabled German model is not downloaded unless its pack is later enabled and called.
+The deployment controls in the System tab operate on four independently loaded model packs: the shared standard Kokoro checkpoint, German Martin, German Victoria, and Kokoro Vietnamese. All packs remain enabled by default for backward compatibility. The 54 standard voices move together, and the 14 Vietnamese voices move together, because each group shares one model and therefore has the same VRAM cost. Model weights load only when one of their voices is first used; disabling a pack releases cached models after active generations finish. In the tiny image, a disabled custom model is not downloaded unless its pack is later enabled and called.
 
 Release from a clean tree:
 
@@ -344,6 +346,7 @@ The data volume is recommended but optional. Without it, the same files are stor
 - Added a repeatable HTTP voice-generation benchmark sourced directly from the examples in `examples/voices.js`. It warms one voice per language, measures every voice five times, and records overall, per-language, and per-voice latency, audio duration, realtime factor, and realtime speed in machine-readable and Markdown reports.
 - Added a separate isolated-container VRAM benchmark that records memory before runtime initialization, after voice preparation, after model loading, and during every voice. It reports exact Kokoro-process PyTorch peaks alongside sampled whole-device peaks without changing the public API.
 - Added German synthesis with dedicated Misaki normalization/G2P, Martin and Victoria voice packs, and their matching Kokoro-compatible checkpoints. The full image bakes only deployable inference assets; each model family remains lazy in CPU/GPU memory.
+- Added Vietnamese synthesis using the ContextBoxAI Kokoro Vietnamese checkpoint, its custom vocabulary, all fourteen upstream voice packs, and pinned `vig2p`/`sea-g2p` phonemization. The shared Vietnamese weights appear as one independently selectable model pack and the unused ONNX export is not baked into the image.
 - Added persisted deployment model-pack settings to the System tab and HTTP API. Operators can enable independently loaded checkpoints while voices that share the same weights remain together, making each choice meaningful for downloads and VRAM without changing the backward-compatible all-models default.
 - Added a unified optional `/app/persistent` Docker data location for downloaded model assets and operator settings. A named volume preserves both across image upgrades, while unmounted containers continue to work with local ephemeral storage.
 

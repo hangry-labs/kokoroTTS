@@ -16,7 +16,7 @@ Voice examples are available here:
 
 https://hangry-labs.github.io/kokoroTTS/examples/
 
-The examples page includes MP3 previews for all 56 voices across American English, British English, Japanese, Mandarin Chinese, Spanish, French, Hindi, Italian, Brazilian Portuguese, and German. Selecting a language filters the examples and switches the page text to that language.
+The examples page includes MP3 previews for all 70 voices across American English, British English, Japanese, Mandarin Chinese, Spanish, French, Hindi, Italian, Brazilian Portuguese, German, and Vietnamese. Selecting a language filters the examples and switches the page text to that language.
 
 ## Project Links
 
@@ -103,7 +103,7 @@ The container includes the web UI and the HTTP API on the same port.
 - MP3 output from the UI by default
 - Backward-compatible WAV API responses unless `output_format` or `format` is requested
 - WAV, MP3, FLAC, and OGG output support
-- Full 56-voice catalog exposed in the UI and API, including dedicated German Martin and Victoria models
+- Full 70-voice catalog exposed in the UI and API, including dedicated German and Vietnamese models
 - Persistent System controls for choosing independently loaded model packs and their served voices
 - GPU support when Docker/NVIDIA support is available
 - Offline-friendly usage with the standard full image once it is available locally
@@ -168,11 +168,11 @@ docker run -p 7860:7860 --gpus "device=1" -e CUDA_VISIBLE_DEVICES=1 hangrylabs/k
 docker run -p 7860:7860 --gpus all -v kokorotts_hf_cache:/app/.cache/huggingface hangrylabs/kokorotts:v0.3_tiny
 ```
 
-The standard `vX.Y` image is the recommended image for most users. It includes the standard Kokoro model, dedicated German models, voice packs, and required language assets for offline-friendly use after the image is pulled.
+The standard `vX.Y` image is the recommended image for most users. It includes the standard Kokoro model, dedicated German and Vietnamese models, voice packs, and required language assets for offline-friendly use after the image is pulled.
 
 Tiny images use the `vX.Y_tiny` tag pattern. They keep runtime and language dependencies, but skip baked Hugging Face model and voice files. Current images use the optional `/app/persistent` volume so downloaded assets and settings survive container replacement. The stable `v0.3_tiny` command above retains its original `/app/.cache/huggingface` layout.
 
-All three model packs are served by default. The System controls can disable the shared standard Kokoro checkpoint, German Martin, or German Victoria. The 54 standard voices remain together because they share one model and have the same VRAM cost. Models load into CPU/GPU memory on first use, and disabling a pack releases cached models after active generations finish. With the tiny image, a disabled German checkpoint is not downloaded unless its pack is later enabled and called.
+All four model packs are served by default. The System controls can disable the shared standard Kokoro checkpoint, German Martin, German Victoria, or Kokoro Vietnamese. The 54 standard voices remain together, and the 14 Vietnamese voices remain together, because each group shares one model and has the same VRAM cost. Models load into CPU/GPU memory on first use, and disabling a pack releases cached models after active generations finish. With the tiny image, a disabled custom checkpoint is not downloaded unless its pack is later enabled and called.
 
 ## Links
 
@@ -193,5 +193,10 @@ German synthesis uses the Apache-2.0 Kikiri German Martin and Victoria releases:
 
 - https://huggingface.co/kikiri-tts/kikiri-german-martin
 - https://huggingface.co/kikiri-tts/kikiri-german-victoria
+
+Vietnamese synthesis uses the Apache-2.0 ContextBoxAI Kokoro Vietnamese model and Kokoro-Vietnamese integration:
+
+- https://huggingface.co/contextboxai/Kokoro-Vietnamese
+- https://github.com/iamdinhthuan/Kokoro-Vietnamese
 
 License and attribution are preserved in the repository. Original Kokoro copyright remains with the upstream authors; Hangry Labs maintains the Docker packaging, web UI/API integration, examples page, documentation, release tooling, and other modifications in this fork.

@@ -63,7 +63,7 @@ class HttpClientServerSmokeTest(unittest.TestCase):
     def test_tts_status_returns_runtime_metadata(self) -> None:
         status = self.client.status()
         self.assertEqual(status["type"], "KokoroTTS")
-        self.assertGreaterEqual(status["voices"], 56)
+        self.assertGreaterEqual(status["voices"], 70)
 
     def test_tts_defaults_returns_default_request_values(self) -> None:
         defaults = self.client.defaults()
@@ -82,9 +82,10 @@ class HttpClientServerSmokeTest(unittest.TestCase):
 
     def test_tts_languages_lists_loaded_languages(self) -> None:
         languages = self.client.languages()
-        self.assertEqual(len(languages["languages"]), 10)
+        self.assertEqual(len(languages["languages"]), 11)
         self.assertIn("j", languages["loaded_languages"])
         self.assertIn("d", languages["loaded_languages"])
+        self.assertIn("v", languages["loaded_languages"])
 
     def test_tts_samples_returns_language_intro(self) -> None:
         sample = self.client.sample("j")
@@ -96,16 +97,22 @@ class HttpClientServerSmokeTest(unittest.TestCase):
         speakers = self.client.speakers("j")
         self.assertIn("jf_alpha", speakers["speakers"])
 
+    def test_tts_speakers_lists_vietnamese_voices(self) -> None:
+        speakers = self.client.speakers("v")
+        self.assertEqual(len(speakers["speakers"]), 14)
+        self.assertIn("diem_trinh", speakers["speakers"])
+
     def test_tts_voices_lists_all_voice_metadata(self) -> None:
         voices = self.client.voices()
-        self.assertGreaterEqual(len(voices["voices"]), 56)
+        self.assertGreaterEqual(len(voices["voices"]), 70)
         self.assertTrue(any(voice["id"] == "af_heart" for voice in voices["voices"]))
         self.assertTrue(any(voice["id"] == "dm_martin" for voice in voices["voices"]))
+        self.assertTrue(any(voice["id"] == "diem_trinh" for voice in voices["voices"]))
 
     def test_system_settings_get_lists_deployment_models(self) -> None:
         settings = self.client.deployment_settings()
-        self.assertGreaterEqual(len(settings["supported_voices"]), 56)
-        self.assertGreaterEqual(len(settings["supported_model_families"]), 3)
+        self.assertGreaterEqual(len(settings["supported_voices"]), 70)
+        self.assertGreaterEqual(len(settings["supported_model_families"]), 4)
 
     def test_system_settings_voices_put_preserves_served_voices(self) -> None:
         served = self.client.deployment_settings()["served_voices"]
@@ -182,6 +189,17 @@ class HttpClientServerSmokeTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp_dir:
             output_path = audio.save(Path(temp_dir) / "generate.mp3")
             self.assertGreater(output_path.stat().st_size, 10_000)
+
+    def test_tts_generate_vietnamese_mp3(self) -> None:
+        audio = self.client.generate(
+            "Xin chào từ Kokoro TTS. Đây là bài kiểm tra tiếng Việt.",
+            voice="diem_trinh",
+            output_format="mp3",
+        )
+
+        self.assertEqual(audio.media_type, "audio/mpeg")
+        self.assertGreater(len(audio.content), 10_000)
+        self.assertEqual(audio.headers["x-kokorotts-language"], "v")
 
     def test_tts_convert_wav_compatibility_alias(self) -> None:
         audio = self.client.convert(

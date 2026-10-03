@@ -19,6 +19,8 @@ LANGUAGE_ALIASES = {
     "zh": "z",
     "de": "d",
     "de-de": "d",
+    "vi": "v",
+    "vi-vn": "v",
 }
 
 # Values are the names expected by the corresponding G2P implementation.
@@ -33,6 +35,7 @@ PIPELINE_LANGUAGE_CODES = {
     "j": "Japanese",
     "z": "Mandarin Chinese",
     "d": "de",
+    "v": "vi",
 }
 
 # Public names presented by the UI and discovery API.
@@ -47,6 +50,7 @@ LANGUAGE_CHOICES = {
     "i": "Italian",
     "p": "Brazilian Portuguese",
     "d": "German",
+    "v": "Vietnamese",
 }
 
 VOICE_CHOICES = {
@@ -106,9 +110,42 @@ VOICE_CHOICES = {
     "🇧🇷 🚹 Santa": "pm_santa",
     "🇩🇪 🚺 Victoria": "df_victoria",
     "🇩🇪 🚹 Martin": "dm_martin",
+    "🇻🇳 Diễm Trinh": "diem_trinh",
+    "🇻🇳 Hưng Thịnh": "hung_thinh",
+    "🇻🇳 Mai Linh": "mai_linh",
+    "🇻🇳 Mai Loan": "mai_loan",
+    "🇻🇳 Mạnh Dũng": "manh_dung",
+    "🇻🇳 Mỹ Yến": "my_yen",
+    "🇻🇳 Ngọc Huyền": "ngoc_huyen",
+    "🇻🇳 Phát Tài": "phat_tai",
+    "🇻🇳 Thành Đạt": "thanh_dat",
+    "🇻🇳 Thục Trinh": "thuc_trinh",
+    "🇻🇳 Tuấn Ngọc": "tuan_ngoc",
+    "🇻🇳 Storyvert": "storyvert",
+    "🇻🇳 Đức An": "duc_an",
+    "🇻🇳 Đức Duy": "duc_duy",
 }
 
 STANDARD_MODEL_FAMILY = "kokoro-v1.0"
+VIETNAMESE_MODEL_FAMILY = "contextboxai-kokoro-vietnamese"
+VIETNAMESE_REPO_ID = "contextboxai/Kokoro-Vietnamese"
+
+VIETNAMESE_VOICE_FILES = {
+    "diem_trinh": "voicepacks/diem_trinh.pt",
+    "hung_thinh": "voicepacks/hung_thinh.pt",
+    "mai_linh": "voicepacks/mai_linh.pt",
+    "mai_loan": "voicepacks/mai_loan.pt",
+    "manh_dung": "voicepacks/manh_dung.pt",
+    "my_yen": "voicepacks/my_yen.pt",
+    "ngoc_huyen": "voicepacks/ngoc_huyen.pt",
+    "phat_tai": "voicepacks/phat_tai.pt",
+    "thanh_dat": "voicepacks/thanh_dat.pt",
+    "thuc_trinh": "voicepacks/thuc_trinh.pt",
+    "tuan_ngoc": "voicepacks/tuan_ngoc.pt",
+    "storyvert": "voicepacks/storyvert.pt",
+    "duc_an": "voicepacks/duc_an.pt",
+    "duc_duy": "voicepacks/duc_duy.pt",
+}
 
 # German voice packs are tied to their fine-tuned checkpoint and cannot use the
 # standard Kokoro weights. Only deployable inference files are listed here.
@@ -125,6 +162,17 @@ CUSTOM_VOICE_ASSETS = {
         "voice_file": "voices/martin.pt",
         "model_file": "kikiri_german_martin_ep10.pth",
     },
+    **{
+        voice_id: {
+            "model_family": VIETNAMESE_MODEL_FAMILY,
+            "repo_id": VIETNAMESE_REPO_ID,
+            "voice_file": voice_file,
+            "model_file": "kokoro_vi.pth",
+            "config_file": "config.json",
+            "language": "v",
+        }
+        for voice_id, voice_file in VIETNAMESE_VOICE_FILES.items()
+    },
 }
 
 MODEL_FAMILY_CHOICES = {
@@ -140,6 +188,10 @@ MODEL_FAMILY_CHOICES = {
         "name": "Kikiri German Victoria",
         "repo_id": "kikiri-tts/kikiri-german-victoria",
     },
+    VIETNAMESE_MODEL_FAMILY: {
+        "name": "Kokoro Vietnamese",
+        "repo_id": VIETNAMESE_REPO_ID,
+    },
 }
 
 
@@ -148,6 +200,9 @@ def voice_ids() -> list[str]:
 
 
 def voice_language(voice_id: str) -> str:
+    asset = CUSTOM_VOICE_ASSETS.get(voice_id)
+    if asset and "language" in asset:
+        return asset["language"]
     if voice_id and voice_id[0] in LANGUAGE_CHOICES:
         return voice_id[0]
     return "a"

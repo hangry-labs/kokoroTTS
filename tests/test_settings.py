@@ -96,6 +96,7 @@ class RuntimeSettingsStoreTest(unittest.TestCase):
                 STANDARD_MODEL_FAMILY,
                 "kikiri-german-martin",
                 "kikiri-german-victoria",
+                "contextboxai-kokoro-vietnamese",
             ],
         )
 

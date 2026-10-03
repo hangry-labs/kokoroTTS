@@ -118,6 +118,17 @@ class KPipeline:
             except ImportError:
                 logger.error("You need to `pip install misaki[de]` to use lang_code='d'")
                 raise
+        elif lang_code == 'v':
+            try:
+                from vig2p import phonemize_text
+            except ImportError:
+                logger.error("You need to `pip install vig2p` to use lang_code='v'")
+                raise
+
+            def vietnamese_g2p(text: str):
+                return phonemize_text(text), None
+
+            self.g2p = vietnamese_g2p
         else:
             language = LANG_CODES[lang_code]
             self.g2p = espeak.EspeakG2P(language=language)
