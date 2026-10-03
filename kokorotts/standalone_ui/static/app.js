@@ -109,7 +109,7 @@ function persistGpuSession() {
 
 function restoreSessionState() {
   const ui = readSessionJson(UI_SESSION_KEY)
-  if (['generate', 'stream', 'api', 'settings', 'system'].includes(ui?.activeTab)) state.activeTab = ui.activeTab
+  if (['generate', 'stream', 'api', 'system'].includes(ui?.activeTab)) state.activeTab = ui.activeTab
   if (typeof ui?.headerCollapsed === 'boolean') state.headerCollapsed = ui.headerCollapsed
   if ([60 * 1000, 10 * 60 * 1000].includes(ui?.gpuWindowMs)) state.gpuWindowMs = ui.gpuWindowMs
 
@@ -178,8 +178,8 @@ function activateTab(name) {
   $('.settings-panel').hidden = !synthesisView
   $('.workspace').dataset.view = name
   if (name === 'api') refreshApiStatus()
-  if (name === 'settings') loadDeploymentSettings()
   if (name === 'system') {
+    loadDeploymentSettings()
     refreshSystem()
     startGpuMonitor()
   } else {
@@ -291,48 +291,49 @@ function refreshVoiceOptions(preferredVoice) {
   )
 }
 
-function updateVoiceSettingsSummary() {
-  const checkboxes = $$('#voice-settings-groups input[type="checkbox"]')
+function updateModelSettingsSummary() {
+  const checkboxes = $$('#model-settings-groups input[type="checkbox"]')
   const selected = checkboxes.filter((checkbox) => checkbox.checked).length
-  $('#voice-settings-summary').textContent = `${selected} of ${checkboxes.length} voices selected`
+  $('#model-settings-summary').textContent = `${selected} of ${checkboxes.length} model packs selected`
 }
 
 function renderDeploymentSettings(payload) {
   state.deploymentSettings = payload
-  const selected = new Set(payload.served_voices || [])
-  const groups = new Map()
-  ;(payload.supported_voices || []).forEach((voice) => {
-    if (!groups.has(voice.language)) groups.set(voice.language, [])
-    groups.get(voice.language).push(voice)
-  })
-  const container = $('#voice-settings-groups')
+  const selected = new Set(payload.served_model_families || [])
+  const container = $('#model-settings-groups')
   container.replaceChildren()
-  groups.forEach((voices, language) => {
+  ;(payload.supported_model_families || []).forEach((modelPack) => {
     const section = document.createElement('section')
-    section.className = 'voice-settings-group'
-    const heading = document.createElement('h3')
-    heading.textContent = voices[0]?.language_name || language
-    const list = document.createElement('div')
-    list.className = 'voice-settings-list'
-    voices.forEach((voice) => {
-      const label = document.createElement('label')
-      label.className = 'voice-setting'
-      const checkbox = document.createElement('input')
-      checkbox.type = 'checkbox'
-      checkbox.value = voice.id
-      checkbox.checked = selected.has(voice.id)
-      checkbox.addEventListener('change', updateVoiceSettingsSummary)
-      const name = document.createElement('span')
-      name.textContent = voiceDisplayName(voice).replace(` (${voice.id})`, '')
-      const id = document.createElement('code')
-      id.textContent = voice.id
-      label.append(checkbox, name, id)
-      list.append(label)
-    })
-    section.append(heading, list)
+    section.className = 'model-setting'
+    const label = document.createElement('label')
+    label.className = 'model-setting-choice'
+    const checkbox = document.createElement('input')
+    checkbox.type = 'checkbox'
+    checkbox.value = modelPack.id
+    checkbox.checked = selected.has(modelPack.id)
+    checkbox.addEventListener('change', updateModelSettingsSummary)
+    const copy = document.createElement('span')
+    copy.className = 'model-setting-copy'
+    const name = document.createElement('strong')
+    name.textContent = modelPack.name
+    const languages = (modelPack.languages || []).map((language) => language.name).join(', ')
+    const metadata = document.createElement('span')
+    metadata.textContent = `${modelPack.voice_count} ${modelPack.voice_count === 1 ? 'voice' : 'voices'} - ${languages}`
+    const id = document.createElement('code')
+    id.textContent = modelPack.id
+    copy.append(name, metadata, id)
+    label.append(checkbox, copy)
+    const details = document.createElement('details')
+    details.className = 'model-voices'
+    const summary = document.createElement('summary')
+    summary.textContent = 'Included voices'
+    const voices = document.createElement('div')
+    voices.textContent = (modelPack.voices || []).join(', ')
+    details.append(summary, voices)
+    section.append(label, details)
     container.append(section)
   })
-  updateVoiceSettingsSummary()
+  updateModelSettingsSummary()
 }
 
 async function loadDeploymentSettings() {
@@ -343,23 +344,23 @@ async function loadDeploymentSettings() {
   }
 }
 
-function setAllVoiceSettings(checked) {
-  $$('#voice-settings-groups input[type="checkbox"]').forEach((checkbox) => { checkbox.checked = checked })
-  updateVoiceSettingsSummary()
+function setAllModelSettings(checked) {
+  $$('#model-settings-groups input[type="checkbox"]').forEach((checkbox) => { checkbox.checked = checked })
+  updateModelSettingsSummary()
 }
 
-$('#voices-select-all').addEventListener('click', () => setAllVoiceSettings(true))
-$('#voices-select-none').addEventListener('click', () => setAllVoiceSettings(false))
+$('#models-select-all').addEventListener('click', () => setAllModelSettings(true))
+$('#models-select-none').addEventListener('click', () => setAllModelSettings(false))
 
-$('#save-voice-settings').addEventListener('click', async () => {
-  const button = $('#save-voice-settings')
-  const voices = $$('#voice-settings-groups input[type="checkbox"]:checked').map((checkbox) => checkbox.value)
+$('#save-model-settings').addEventListener('click', async () => {
+  const button = $('#save-model-settings')
+  const modelFamilies = $$('#model-settings-groups input[type="checkbox"]:checked').map((checkbox) => checkbox.value)
   button.disabled = true
   try {
-    const settings = await fetchJson('/system/settings/voices', {
+    const settings = await fetchJson('/system/settings/model-families', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ voices }),
+      body: JSON.stringify({ model_families: modelFamilies }),
     })
     renderDeploymentSettings(settings)
     const [defaults, languages, inventory] = await Promise.all([
@@ -377,8 +378,8 @@ $('#save-voice-settings').addEventListener('click', async () => {
       languages.languages[previousLanguage] ? previousLanguage : state.voices[0]?.language,
     )
     refreshVoiceOptions(state.voices.some((voice) => voice.id === previousVoice) ? previousVoice : defaults.voice)
-    setStatus('Deployment voice settings saved', 'success')
-    showToast('Voice settings saved', 'success')
+    setStatus('Deployment model packs saved', 'success')
+    showToast('Model packs saved', 'success')
   } catch (error) {
     showToast(errorMessage(error))
   } finally {

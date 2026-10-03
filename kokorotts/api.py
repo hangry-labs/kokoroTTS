@@ -30,6 +30,7 @@ from .audio import (
 )
 from .catalog import (
     LANGUAGE_CHOICES,
+    model_family_inventory,
     voice_ids,
     voice_inventory,
     voice_language,
@@ -40,6 +41,7 @@ from .sample_texts import get_initial_text, get_intro_text, get_random_quote
 from .schemas import (
     MetricsRequest,
     PurgeRequest,
+    ServedModelFamiliesRequest,
     ServedVoicesRequest,
     StreamingTTSRequest,
     TTSRequest,
@@ -391,27 +393,37 @@ def voices() -> dict:
 
 @api.get("/system/settings")
 def system_settings() -> dict:
+    return deployment_settings_payload()
+
+
+def deployment_settings_payload() -> dict:
     served = RUNTIME.served_voices
     return {
         "served_voices": served,
         "supported_voices": voice_inventory(voice_ids()),
+        "served_model_families": RUNTIME.served_model_families,
+        "supported_model_families": model_family_inventory(),
         "settings_path": str(RUNTIME.settings.path),
         "model_loading": "lazy",
     }
+
+
+@api.put("/system/settings/model-families")
+def update_served_model_families(payload: ServedModelFamiliesRequest) -> dict:
+    try:
+        RUNTIME.set_served_model_families(payload.model_families)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return deployment_settings_payload()
 
 
 @api.put("/system/settings/voices")
 def update_served_voices(payload: ServedVoicesRequest) -> dict:
     try:
-        served = RUNTIME.set_served_voices(payload.voices)
+        RUNTIME.set_served_voices(payload.voices)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
-    return {
-        "served_voices": served,
-        "supported_voices": voice_inventory(voice_ids()),
-        "settings_path": str(RUNTIME.settings.path),
-        "model_loading": "lazy",
-    }
+    return deployment_settings_payload()
 
 
 @api.post("/tts/metrics")

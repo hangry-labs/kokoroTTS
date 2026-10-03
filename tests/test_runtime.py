@@ -140,11 +140,30 @@ class InferenceRuntimeTest(unittest.TestCase):
 
             selected = runtime.set_served_voices(["af_heart"])
 
-            self.assertEqual(selected, ["af_heart"])
+            self.assertIn("af_heart", selected)
+            self.assertIn("bf_emma", selected)
             self.assertTrue(runtime.serves_voice("af_heart"))
+            self.assertTrue(runtime.serves_voice("bf_emma"))
             self.assertFalse(runtime.serves_voice("dm_martin"))
             self.assertFalse(runtime.serves_voice("df_victoria"))
             self.assertEqual(settings.served_voices(), selected)
+
+    def test_model_family_setting_keeps_shared_voices_together(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            runtime = InferenceRuntime(
+                model_factory=lambda _family, device: FakeModel(device),
+                pipeline_factory=lambda _language: FakePipeline(),
+                settings=RuntimeSettingsStore(Path(directory) / "settings.json"),
+                eager_voices=False,
+            )
+
+            selected = runtime.set_served_model_families(
+                ["kikiri-german-martin"]
+            )
+
+            self.assertEqual(selected, ["kikiri-german-martin"])
+            self.assertEqual(runtime.served_voices, ["dm_martin"])
+            self.assertEqual(runtime.served_model_families, selected)
 
     def test_reducing_served_voices_releases_cached_models(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

@@ -69,3 +69,10 @@ class ServedVoicesRequest(BaseModel):
     voices: list[str] = Field(
         ..., description="Complete list of voice ids this deployment should serve."
     )
+
+
+class ServedModelFamiliesRequest(BaseModel):
+    model_families: list[str] = Field(
+        ...,
+        description="Complete list of independently loaded model families this deployment should serve.",
+    )

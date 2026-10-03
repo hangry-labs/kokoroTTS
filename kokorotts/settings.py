@@ -10,12 +10,18 @@ from pathlib import Path
 from threading import RLock
 from typing import Any
 
-from .catalog import voice_ids
+from .catalog import (
+    model_families_for_voices,
+    model_family_ids,
+    voice_ids,
+    voices_for_model_families,
+)
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_SETTINGS_PATH = "/app/.cache/huggingface/.kokorotts/settings.json"
+DEFAULT_SETTINGS_PATH = "/app/persistent/app/settings.json"
 SERVED_VOICES_KEY = "served_voices"
+SERVED_MODEL_FAMILIES_KEY = "served_model_families"
 
 
 class RuntimeSettingsStore:
@@ -43,31 +49,51 @@ class RuntimeSettingsStore:
         with self._lock:
             return dict(self._read_unlocked())
 
-    def served_voices(self) -> list[str]:
-        supported = voice_ids()
-        configured = self.snapshot().get(SERVED_VOICES_KEY)
+    def served_model_families(self) -> list[str]:
+        snapshot = self.snapshot()
+        configured = snapshot.get(SERVED_MODEL_FAMILIES_KEY)
+        if configured is None and isinstance(snapshot.get(SERVED_VOICES_KEY), list):
+            configured = model_families_for_voices(snapshot[SERVED_VOICES_KEY])
         if configured is None:
+            family_env = os.getenv("KOKOROTTS_SERVED_MODEL_FAMILIES", "").strip()
             env_value = os.getenv("KOKOROTTS_SERVED_VOICES", "").strip()
-            configured = (
-                [item.strip() for item in env_value.split(",") if item.strip()]
-                if env_value
-                else None
-            )
-            if configured is not None:
-                unknown = sorted(set(configured) - set(supported))
+            if family_env:
+                configured = [item.strip() for item in family_env.split(",") if item.strip()]
+            elif env_value:
+                env_voices = [item.strip() for item in env_value.split(",") if item.strip()]
+                unknown = sorted(set(env_voices) - set(voice_ids()))
                 if unknown:
                     raise ValueError(
                         "KOKOROTTS_SERVED_VOICES contains unsupported voices: "
                         + ", ".join(unknown)
                     )
+                configured = model_families_for_voices(env_voices)
         if not isinstance(configured, list):
-            return supported
-        selected = [voice for voice in supported if voice in configured]
-        return selected or supported
+            return model_family_ids()
+        return self.validate_served_model_families(configured)
+
+    def served_voices(self) -> list[str]:
+        return voices_for_model_families(self.served_model_families())
+
+    def set_served_model_families(self, families: list[str]) -> list[str]:
+        selected = self.validate_served_model_families(families)
+        self._update(SERVED_MODEL_FAMILIES_KEY, selected, remove=(SERVED_VOICES_KEY,))
+        return selected
 
     def set_served_voices(self, voices: list[str]) -> list[str]:
         selected = self.validate_served_voices(voices)
-        self._update(SERVED_VOICES_KEY, selected)
+        self.set_served_model_families(model_families_for_voices(selected))
+        return selected
+
+    @staticmethod
+    def validate_served_model_families(families: list[str]) -> list[str]:
+        supported = model_family_ids()
+        unknown = sorted(set(families) - set(supported))
+        if unknown:
+            raise ValueError(f"Unsupported model families: {', '.join(unknown)}")
+        selected = [family for family in supported if family in families]
+        if not selected:
+            raise ValueError("At least one model family must be served.")
         return selected
 
     @staticmethod
@@ -76,14 +102,16 @@ class RuntimeSettingsStore:
         unknown = sorted(set(voices) - set(supported))
         if unknown:
             raise ValueError(f"Unsupported voices: {', '.join(unknown)}")
-        selected = [voice for voice in supported if voice in voices]
-        if not selected:
+        requested = [voice for voice in supported if voice in voices]
+        if not requested:
             raise ValueError("At least one voice must be served.")
-        return selected
+        return voices_for_model_families(model_families_for_voices(requested))
 
-    def _update(self, key: str, value: Any) -> None:
+    def _update(self, key: str, value: Any, *, remove: tuple[str, ...] = ()) -> None:
         with self._lock:
             payload = self._read_unlocked()
+            for obsolete_key in remove:
+                payload.pop(obsolete_key, None)
             payload[key] = value
             self.path.parent.mkdir(parents=True, exist_ok=True)
             descriptor, temporary_name = tempfile.mkstemp(

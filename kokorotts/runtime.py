@@ -21,8 +21,10 @@ from .catalog import (
     DEFAULT_MODEL_REPO_ID,
     LANGUAGE_CHOICES,
     STANDARD_MODEL_FAMILY,
+    model_families_for_voices,
     voice_language,
     voice_model_family,
+    voices_for_model_families,
 )
 from .model import KModel
 from .pipeline import KPipeline
@@ -143,6 +145,18 @@ class InferenceRuntime:
 
     def set_served_voices(self, voices: list[str]) -> list[str]:
         selected = self.settings.validate_served_voices(voices)
+        return self._apply_served_voices(selected)
+
+    @property
+    def served_model_families(self) -> list[str]:
+        return model_families_for_voices(self.served_voices)
+
+    def set_served_model_families(self, families: list[str]) -> list[str]:
+        selected_families = self.settings.validate_served_model_families(families)
+        self._apply_served_voices(voices_for_model_families(selected_families))
+        return selected_families
+
+    def _apply_served_voices(self, selected: list[str]) -> list[str]:
         previous = self.served_voices
         for voice_id in selected:
             self._load_voice(voice_id)

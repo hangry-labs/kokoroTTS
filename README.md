@@ -80,17 +80,27 @@ docker run -p 7860:7860 --gpus "device=1" -e CUDA_VISIBLE_DEVICES=1 hangrylabs/k
 
 ### Current Snapshot
 
-Use `latest` to try the current `v0.4` snapshot from the main development line. This moving tag can change between releases:
+Use `latest` to try the current `v0.4` snapshot from the main development line. This moving tag can change between releases. Choose one command below.
+
+Run the full image with NVIDIA GPU support and persistent models and settings:
 
 ```bash
-docker run -p 7860:7860 --gpus all -v kokorotts_hf_cache:/app/.cache/huggingface hangrylabs/kokorotts:latest
+docker run -p 7860:7860 --gpus all -v kokorotts_data:/app/persistent hangrylabs/kokorotts:latest
 ```
 
-Run the current snapshot on CPU:
+Run the full image on CPU with persistent models and settings:
 
 ```bash
-docker run -p 7860:7860 -v kokorotts_hf_cache:/app/.cache/huggingface hangrylabs/kokorotts:latest
+docker run -p 7860:7860 -v kokorotts_data:/app/persistent hangrylabs/kokorotts:latest
 ```
+
+Run the smaller tiny image with NVIDIA GPU support. It downloads model assets when first needed:
+
+```bash
+docker run -p 7860:7860 --gpus all -v kokorotts_data:/app/persistent hangrylabs/kokorotts:latest_tiny
+```
+
+The volume is optional. Remove `-v kokorotts_data:/app/persistent` to keep models and settings only inside that container; KokoroTTS still starts and works normally, but those files are lost when the container is removed.
 
 Then open: **[http://localhost:7860](http://localhost:7860)**
 
@@ -138,7 +148,8 @@ Useful API endpoints:
 - `GET /tts/speakers?language=a`
 - `GET /tts/voices`
 - `GET /system/settings`
-- `PUT /system/settings/voices`
+- `PUT /system/settings/model-families`
+- `PUT /system/settings/voices` (compatibility endpoint; selected voices expand to complete model families)
 - `POST /tts/metrics`
 - `POST /tts/tokenize`
 - `POST /tts/stream`
@@ -196,7 +207,7 @@ If you encounter bugs, have feature requests, or need help using Hangry Labs Kok
 All published images are available on [Docker Hub](https://hub.docker.com/r/hangrylabs/kokorotts/tags).
 
 - Full images contain the standard Kokoro model, both dedicated German checkpoints, all 56 voice packs, configuration, and Japanese UniDic data. They are ready for offline use after the image has been pulled.
-- Tiny images contain the complete runtime but download Hugging Face model and voice assets on first use. Mount `/app/.cache/huggingface` as a named volume to preserve those downloads across containers.
+- Tiny images contain the complete runtime but download Hugging Face model and voice assets on first use. Mount the optional `/app/persistent` data volume to preserve downloads and settings across containers.
 - Versioned tags such as `v0.3` and `v0.3_tiny` are fixed releases suitable for repeatable deployments.
 - Moving tags `latest` and `latest_tiny` follow the current `v0.4` snapshot built from `main`.
 
@@ -215,7 +226,7 @@ task imageweb
 task imageapi
 ```
 
-The default image is the full baked image and keeps model, voice, and required language assets inside the container for offline use. The tiny image keeps required runtime/language dependencies but skips baked Hugging Face model/voice assets and uses the persistent `/app/.cache/huggingface` Docker volume instead; run it online once to warm the cache, then reuse the same volume across rebuilt containers.
+The default image is the full baked image and keeps model, voice, and required language assets inside the container for offline use. The tiny image keeps required runtime/language dependencies but skips baked Hugging Face model/voice assets; run it online once to download the voices you use. Both images work without a mounted volume.
 
 Hot-swap local app code into the container without rebuilding:
 
@@ -226,9 +237,9 @@ task logs
 task client-test
 ```
 
-`task imagerun` and `task localrun` mount a named Docker volume at `/app/.cache/huggingface` so lazy-downloaded Hugging Face assets and deployment voice settings survive container and image rebuilds. Baked run tasks seed missing cache files from the full image before startup, so the normal image stays offline-friendly even if the cache volume was first created by a tiny run. Use `task nuke` when you need a true from-scratch cache test.
+`task imagerun` and `task localrun` mount the named `kokorotts_data` volume at `/app/persistent`. It stores downloaded Hugging Face assets under `models/huggingface` and operator settings under `app`, so both survive container and image replacement. Baked run tasks seed missing model files from the full image before startup, preserving offline behavior even if the volume was first created by a tiny run. Direct Docker runs may omit the volume and use the same paths inside the disposable container. Use `task nuke` when you need a true from-scratch data test.
 
-The Settings tab controls which voices the deployment advertises and accepts. All voices remain enabled by default for backward compatibility. Voice packs are prepared when enabled, while the standard and German model weights load into memory only when one of their voices is first used. Reducing the selection releases disabled voice packs and cached models after active generations finish. In the tiny image, disabled German models are not downloaded unless they are later enabled and called.
+The deployment controls in the System tab operate on the three independently loaded model packs: the shared standard Kokoro checkpoint, German Martin, and German Victoria. All packs remain enabled by default for backward compatibility. The 54 standard voices move together because they share one model and therefore have the same VRAM cost. Model weights load only when one of their voices is first used; disabling a pack releases cached models after active generations finish. In the tiny image, a disabled German model is not downloaded unless its pack is later enabled and called.
 
 Release from a clean tree:
 
@@ -283,14 +294,33 @@ The report separates process-specific allocated/reserved VRAM from whole-device 
 
 #### Docker
 
-The current development snapshot is published through the moving `latest` and `latest_tiny` tags:
+The current development snapshot is published through the moving `latest` and `latest_tiny` tags. Each block below is one complete alternative.
+
+Full image with NVIDIA GPU support:
 
 ```bash
-docker run -p 7860:7860 --gpus all -v kokorotts_hf_cache:/app/.cache/huggingface hangrylabs/kokorotts:latest
-docker run -p 7860:7860 -v kokorotts_hf_cache:/app/.cache/huggingface hangrylabs/kokorotts:latest
-docker run -p 7860:7860 --gpus "device=1" -e CUDA_VISIBLE_DEVICES=1 -v kokorotts_hf_cache:/app/.cache/huggingface hangrylabs/kokorotts:latest
-docker run -p 7860:7860 --gpus all -v kokorotts_hf_cache:/app/.cache/huggingface hangrylabs/kokorotts:latest_tiny
+docker run -p 7860:7860 --gpus all -v kokorotts_data:/app/persistent hangrylabs/kokorotts:latest
 ```
+
+Full image on CPU:
+
+```bash
+docker run -p 7860:7860 -v kokorotts_data:/app/persistent hangrylabs/kokorotts:latest
+```
+
+Full image on GPU index `1`:
+
+```bash
+docker run -p 7860:7860 --gpus "device=1" -e CUDA_VISIBLE_DEVICES=1 -v kokorotts_data:/app/persistent hangrylabs/kokorotts:latest
+```
+
+Tiny image with NVIDIA GPU support:
+
+```bash
+docker run -p 7860:7860 --gpus all -v kokorotts_data:/app/persistent hangrylabs/kokorotts:latest_tiny
+```
+
+The data volume is recommended but optional. Without it, the same files are stored in the container and disappear when that container is removed.
 
 #### Included Changes
 
@@ -314,7 +344,8 @@ docker run -p 7860:7860 --gpus all -v kokorotts_hf_cache:/app/.cache/huggingface
 - Added a repeatable HTTP voice-generation benchmark sourced directly from the examples in `examples/voices.js`. It warms one voice per language, measures every voice five times, and records overall, per-language, and per-voice latency, audio duration, realtime factor, and realtime speed in machine-readable and Markdown reports.
 - Added a separate isolated-container VRAM benchmark that records memory before runtime initialization, after voice preparation, after model loading, and during every voice. It reports exact Kokoro-process PyTorch peaks alongside sampled whole-device peaks without changing the public API.
 - Added German synthesis with dedicated Misaki normalization/G2P, Martin and Victoria voice packs, and their matching Kokoro-compatible checkpoints. The full image bakes only deployable inference assets; each model family remains lazy in CPU/GPU memory.
-- Added persisted deployment voice settings to the browser UI and HTTP API. Operators can choose which voices are advertised and accepted without changing the backward-compatible all-voices default.
+- Added persisted deployment model-pack settings to the System tab and HTTP API. Operators can enable independently loaded checkpoints while voices that share the same weights remain together, making each choice meaningful for downloads and VRAM without changing the backward-compatible all-models default.
+- Added a unified optional `/app/persistent` Docker data location for downloaded model assets and operator settings. A named volume preserves both across image upgrades, while unmounted containers continue to work with local ephemeral storage.
 
 #### Planned Work
 
@@ -327,12 +358,29 @@ docker run -p 7860:7860 --gpus all -v kokorotts_hf_cache:/app/.cache/huggingface
 
 #### Docker
 
-Use the full image for baked, offline-friendly model assets, or the tiny image with a persistent cache volume:
+Choose one v0.3 command below. Use the full image for baked, offline-friendly model assets, or the tiny image with its legacy persistent cache mount.
+
+Full image with NVIDIA GPU support:
 
 ```bash
 docker run -p 7860:7860 --gpus all hangrylabs/kokorotts:v0.3
+```
+
+Full image on CPU:
+
+```bash
 docker run -p 7860:7860 hangrylabs/kokorotts:v0.3
+```
+
+Full image on GPU index `1`:
+
+```bash
 docker run -p 7860:7860 --gpus "device=1" -e CUDA_VISIBLE_DEVICES=1 hangrylabs/kokorotts:v0.3
+```
+
+Tiny image with NVIDIA GPU support:
+
+```bash
 docker run -p 7860:7860 --gpus all -v kokorotts_hf_cache:/app/.cache/huggingface hangrylabs/kokorotts:v0.3_tiny
 ```
 

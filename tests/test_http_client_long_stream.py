@@ -102,12 +102,21 @@ class HttpClientServerSmokeTest(unittest.TestCase):
         self.assertTrue(any(voice["id"] == "af_heart" for voice in voices["voices"]))
         self.assertTrue(any(voice["id"] == "dm_martin" for voice in voices["voices"]))
 
-    def test_system_settings_lists_and_preserves_served_voices(self) -> None:
+    def test_system_settings_get_lists_deployment_models(self) -> None:
         settings = self.client.deployment_settings()
-        served = settings["served_voices"]
-
         self.assertGreaterEqual(len(settings["supported_voices"]), 56)
+        self.assertGreaterEqual(len(settings["supported_model_families"]), 3)
+
+    def test_system_settings_voices_put_preserves_served_voices(self) -> None:
+        served = self.client.deployment_settings()["served_voices"]
         self.assertEqual(self.client.set_served_voices(served)["served_voices"], served)
+
+    def test_system_settings_model_families_put_preserves_served_models(self) -> None:
+        families = self.client.deployment_settings()["served_model_families"]
+        self.assertEqual(
+            self.client.set_served_model_families(families)["served_model_families"],
+            families,
+        )
 
     def test_tts_metrics_basic_text_metrics(self) -> None:
         metrics = self.client.metrics("Hello from the Python client.", voice="af_heart")

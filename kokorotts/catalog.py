@@ -127,6 +127,21 @@ CUSTOM_VOICE_ASSETS = {
     },
 }
 
+MODEL_FAMILY_CHOICES = {
+    STANDARD_MODEL_FAMILY: {
+        "name": "Kokoro v1.0 standard voices",
+        "repo_id": DEFAULT_MODEL_REPO_ID,
+    },
+    "kikiri-german-martin": {
+        "name": "Kikiri German Martin",
+        "repo_id": "kikiri-tts/kikiri-german-martin",
+    },
+    "kikiri-german-victoria": {
+        "name": "Kikiri German Victoria",
+        "repo_id": "kikiri-tts/kikiri-german-victoria",
+    },
+}
+
 
 def voice_ids() -> list[str]:
     return list(VOICE_CHOICES.values())
@@ -158,6 +173,41 @@ def voice_label(voice_id: str) -> str:
 def voice_model_family(voice_id: str) -> str:
     asset = CUSTOM_VOICE_ASSETS.get(voice_id)
     return asset["model_family"] if asset else STANDARD_MODEL_FAMILY
+
+
+def model_family_ids() -> list[str]:
+    return list(MODEL_FAMILY_CHOICES)
+
+
+def model_families_for_voices(voices: list[str]) -> list[str]:
+    selected = {voice_model_family(voice_id) for voice_id in voices}
+    return [family for family in model_family_ids() if family in selected]
+
+
+def voices_for_model_families(families: list[str]) -> list[str]:
+    selected = set(families)
+    return [voice_id for voice_id in voice_ids() if voice_model_family(voice_id) in selected]
+
+
+def model_family_inventory() -> list[dict[str, object]]:
+    inventory = []
+    for family, metadata in MODEL_FAMILY_CHOICES.items():
+        voices = voices_for_model_families([family])
+        language_codes = list(dict.fromkeys(voice_language(voice) for voice in voices))
+        inventory.append(
+            {
+                "id": family,
+                "name": metadata["name"],
+                "repo_id": metadata["repo_id"],
+                "voice_count": len(voices),
+                "voices": voices,
+                "languages": [
+                    {"code": code, "name": LANGUAGE_CHOICES[code]}
+                    for code in language_codes
+                ],
+            }
+        )
+    return inventory
 
 
 def voice_inventory(available_voices: list[str] | None = None) -> list[dict[str, str]]:

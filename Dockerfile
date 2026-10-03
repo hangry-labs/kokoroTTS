@@ -4,7 +4,8 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \
     PIP_ROOT_USER_ACTION=ignore \
-    HF_HOME=/app/.cache/huggingface
+    HF_HOME=/app/persistent/models/huggingface \
+    KOKOROTTS_SETTINGS_PATH=/app/persistent/app/settings.json
 
 WORKDIR /app
 
@@ -28,7 +29,8 @@ COPY pyproject.toml README.md LICENSE VERSION /app/
 COPY kokorotts /app/kokorotts
 COPY assets/kokoro_favicon.webp assets/kokoro_logo_horizontal.webp assets/hangrylabs_logo_horizontal.webp /app/assets/
 
-RUN python -m pip install -e . --no-deps
+RUN mkdir -p /app/persistent/app /app/persistent/models/huggingface \
+    && python -m pip install -e . --no-deps
 
 FROM app-builder AS baked-builder
 
@@ -40,7 +42,8 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \
     PIP_ROOT_USER_ACTION=ignore \
-    HF_HOME=/app/.cache/huggingface \
+    HF_HOME=/app/persistent/models/huggingface \
+    KOKOROTTS_SETTINGS_PATH=/app/persistent/app/settings.json \
     HF_HUB_OFFLINE=1 \
     TRANSFORMERS_OFFLINE=1 \
     KOKOROTTS_DEVICE=auto \

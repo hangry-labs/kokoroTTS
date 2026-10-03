@@ -115,6 +115,13 @@ class KokoroTTSClient:
     def set_served_voices(self, voices: list[str]) -> dict[str, Any]:
         return self._json("PUT", "/system/settings/voices", {"voices": voices})
 
+    def set_served_model_families(self, model_families: list[str]) -> dict[str, Any]:
+        return self._json(
+            "PUT",
+            "/system/settings/model-families",
+            {"model_families": model_families},
+        )
+
     def metrics(self, text: str, voice: str = "af_heart") -> dict[str, Any]:
         return self._json("POST", "/tts/metrics", {"text": text, "voice": voice})
 

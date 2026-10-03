@@ -48,7 +48,6 @@
     <button class="tab-button active" type="button" role="tab" aria-selected="true" data-tab="generate">Generate</button>
     <button class="tab-button" type="button" role="tab" aria-selected="false" data-tab="stream">Stream</button>
     <button class="tab-button" type="button" role="tab" aria-selected="false" data-tab="api">API</button>
-    <button class="tab-button" type="button" role="tab" aria-selected="false" data-tab="settings">Settings</button>
     <button class="tab-button" type="button" role="tab" aria-selected="false" data-tab="system">System</button>
   </div>
 
@@ -122,31 +121,27 @@
         <div class="data-output json-output" id="api-output"></div>
       </div>
 
-      <div class="tab-panel" data-panel="settings" hidden>
-        <div class="view-heading"><div><h2>Deployment settings</h2><p>Choose the voices advertised and accepted by this deployment</p></div></div>
-        <section class="deployment-settings" aria-labelledby="served-voices-title">
-          <div class="settings-toolbar">
-            <div>
-              <div class="section-title" id="served-voices-title"><i class="icon-audio-lines"></i><span>Served voices</span></div>
-              <p>Voice packs are prepared when enabled. Model weights load on first use; reducing this list releases cached models after active generations finish.</p>
-            </div>
-            <div class="settings-actions">
-              <button class="secondary-button" id="voices-select-all" type="button">Select all</button>
-              <button class="secondary-button" id="voices-select-none" type="button">Clear</button>
-            </div>
-          </div>
-          <div class="voice-settings-groups" id="voice-settings-groups" aria-live="polite"></div>
-          <div class="settings-save-row">
-            <span id="voice-settings-summary">Loading voice settings</span>
-            <button class="primary-button" id="save-voice-settings" type="button"><i class="icon-check"></i>Save voice settings</button>
-          </div>
-        </section>
-      </div>
-
       <div class="tab-panel" data-panel="system" hidden>
-        <div class="view-heading"><div><h2>System</h2><p>Runtime, voice, and GPU state</p></div></div>
+        <div class="view-heading"><div><h2>System</h2><p>Runtime, deployment models, and GPU state</p></div></div>
         <div class="system-grid">
           <div class="system-info-stack">
+            <section class="deployment-settings" aria-labelledby="served-models-title">
+              <div class="settings-toolbar">
+                <div>
+                  <div class="section-title" id="served-models-title"><i class="icon-audio-lines"></i><span>Model packs</span></div>
+                  <p>Each pack is one checkpoint. Voices sharing weights stay together so every choice affects downloads and VRAM.</p>
+                </div>
+                <div class="settings-actions">
+                  <button class="secondary-button" id="models-select-all" type="button">Select all</button>
+                  <button class="secondary-button" id="models-select-none" type="button">Clear</button>
+                </div>
+              </div>
+              <div class="model-settings-groups" id="model-settings-groups" aria-live="polite"></div>
+              <div class="settings-save-row">
+                <span id="model-settings-summary">Loading model packs</span>
+                <button class="primary-button" id="save-model-settings" type="button"><i class="icon-check"></i>Save model packs</button>
+              </div>
+            </section>
             <section><div class="section-title"><i class="icon-activity"></i><span>Runtime</span></div><div class="data-output json-output" id="runtime-output"></div></section>
             <section><div class="section-title"><i class="icon-boxes"></i><span>Voices</span></div><div class="data-output json-output" id="voices-output"></div></section>
           </div>

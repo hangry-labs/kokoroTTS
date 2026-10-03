@@ -57,14 +57,33 @@ The tiny image is smaller, but it downloads model and voice files after startup 
 
 ### Latest image:
 
+Choose one complete command below.
+
+Run the full image with NVIDIA GPU support:
+
 ```bash
-docker run -p 7860:7860 --gpus all -v kokorotts_hf_cache:/app/.cache/huggingface hangrylabs/kokorotts:latest
-docker run -p 7860:7860 -v kokorotts_hf_cache:/app/.cache/huggingface hangrylabs/kokorotts:latest
-docker run -p 7860:7860 --gpus "device=1" -e CUDA_VISIBLE_DEVICES=1 -v kokorotts_hf_cache:/app/.cache/huggingface hangrylabs/kokorotts:latest
-docker run -p 7860:7860 --gpus all -v kokorotts_hf_cache:/app/.cache/huggingface hangrylabs/kokorotts:latest_tiny
+docker run -p 7860:7860 --gpus all -v kokorotts_data:/app/persistent hangrylabs/kokorotts:latest
 ```
 
-Use the stable version tag when you want repeatable deployments. Use `latest` when you want the newest published full image, and `latest_tiny` when you want the newest published tiny image.
+Run the full image on CPU:
+
+```bash
+docker run -p 7860:7860 -v kokorotts_data:/app/persistent hangrylabs/kokorotts:latest
+```
+
+Run the full image on GPU index `1`:
+
+```bash
+docker run -p 7860:7860 --gpus "device=1" -e CUDA_VISIBLE_DEVICES=1 -v kokorotts_data:/app/persistent hangrylabs/kokorotts:latest
+```
+
+Run the tiny image with NVIDIA GPU support:
+
+```bash
+docker run -p 7860:7860 --gpus all -v kokorotts_data:/app/persistent hangrylabs/kokorotts:latest_tiny
+```
+
+Use the stable version tag when you want repeatable deployments. Use `latest` when you want the newest published full image, and `latest_tiny` when you want the newest published tiny image. The `/app/persistent` volume is recommended but optional; without it, downloaded assets and saved settings remain inside the current container and are lost when it is removed.
 
 Then open:
 
@@ -78,14 +97,14 @@ The container includes the web UI and the HTTP API on the same port.
   <img src="https://github.com/Hangry-Labs/kokoroTTS/raw/main/assets/ui.webp" alt="KokoroTTS browser interface">
 </p>
 
-- Responsive browser audio workspace with Generate, Stream, API, Settings, and System views
+- Responsive browser audio workspace with Generate, Stream, API, and System views
 - Waveform playback, seeking, download controls, and cancellable MP3 streaming
 - HTTP API for applications and automation
 - MP3 output from the UI by default
 - Backward-compatible WAV API responses unless `output_format` or `format` is requested
 - WAV, MP3, FLAC, and OGG output support
 - Full 56-voice catalog exposed in the UI and API, including dedicated German Martin and Victoria models
-- Persistent Settings controls for choosing which voices a deployment advertises and accepts
+- Persistent System controls for choosing independently loaded model packs and their served voices
 - GPU support when Docker/NVIDIA support is available
 - Offline-friendly usage with the standard full image once it is available locally
 
@@ -151,9 +170,9 @@ docker run -p 7860:7860 --gpus all -v kokorotts_hf_cache:/app/.cache/huggingface
 
 The standard `vX.Y` image is the recommended image for most users. It includes the standard Kokoro model, dedicated German models, voice packs, and required language assets for offline-friendly use after the image is pulled.
 
-Tiny images use the `vX.Y_tiny` tag pattern. They keep runtime and language dependencies, but skip baked Hugging Face model and voice files. Use a persistent volume mounted at `/app/.cache/huggingface` so downloaded assets survive container replacement.
+Tiny images use the `vX.Y_tiny` tag pattern. They keep runtime and language dependencies, but skip baked Hugging Face model and voice files. Current images use the optional `/app/persistent` volume so downloaded assets and settings survive container replacement. The stable `v0.3_tiny` command above retains its original `/app/.cache/huggingface` layout.
 
-The same volume stores deployment voice settings. All voices are served by default; use the Settings tab to disable voices that are not needed. Models load into CPU/GPU memory on first use, and reducing the served selection releases cached models after active generations finish. With the tiny image, a disabled German checkpoint is not downloaded unless its voice is later enabled and called.
+All three model packs are served by default. The System controls can disable the shared standard Kokoro checkpoint, German Martin, or German Victoria. The 54 standard voices remain together because they share one model and have the same VRAM cost. Models load into CPU/GPU memory on first use, and disabling a pack releases cached models after active generations finish. With the tiny image, a disabled German checkpoint is not downloaded unless its pack is later enabled and called.
 
 ## Links
 
