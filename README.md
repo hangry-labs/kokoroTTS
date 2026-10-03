@@ -350,6 +350,7 @@ The data volume is recommended but optional. Without it, the same files are stor
 - Added Vietnamese synthesis using the ContextBoxAI Kokoro Vietnamese checkpoint, its custom vocabulary, all fourteen upstream voice packs, and pinned `vig2p`/`sea-g2p` phonemization. The shared Vietnamese weights appear as one independently selectable model pack and the unused ONNX export is not baked into the image.
 - Added a third-party notice covering the upstream Kokoro implementation, language processing dependencies, model and voice assets, bundled browser libraries, and Docker runtime components.
 - Added a checksum-verified UniDic download override for fast local-network builds while retaining the public upstream source as the portable default.
+- Replaced the separate full/tiny `mode=max` GitHub Actions caches with one shared, checksum-verified cache containing only the immutable UniDic archive. Complete Docker build graphs and model layers are no longer imported or exported through the Actions cache.
 - Added persisted deployment model-pack settings to the System tab and HTTP API. Operators can enable independently loaded checkpoints while voices that share the same weights remain together, making each choice meaningful for downloads and VRAM without changing the backward-compatible all-models default.
 - Added a unified optional `/app/persistent` Docker data location for downloaded model assets and operator settings. A named volume preserves both across image upgrades, while unmounted containers continue to work with local ephemeral storage.
 
@@ -358,7 +359,7 @@ The data volume is recommended but optional. Without it, the same files are stor
 1. Record the official VRAM baseline on a quiet GPU using the new lifecycle, per-language, and per-voice benchmark.
 2. Standardize the API surface, including an OpenAI-compatible speech endpoint, while retaining the existing `/tts/*` endpoints for backward compatibility.
 3. Prove whether the system `espeak-ng` package can be removed in favor of the bundled `espeakng-loader` runtime without reducing language support or offline reliability.
-4. Benchmark and optimize Docker and GitHub Actions build times, including selective caching for expensive dependency and language-data layers and a measured replacement for duplicated complete full and tiny image caches. The checksum-verified local-network UniDic mirror is implemented for development builds.
+4. Record fresh Docker and GitHub Actions build baselines with only the immutable UniDic archive cached. Add another selective cache only when measurements show that restoring and saving it is faster than downloading or rebuilding it. The checksum-verified local-network UniDic mirror is implemented for development builds; complete full/tiny BuildKit graphs must not be cached again.
 
 ### v0.3
 

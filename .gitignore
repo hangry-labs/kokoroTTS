@@ -172,5 +172,8 @@ cython_debug/
 todo/
 /AGENTS.md
 
+# Immutable build inputs restored by CI caches
+/.build-cache/unidic/*.zip
+
 # PyPI configuration file
 .pypirc

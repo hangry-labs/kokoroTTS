@@ -25,6 +25,9 @@ on:
 
 env:
   IMAGE_NAME: hangrylabs/kokorotts
+  UNIDIC_CACHE_PATH: .build-cache/unidic/unidic-3.1.0.zip
+  UNIDIC_SOURCE_URL: https://cotonoha-dic.s3-ap-northeast-1.amazonaws.com/unidic-3.1.0.zip
+  UNIDIC_SHA256: 638718c4c63625ab300de4c92c67925d54c0e9e3830009eaa992f29819d59c43
 
 jobs:
   build:
@@ -49,6 +52,28 @@ jobs:
 
           echo "Disk usage after cleanup:"
           df -h
+
+      - name: Restore UniDic archive
+        id: unidic-cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.UNIDIC_CACHE_PATH }}
+          key: unidic-${{ runner.os }}-${{ env.UNIDIC_SHA256 }}
+
+      - name: Download UniDic archive on cache miss
+        if: steps.unidic-cache.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$(dirname "$UNIDIC_CACHE_PATH")"
+          curl --fail --location --retry 3 --retry-all-errors \
+            --output "$UNIDIC_CACHE_PATH" "$UNIDIC_SOURCE_URL"
+          echo "$UNIDIC_SHA256  $UNIDIC_CACHE_PATH" | sha256sum --check --strict
+
+      - name: Verify cached UniDic archive
+        if: steps.unidic-cache.outputs.cache-hit == 'true'
+        shell: bash
+        run: echo "$UNIDIC_SHA256  $UNIDIC_CACHE_PATH" | sha256sum --check --strict
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -92,6 +117,4 @@ jobs:
           target: baked
           push: true
           tags: ${{ steps.image_tags.outputs.tags }}
-          cache-from: type=gha,scope=kokorotts-full
-          cache-to: type=gha,mode=max,scope=kokorotts-full
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Install a pinned UniDic archive from an explicit, checksum-verified URL."""
+"""Install pinned UniDic from a verified local archive or explicit URL."""
 
 from __future__ import annotations
 
@@ -14,6 +14,18 @@ import zipfile
 from pathlib import Path
 
 import unidic
+
+
+def verify(archive: Path, expected_sha256: str) -> None:
+    digest = hashlib.sha256()
+    with archive.open("rb") as source:
+        while chunk := source.read(1024 * 1024):
+            digest.update(chunk)
+    actual_sha256 = digest.hexdigest()
+    if actual_sha256 != expected_sha256:
+        raise RuntimeError(
+            f"UniDic checksum mismatch: expected {expected_sha256}, got {actual_sha256}"
+        )
 
 
 def download(url: str, destination: Path, expected_sha256: str) -> None:
@@ -80,12 +92,21 @@ def main() -> None:
     parser.add_argument("--url", required=True)
     parser.add_argument("--sha256", required=True)
     parser.add_argument("--version", required=True)
+    parser.add_argument("--archive", type=Path)
     args = parser.parse_args()
+
+    expected_sha256 = args.sha256.lower()
+    if args.archive and args.archive.is_file():
+        verify(args.archive, expected_sha256)
+        print(f"Using cached UniDic archive {args.archive}", file=sys.stderr)
+        install(args.archive, args.version)
+        print(f"Installed UniDic {args.version} in {unidic.DICDIR}", file=sys.stderr)
+        return
 
     package_dir = Path(unidic.__file__).resolve().parent
     archive = package_dir / "unidic.zip"
     try:
-        download(args.url, archive, args.sha256.lower())
+        download(args.url, archive, expected_sha256)
         install(archive, args.version)
     finally:
         archive.unlink(missing_ok=True)

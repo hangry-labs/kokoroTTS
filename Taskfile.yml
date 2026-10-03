@@ -219,7 +219,7 @@ tasks:
       - cmd /c docker logs --tail 200 {{.CONTAINER_LOCAL}} 2>nul || docker logs --tail 200 {{.CONTAINER}}
 
   nuke:
-    desc: Remove KokoroTTS local containers, images, and persistent data volumes
+    desc: Remove KokoroTTS local containers, images, persistent data, and build-input cache
     cmds:
       - cmd: cmd /c docker rm -f {{.CONTAINER}} >nul 2>&1
         ignore_error: true
@@ -232,5 +232,7 @@ tasks:
       - cmd: cmd /c docker volume rm -f {{.DATA_VOLUME}} >nul 2>&1
         ignore_error: true
       - cmd: cmd /c docker volume rm -f {{.LEGACY_HF_CACHE_VOLUME}} >nul 2>&1
+        ignore_error: true
+      - cmd: powershell -NoProfile -Command "Remove-Item -LiteralPath '.build-cache\unidic\unidic-3.1.0.zip' -Force -ErrorAction SilentlyContinue"
         ignore_error: true
 
