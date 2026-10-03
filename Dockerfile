@@ -1,4 +1,26 @@
+ARG PYOPENJTALK_VERSION=0.4.1
+
+FROM python:3.13-slim AS pyopenjtalk-wheel-builder
+
+ARG PYOPENJTALK_VERSION
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN python -m pip wheel \
+    --no-cache-dir \
+    --no-deps \
+    --wheel-dir /wheels \
+    "pyopenjtalk==${PYOPENJTALK_VERSION}"
+
+FROM scratch AS pyopenjtalk-wheel
+
+COPY --from=pyopenjtalk-wheel-builder /wheels/ /
+
 FROM python:3.13-slim AS base
+
+ARG PYOPENJTALK_VERSION
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -15,8 +37,17 @@ RUN apt-get update \
 
 COPY requirements.txt /app/
 
-RUN python -m pip install --upgrade pip setuptools wheel \
-    && python -m pip install --extra-index-url https://download.pytorch.org/whl/cu130 -r /app/requirements.txt \
+RUN python -m pip install --upgrade pip setuptools wheel
+
+RUN --mount=type=bind,source=.build-cache/wheels,target=/tmp/wheel-cache,ro \
+    wheel_count="$(find /tmp/wheel-cache -maxdepth 1 -type f -name 'pyopenjtalk-*.whl' | wc -l)" \
+    && if [ "${wheel_count}" -gt 0 ]; then \
+        python -m pip install --no-deps --no-index --find-links=/tmp/wheel-cache "pyopenjtalk==${PYOPENJTALK_VERSION}"; \
+    else \
+        python -m pip install --no-deps "pyopenjtalk==${PYOPENJTALK_VERSION}"; \
+    fi
+
+RUN python -m pip install --extra-index-url https://download.pytorch.org/whl/cu130 -r /app/requirements.txt \
     && python -m pip install https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl
 
 FROM base AS language-builder
@@ -44,9 +75,12 @@ COPY assets/kokoro_favicon.webp assets/kokoro_logo_horizontal.webp assets/hangry
 RUN mkdir -p /app/persistent/app /app/persistent/models/huggingface \
     && python -m pip install -e . --no-deps
 
-FROM app-builder AS baked-builder
+FROM base AS asset-builder
 
-RUN python -u /app/kokorotts/prefetch_assets.py
+COPY VERSION /app/VERSION
+COPY kokorotts/__init__.py kokorotts/catalog.py kokorotts/client.py kokorotts/prefetch_assets.py /app/kokorotts/
+
+RUN python -u -m kokorotts.prefetch_assets
 
 FROM python:3.13-slim AS runtime-base
 
@@ -85,5 +119,6 @@ COPY --from=app-builder /app /app
 
 FROM runtime-base AS baked
 
-COPY --from=baked-builder /usr/local /usr/local
-COPY --from=baked-builder /app /app
+COPY --from=app-builder /usr/local /usr/local
+COPY --from=app-builder /app /app
+COPY --from=asset-builder /app/persistent /app/persistent

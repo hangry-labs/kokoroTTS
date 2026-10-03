@@ -82,7 +82,7 @@ docker run -p 7860:7860 --gpus "device=1" -e CUDA_VISIBLE_DEVICES=1 hangrylabs/k
 
 ### Current Snapshot
 
-Use `latest` to try the current `v0.4` snapshot from the main development line. This moving tag can change between releases. Choose one command below.
+Use `latest` to try the current `v1.0` snapshot from the main development line. This moving tag can change between releases. Choose one command below.
 
 Run the full image with NVIDIA GPU support and persistent models and settings:
 
@@ -280,7 +280,7 @@ All published tags are mirrored on [Docker Hub](https://hub.docker.com/r/hangryl
 - Full images contain the standard Kokoro model, both dedicated German checkpoints, the dedicated Vietnamese checkpoint, all 70 voice packs, configuration, and required language data. They are ready for offline use after the image has been pulled.
 - Tiny images contain the complete runtime but download Hugging Face model and voice assets on first use. Mount the optional `/app/persistent` data volume to preserve downloads and settings across containers.
 - Versioned tags such as `v0.3` and `v0.3_tiny` are fixed releases suitable for repeatable deployments.
-- Moving tags `latest` and `latest_tiny` follow the current `v0.4` snapshot built from `main`.
+- Moving tags `latest` and `latest_tiny` follow the current `v1.0` snapshot built from `main`.
 
 Exact commands for every release and the current snapshot are kept in [Version History](#version-history).
 
@@ -361,13 +361,13 @@ task benchmark-vram VRAM_BENCHMARK_COMMENT="clean GPU baseline"
 
 The report separates process-specific allocated/reserved VRAM from whole-device usage, and records lifecycle, per-language, and per-voice peaks. Use `task benchmark-vram-smoke` for a one-voice implementation check that does not update history. See [`benchmarks/vram`](benchmarks/vram/) for the full methodology and reports.
 
-The official `v0.4-snapshot` baseline was recorded on a quiet NVIDIA GeForce RTX 5070 Ti across all 70 voices and 11 languages, with no failed generation. The initial standard Kokoro model used 317.6 MiB allocated and 332.0 MiB reserved before inference; the German and Vietnamese checkpoints then loaded lazily as their voices were reached. The sequential single-request run peaked at 1725.1 MiB allocated and 2052.0 MiB reserved by the Kokoro process. Whole-device usage rose from the benchmark's 1293.6 MiB idle reference to 3413.6 MiB; this includes the Windows display stack and other non-Kokoro GPU allocations. Vietnamese was the heaviest model family, with `storyvert` setting the overall process peak. The complete lifecycle, language, and voice measurements are in [`VRAM_BENCHMARKS.md`](benchmarks/vram/VRAM_BENCHMARKS.md) and [`DETAILS.md`](benchmarks/vram/DETAILS.md).
+Before the development line was promoted to `v1.0-snapshot`, its official VRAM baseline was recorded under the `v0.4-snapshot` label on a quiet NVIDIA GeForce RTX 5070 Ti across all 70 voices and 11 languages, with no failed generation. The initial standard Kokoro model used 317.6 MiB allocated and 332.0 MiB reserved before inference; the German and Vietnamese checkpoints then loaded lazily as their voices were reached. The sequential single-request run peaked at 1725.1 MiB allocated and 2052.0 MiB reserved by the Kokoro process. Whole-device usage rose from the benchmark's 1293.6 MiB idle reference to 3413.6 MiB; this includes the Windows display stack and other non-Kokoro GPU allocations. Vietnamese was the heaviest model family, with `storyvert` setting the overall process peak. The complete lifecycle, language, and voice measurements are in [`VRAM_BENCHMARKS.md`](benchmarks/vram/VRAM_BENCHMARKS.md) and [`DETAILS.md`](benchmarks/vram/DETAILS.md).
 
 ---
 
 ## Version History
 
-### v0.4 Snapshot
+### v1.0 Snapshot
 
 #### Docker
 
@@ -427,15 +427,15 @@ The data volume is recommended but optional. Without it, the same files are stor
 - Added Vietnamese synthesis using the ContextBoxAI Kokoro Vietnamese checkpoint, its custom vocabulary, all fourteen upstream voice packs, and pinned `vig2p`/`sea-g2p` phonemization. The shared Vietnamese weights appear as one independently selectable model pack and the unused ONNX export is not baked into the image.
 - Added a third-party notice covering the upstream Kokoro implementation, language processing dependencies, model and voice assets, bundled browser libraries, and Docker runtime components.
 - Added a checksum-verified UniDic download override for fast local-network builds while retaining the public upstream source as the portable default.
-- Replaced the separate full/tiny `mode=max` GitHub Actions caches with one shared, checksum-verified cache containing only the immutable UniDic archive. Complete Docker build graphs and model layers are no longer imported or exported through the Actions cache.
-- Added GitHub Container Registry as an official mirror. The existing full and tiny workflows publish identical tags to Docker Hub and GHCR from the same build: `main` owns the moving `latest`/`latest_tiny` tags, while a release tag owns immutable `vX.Y`/`vX.Y_tiny` images.
+- Replaced the separate full/tiny `mode=max` GitHub Actions caches with selective inputs: the checksum-verified immutable UniDic archive and an integrity-tested compiled `pyopenjtalk` wheel keyed by platform, Python ABI, package version, and Dockerfile recipe. Complete Docker build graphs, CUDA dependencies, and model layers are not imported or exported through the Actions cache.
+- Unified full and tiny publishing in one Buildx workflow so both variants reuse the same dependency graph without loading either image into the runner's Docker store. Baked model prefetch depends only on the pinned catalog/manifest files, and its assets occupy an independent final-image layer, so unrelated UI/API changes reuse both the download step and large model layer.
+- Added GitHub Container Registry as an official mirror. One workflow publishes identical full and tiny tags to Docker Hub and GHCR: `main` owns the moving `latest`/`latest_tiny` tags, while a release tag owns immutable `vX.Y`/`vX.Y_tiny` images.
 - Added persisted deployment model-pack settings to the System tab and HTTP API. Operators can enable independently loaded checkpoints while voices that share the same weights remain together, making each choice meaningful for downloads and VRAM without changing the backward-compatible all-models default.
 - Added a unified optional `/app/persistent` Docker data location for downloaded model assets and operator settings. A named volume preserves both across image upgrades, while unmounted containers continue to work with local ephemeral storage.
 
 #### Planned Work
 
-1. Prove whether the system `espeak-ng` package can be removed in favor of the bundled `espeakng-loader` runtime without reducing language support or offline reliability.
-2. Record fresh Docker and GitHub Actions build baselines with only the immutable UniDic archive cached. Add another selective cache only when measurements show that restoring and saving it is faster than downloading or rebuilding it. The checksum-verified local-network UniDic mirror is implemented for development builds; complete full/tiny BuildKit graphs must not be cached again.
+1. Record the first GitHub Actions baseline for the combined full/tiny workflow and verify its shared graph stays within hosted-runner disk limits. Compare its timings with the separate-workflow UniDic-only baseline before considering another narrow input cache; complete BuildKit graphs must not be cached again.
 
 ### v0.3
 

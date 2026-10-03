@@ -1,4 +1,4 @@
-name: Build and Push Docker Image (FULL)
+name: Build and Push Container Images
 
 on:
   push:
@@ -18,7 +18,7 @@ on:
         required: false
         type: string
       push_latest:
-        description: "Also publish latest"
+        description: "Also publish latest and latest_tiny"
         required: false
         default: true
         type: boolean
@@ -29,6 +29,8 @@ env:
   UNIDIC_CACHE_PATH: .build-cache/unidic/unidic-3.1.0.zip
   UNIDIC_SOURCE_URL: https://cotonoha-dic.s3-ap-northeast-1.amazonaws.com/unidic-3.1.0.zip
   UNIDIC_SHA256: 638718c4c63625ab300de4c92c67925d54c0e9e3830009eaa992f29819d59c43
+  PYOPENJTALK_VERSION: 0.4.1
+  PYOPENJTALK_WHEEL_CACHE: .build-cache/wheels
 
 jobs:
   build:
@@ -82,6 +84,39 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      - name: Restore pyopenjtalk wheel
+        id: pyopenjtalk-cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.PYOPENJTALK_WHEEL_CACHE }}
+          key: pyopenjtalk-wheel-${{ runner.os }}-${{ runner.arch }}-cp313-${{ env.PYOPENJTALK_VERSION }}-${{ hashFiles('Dockerfile') }}
+
+      - name: Build pyopenjtalk wheel on cache miss
+        if: steps.pyopenjtalk-cache.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$PYOPENJTALK_WHEEL_CACHE"
+          docker buildx build \
+            --target pyopenjtalk-wheel \
+            --build-arg "PYOPENJTALK_VERSION=$PYOPENJTALK_VERSION" \
+            --output "type=local,dest=$PYOPENJTALK_WHEEL_CACHE" \
+            .
+          docker buildx prune --all --force
+
+      - name: Verify pyopenjtalk wheel
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          wheels=("$PYOPENJTALK_WHEEL_CACHE"/pyopenjtalk-*.whl)
+          if (( ${#wheels[@]} != 1 )); then
+            echo "Expected exactly one cached pyopenjtalk wheel, found ${#wheels[@]}." >&2
+            exit 1
+          fi
+          python -m zipfile -t "${wheels[0]}"
+          ls -lh "${wheels[0]}"
+
       - name: Login to Docker Hub
         run: echo "${{ secrets.DOCKER_TOKEN }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
@@ -101,24 +136,30 @@ jobs:
             echo "VERSION=${{ inputs.image_tag }}" >> $GITHUB_ENV
           fi
 
-      - name: Prepare baked image tags
+      - name: Prepare image tags
         id: image_tags
         run: |
-          tags=()
+          baked_tags=()
+          tiny_tags=()
           if [[ "${{ github.event_name }}" == "push" && "$GITHUB_REF" == "refs/heads/main" ]] || \
              [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.push_latest }}" == "true" ]]; then
-            tags+=("$DOCKER_IMAGE_NAME:latest" "$GHCR_IMAGE_NAME:latest")
+            baked_tags+=("$DOCKER_IMAGE_NAME:latest" "$GHCR_IMAGE_NAME:latest")
+            tiny_tags+=("$DOCKER_IMAGE_NAME:latest_tiny" "$GHCR_IMAGE_NAME:latest_tiny")
           fi
           if [[ -n "$VERSION" ]]; then
-            tags+=("$DOCKER_IMAGE_NAME:$VERSION" "$GHCR_IMAGE_NAME:$VERSION")
+            baked_tags+=("$DOCKER_IMAGE_NAME:$VERSION" "$GHCR_IMAGE_NAME:$VERSION")
+            tiny_tags+=("$DOCKER_IMAGE_NAME:${VERSION}_tiny" "$GHCR_IMAGE_NAME:${VERSION}_tiny")
           fi
-          if (( ${#tags[@]} == 0 )); then
+          if (( ${#baked_tags[@]} == 0 || ${#tiny_tags[@]} == 0 )); then
             echo "No Docker tags selected for publishing." >&2
             exit 1
           fi
           {
-            echo "tags<<EOF"
-            printf '%s\n' "${tags[@]}"
+            echo "baked_tags<<EOF"
+            printf '%s\n' "${baked_tags[@]}"
+            echo "EOF"
+            echo "tiny_tags<<EOF"
+            printf '%s\n' "${tiny_tags[@]}"
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
 
@@ -128,5 +169,30 @@ jobs:
           context: .
           target: baked
           push: true
-          tags: ${{ steps.image_tags.outputs.tags }}
+          tags: ${{ steps.image_tags.outputs.baked_tags }}
+          build-args: |
+            PYOPENJTALK_VERSION=${{ env.PYOPENJTALK_VERSION }}
+
+      - name: Report disk usage after baked image
+        shell: bash
+        run: |
+          df -h
+          docker buildx du || true
+
+      - name: Build and push tiny Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          target: tiny
+          push: true
+          tags: ${{ steps.image_tags.outputs.tiny_tags }}
+          build-args: |
+            PYOPENJTALK_VERSION=${{ env.PYOPENJTALK_VERSION }}
+
+      - name: Report final disk usage
+        if: always()
+        shell: bash
+        run: |
+          df -h
+          docker buildx du || true
 

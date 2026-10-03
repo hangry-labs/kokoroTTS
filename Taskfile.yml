@@ -243,4 +243,6 @@ tasks:
         ignore_error: true
       - cmd: powershell -NoProfile -Command "Remove-Item -LiteralPath '.build-cache\unidic\unidic-3.1.0.zip' -Force -ErrorAction SilentlyContinue"
         ignore_error: true
+      - cmd: powershell -NoProfile -Command "Get-ChildItem -LiteralPath '.build-cache\wheels' -Filter '*.whl' -File -ErrorAction SilentlyContinue | Remove-Item -Force"
+        ignore_error: true
 
