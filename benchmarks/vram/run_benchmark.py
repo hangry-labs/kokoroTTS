@@ -155,10 +155,10 @@ def _append_details(path: Path, output: dict[str, Any], comment: str) -> None:
     stages = output["stages"]
     lines = [
         f"\n## {output['test_time']} - {output['version']}\n",
-        f"Model: `{output['model']}`  \n",
-        f"GPU: `{_gpu_label(output['gpu'])}`  \n",
-        f"Sample interval: `{output['sample_interval_ms']:.0f} ms`  \n",
-        f"Comment: {_md_escape(comment) or 'None'}\n",
+        f"- Model: `{output['model']}`\n",
+        f"- GPU: `{_gpu_label(output['gpu'])}`\n",
+        f"- Sample interval: `{output['sample_interval_ms']:.0f} ms`\n",
+        f"- Comment: {_md_escape(comment) or 'None'}\n",
         "\n### Lifecycle Stages\n\n",
         "| Stage | Process allocated | Process reserved | Process peak allocated | Process peak reserved | Device used |\n",
         "| --- | ---: | ---: | ---: | ---: | ---: |\n",
@@ -166,7 +166,7 @@ def _append_details(path: Path, output: dict[str, Any], comment: str) -> None:
     for label, key in (
         ("Before runtime", "before_runtime"),
         ("After voice preparation", "after_voice_preparation"),
-        ("After model weights", "after_weights"),
+        ("After initial model weights", "after_weights"),
         ("After all inference", "after_inference"),
     ):
         stage = stages[key]
@@ -343,7 +343,7 @@ def main() -> int:
         "voices": len(cases),
         "languages": len({case["language"] for case in cases}),
         "sample_interval_ms": args.sample_interval * 1000,
-        "test_time": time.strftime("%d.%m.%Y %H:%M:%S"),
+        "test_time": time.strftime("%Y-%m-%d %H:%M:%S UTC", time.gmtime()),
         "stages": {
             "before_runtime": before_runtime,
             "after_voice_preparation": after_voice_preparation,

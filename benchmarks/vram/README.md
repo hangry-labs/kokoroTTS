@@ -18,7 +18,7 @@ task imagestop
 task benchmark-vram VRAM_BENCHMARK_COMMENT="clean GPU baseline"
 ```
 
-The process values are isolated to Kokoro. Whole-device values include display usage, drivers, and other processes and are included to capture CUDA context or native allocations outside PyTorch's allocator. The benchmark calls `torch.cuda.empty_cache()` before every voice so each voice begins with the same model-resident baseline.
+The process values are isolated to Kokoro. Whole-device values include display usage, drivers, and other processes and are included to capture CUDA context or native allocations outside PyTorch's allocator. The initial weight checkpoint loads the standard Kokoro model. Additional model families load lazily when their first voice is reached and remain resident, matching normal runtime caching. The benchmark calls `torch.cuda.empty_cache()` before every voice so allocator cache does not carry between voices, while loaded model weights intentionally do.
 
 For a non-recording implementation check using one voice:
 

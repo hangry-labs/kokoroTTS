@@ -1,0 +1,1657 @@
+{
+  "version": "0.4-snapshot",
+  "model": "hexgrad/Kokoro-82M",
+  "gpu": {
+    "index": 0,
+    "name": "NVIDIA GeForce RTX 5070 Ti",
+    "memory_total_mib": 16303,
+    "driver_version": "610.88"
+  },
+  "device": "cuda:0",
+  "source": "examples/voices.js",
+  "voices": 70,
+  "languages": 11,
+  "sample_interval_ms": 50.0,
+  "test_time": "2026-10-03 03:20:48 UTC",
+  "stages": {
+    "before_runtime": {
+      "process": {
+        "allocated_mib": 0.0,
+        "reserved_mib": 0.0,
+        "peak_allocated_mib": 0.0,
+        "peak_reserved_mib": 0.0
+      },
+      "device": {
+        "used_mib": 1293.6,
+        "free_mib": 15009.0,
+        "total_mib": 16302.6
+      }
+    },
+    "after_voice_preparation": {
+      "process": {
+        "allocated_mib": 0.0,
+        "reserved_mib": 0.0,
+        "peak_allocated_mib": 0.0,
+        "peak_reserved_mib": 0.0
+      },
+      "device": {
+        "used_mib": 1293.6,
+        "free_mib": 15009.0,
+        "total_mib": 16302.6
+      }
+    },
+    "after_weights": {
+      "process": {
+        "allocated_mib": 317.6,
+        "reserved_mib": 332.0,
+        "peak_allocated_mib": 317.6,
+        "peak_reserved_mib": 332.0
+      },
+      "device": {
+        "used_mib": 1673.6,
+        "free_mib": 14629.0,
+        "total_mib": 16302.6
+      },
+      "device_phase_peak": {
+        "samples": 40,
+        "peak_used_mib": 1673.6,
+        "minimum_free_mib": 14629.0,
+        "total_mib": 16302.6
+      },
+      "elapsed_sec": 1.937
+    },
+    "after_inference": {
+      "process": {
+        "allocated_mib": 1283.5,
+        "reserved_mib": 1324.0,
+        "peak_allocated_mib": 1725.1,
+        "peak_reserved_mib": 2052.0
+      },
+      "device": {
+        "used_mib": 2687.6,
+        "free_mib": 13615.0,
+        "total_mib": 16302.6
+      }
+    }
+  },
+  "peaks": {
+    "process_allocated_mib": 1725.1,
+    "process_reserved_mib": 2052.0,
+    "inference_reserved_increment_mib": 1720.0,
+    "device_used_mib": 3413.6,
+    "device_increment_mib": 2120.0
+  },
+  "by_language": [
+    {
+      "language": "American English",
+      "voices": 20,
+      "peak_allocated_mib": 1022.0,
+      "peak_reserved_mib": 1356.0,
+      "peak_reserved_voice": "af_nicole",
+      "device_peak_used_mib": 2715.6,
+      "device_peak_voice": "af_nicole"
+    },
+    {
+      "language": "British English",
+      "voices": 8,
+      "peak_allocated_mib": 800.2,
+      "peak_reserved_mib": 1064.0,
+      "peak_reserved_voice": "bm_lewis",
+      "device_peak_used_mib": 2425.6,
+      "device_peak_voice": "bm_lewis"
+    },
+    {
+      "language": "Japanese",
+      "voices": 5,
+      "peak_allocated_mib": 962.2,
+      "peak_reserved_mib": 1430.0,
+      "peak_reserved_voice": "jf_nezumi",
+      "device_peak_used_mib": 2791.6,
+      "device_peak_voice": "jf_nezumi"
+    },
+    {
+      "language": "Mandarin Chinese",
+      "voices": 8,
+      "peak_allocated_mib": 809.6,
+      "peak_reserved_mib": 1082.0,
+      "peak_reserved_voice": "zf_xiaoni",
+      "device_peak_used_mib": 2443.6,
+      "device_peak_voice": "zf_xiaoni"
+    },
+    {
+      "language": "Spanish",
+      "voices": 3,
+      "peak_allocated_mib": 756.9,
+      "peak_reserved_mib": 1096.0,
+      "peak_reserved_voice": "ef_dora",
+      "device_peak_used_mib": 2457.6,
+      "device_peak_voice": "ef_dora"
+    },
+    {
+      "language": "French",
+      "voices": 1,
+      "peak_allocated_mib": 764.2,
+      "peak_reserved_mib": 982.0,
+      "peak_reserved_voice": "ff_siwis",
+      "device_peak_used_mib": 2343.6,
+      "device_peak_voice": "ff_siwis"
+    },
+    {
+      "language": "Hindi",
+      "voices": 4,
+      "peak_allocated_mib": 817.3,
+      "peak_reserved_mib": 1208.0,
+      "peak_reserved_voice": "hm_omega",
+      "device_peak_used_mib": 2569.6,
+      "device_peak_voice": "hm_omega"
+    },
+    {
+      "language": "Italian",
+      "voices": 2,
+      "peak_allocated_mib": 767.0,
+      "peak_reserved_mib": 1152.0,
+      "peak_reserved_voice": "im_nicola",
+      "device_peak_used_mib": 2513.6,
+      "device_peak_voice": "im_nicola"
+    },
+    {
+      "language": "Brazilian Portuguese",
+      "voices": 3,
+      "peak_allocated_mib": 735.4,
+      "peak_reserved_mib": 1048.0,
+      "peak_reserved_voice": "pf_dora",
+      "device_peak_used_mib": 2409.6,
+      "device_peak_voice": "pf_dora"
+    },
+    {
+      "language": "German",
+      "voices": 2,
+      "peak_allocated_mib": 1430.7,
+      "peak_reserved_mib": 1658.0,
+      "peak_reserved_voice": "dm_martin",
+      "device_peak_used_mib": 3019.6,
+      "device_peak_voice": "dm_martin"
+    },
+    {
+      "language": "Vietnamese",
+      "voices": 14,
+      "peak_allocated_mib": 1725.1,
+      "peak_reserved_mib": 2052.0,
+      "peak_reserved_voice": "storyvert",
+      "device_peak_used_mib": 3413.6,
+      "device_peak_voice": "storyvert"
+    }
+  ],
+  "results": [
+    {
+      "language": "American English",
+      "voice": "af_heart",
+      "name": "Heart",
+      "characters": 328,
+      "audio_duration_sec": 22.425,
+      "elapsed_sec": 2.0555,
+      "process": {
+        "allocated_mib": 327.6,
+        "reserved_mib": 1124.0,
+        "peak_allocated_mib": 789.4,
+        "peak_reserved_mib": 1124.0
+      },
+      "device_baseline_mib": 1673.6,
+      "device": {
+        "samples": 42,
+        "peak_used_mib": 2483.6,
+        "minimum_free_mib": 13819.0,
+        "total_mib": 16302.6
+      }
+    },
+    {
+      "language": "American English",
+      "voice": "af_bella",
+      "name": "Bella",
+      "characters": 328,
+      "audio_duration_sec": 22.95,
+      "elapsed_sec": 0.2212,
+      "process": {
+        "allocated_mib": 328.6,
+        "reserved_mib": 1064.0,
+        "peak_allocated_mib": 799.6,
+        "peak_reserved_mib": 1064.0
+      },
+      "device_baseline_mib": 1713.6,
+      "device": {
+        "samples": 6,
+        "peak_used_mib": 2423.6,
+        "minimum_free_mib": 13879.0,
+        "total_mib": 16302.6
+      }
+    },
+    {
+      "language": "American English",
+      "voice": "af_nicole",
+      "name": "Nicole",
+      "characters": 328,
+      "audio_duration_sec": 33.725,
+      "elapsed_sec": 0.3057,
+      "process": {
+        "allocated_mib": 327.6,
+        "reserved_mib": 1356.0,
+        "peak_allocated_mib": 1022.0,
+        "peak_reserved_mib": 1356.0
+      },
+      "device_baseline_mib": 1713.6,
+      "device": {
+        "samples": 7,
+        "peak_used_mib": 2715.6,
+        "minimum_free_mib": 13587.0,
+        "total_mib": 16302.6
+      }
+    },
+    {
+      "language": "American English",
+      "voice": "af_aoede",
+      "name": "Aoede",
+      "characters": 328,
+      "audio_duration_sec": 21.4,
+      "elapsed_sec": 0.263,
+      "process": {
+        "allocated_mib": 328.6,
+        "reserved_mib": 1134.0,
+        "peak_allocated_mib": 769.0,
+        "peak_reserved_mib": 1134.0
+      },
+      "device_baseline_mib": 1713.6,
+      "device": {
+        "samples": 7,
+        "peak_used_mib": 2493.6,
+        "minimum_free_mib": 13809.0,
+        "total_mib": 16302.6
+      }
+    },
+    {
+      "language": "American English",
+      "voice": "af_kore",
+      "name": "Kore",
+      "characters": 328,
+      "audio_duration_sec": 20.65,
+      "elapsed_sec": 0.2689,
+      "process": {
+        "allocated_mib": 327.6,
+        "reserved_mib": 1076.0,
+        "peak_allocated_mib": 753.1,
+        "peak_reserved_mib": 1076.0
+      },
+      "device_baseline_mib": 1713.6,
+      "device": {
+        "samples": 7,
+        "peak_used_mib": 2437.6,
+        "minimum_free_mib": 13865.0,
+        "total_mib": 16302.6
+      }
+    },
+    {
+      "language": "American English",
+      "voice": "af_sarah",
+      "name": "Sarah",
+      "characters": 328,
+      "audio_duration_sec": 21.95,
+      "elapsed_sec": 0.2486,
+      "process": {
+        "allocated_mib": 328.6,
+        "reserved_mib": 1024.0,
+        "peak_allocated_mib": 781.1,
+        "peak_reserved_mib": 1024.0
+      },
+      "device_baseline_mib": 1715.6,
+      "device": {
+        "samples": 6,
+        "peak_used_mib": 2385.6,
+        "minimum_free_mib": 13917.0,
+        "total_mib": 16302.6
+      }
+    },
+    {
+      "language": "American English",
+      "voice": "af_nova",
+      "name": "Nova",
+      "characters": 328,
+      "audio_duration_sec": 18.85,
+      "elapsed_sec": 0.241,
+      "process": {
+        "allocated_mib": 327.6,
+        "reserved_mib": 990.0,
+        "peak_allocated_mib": 716.6,
+        "peak_reserved_mib": 990.0
+      },
+      "device_baseline_mib": 1715.6,
+      "device": {
+        "samples": 6,
+        "peak_used_mib": 2351.6,
+        "minimum_free_mib": 13951.0,
+        "total_mib": 16302.6
+      }
+    },
+    {
+      "language": "American English",
+      "voice": "af_sky",
+      "name": "Sky",
+      "characters": 328,
+      "audio_duration_sec": 20.55,
+      "elapsed_sec": 0.2446,
+      "process": {
+        "allocated_mib": 328.6,
+        "reserved_mib": 1088.0,
+        "peak_allocated_mib": 751.1,
+        "peak_reserved_mib": 1088.0
+      },
+      "device_baseline_mib": 1715.6,
+      "device": {
+        "samples": 6,
+        "peak_used_mib": 2449.6,
+        "minimum_free_mib": 13853.0,
+        "total_mib": 16302.6
+      }
+    },
+    {
+      "language": "American English",
+      "voice": "af_alloy",
+      "name": "Alloy",
+      "characters": 328,
+      "audio_duration_sec": 18.8,
+      "elapsed_sec": 0.2444,
+      "process": {
+        "allocated_mib": 327.6,
+        "reserved_mib": 990.0,
+        "peak_allocated_mib": 714.6,
+        "peak_reserved_mib": 990.0
+      },
+      "device_baseline_mib": 1715.6,
+      "device": {
+        "samples": 6,
+        "peak_used_mib": 2351.6,
+        "minimum_free_mib": 13951.0,
+        "total_mib": 16302.6
+      }
+    },
+    {
+      "language": "American English",
+      "voice": "af_jessica",
+      "name": "Jessica",
+      "characters": 328,
+      "audio_duration_sec": 18.725,
+      "elapsed_sec": 0.2262,
+      "process": {
+        "allocated_mib": 328.6,
+        "reserved_mib": 890.0,
+        "peak_allocated_mib": 714.0,
+        "peak_reserved_mib": 890.0
+      },
+      "device_baseline_mib": 1715.6,
+      "device": {
+        "samples": 6,
+        "peak_used_mib": 2251.6,
+        "minimum_free_mib": 14051.0,
+        "total_mib": 16302.6
+      }
+    },
+    {
+      "language": "American English",
+      "voice": "af_river",
+      "name": "River",
+      "characters": 328,
+      "audio_duration_sec": 18.475,
+      "elapsed_sec": 0.2653,
+      "process": {
+        "allocated_mib": 327.6,
+        "reserved_mib": 888.0,
+        "peak_allocated_mib": 710.6,
+        "peak_reserved_mib": 888.0
+      },
+      "device_baseline_mib": 1715.6,
+      "device": {
+        "samples": 7,
+        "peak_used_mib": 2249.6,
+        "minimum_free_mib": 14053.0,
+        "total_mib": 16302.6
+      }
+    },
+    {
+      "language": "American English",
+      "voice": "am_michael",
+      "name": "Michael",
+      "characters": 328,
+      "audio_duration_sec": 24.275,
+      "elapsed_sec": 0.2469,
+      "process": {
+        "allocated_mib": 328.6,
+        "reserved_mib": 1126.0,
+        "peak_allocated_mib": 825.8,
+        "peak_reserved_mib": 1126.0
+      },
+      "device_baseline_mib": 1715.6,
+      "device": {
+        "samples": 6,
+        "peak_used_mib": 2487.6,
+        "minimum_free_mib": 13815.0,
+        "total_mib": 16302.6
+      }
+    },
+    {
+      "language": "American English",
+      "voice": "am_fenrir",
+      "name": "Fenrir",
+      "characters": 328,
+      "audio_duration_sec": 20.3,
+      "elapsed_sec": 0.2216,
+      "process": {
+        "allocated_mib": 327.6,
+        "reserved_mib": 960.0,
+        "peak_allocated_mib": 747.4,
+        "peak_reserved_mib": 960.0
+      },
+      "device_baseline_mib": 1715.6,
+      "device": {
+        "samples": 6,
+        "peak_used_mib": 2321.6,
+        "minimum_free_mib": 13981.0,
+        "total_mib": 16302.6
+      }
+    },
+    {
+      "language": "American English",
+      "voice": "am_puck",
+      "name": "Puck",
+      "characters": 328,
+      "audio_duration_sec": 19.75,
+      "elapsed_sec": 0.2313,
+      "process": {
+        "allocated_mib": 328.6,
+        "reserved_mib": 1048.0,
+        "peak_allocated_mib": 735.8,
+        "peak_reserved_mib": 1048.0
+      },
+      "device_baseline_mib": 1715.6,
+      "device": {
+        "samples": 6,
+        "peak_used_mib": 2409.6,
+        "minimum_free_mib": 13893.0,
+        "total_mib": 16302.6
+      }
+    },
+    {
+      "language": "American English",
+      "voice": "am_echo",
+      "name": "Echo",
+      "characters": 328,
+      "audio_duration_sec": 19.15,
+      "elapsed_sec": 0.2424,
+      "process": {
+        "allocated_mib": 327.6,
+        "reserved_mib": 900.0,
+        "peak_allocated_mib": 721.9,
+        "peak_reserved_mib": 900.0
+      },
+      "device_baseline_mib": 1715.6,
+      "device": {
+        "samples": 6,
+        "peak_used_mib": 2261.6,
+        "minimum_free_mib": 14041.0,
+        "total_mib": 16302.6
+      }
+    },
+    {
+      "language": "American English",
+      "voice": "am_eric",
+      "name": "Eric",
+      "characters": 328,
+      "audio_duration_sec": 17.975,
+      "elapsed_sec": 0.1942,
+      "process": {
+        "allocated_mib": 328.6,
+        "reserved_mib": 950.0,
+        "peak_allocated_mib": 698.5,
+        "peak_reserved_mib": 950.0
+      },
+      "device_baseline_mib": 1715.6,
+      "device": {
+        "samples": 5,
+        "peak_used_mib": 2311.6,
+        "minimum_free_mib": 13991.0,
+        "total_mib": 16302.6
+      }
+    },
+    {
+      "language": "American English",
+      "voice": "am_liam",
+      "name": "Liam",
+      "characters": 328,
+      "audio_duration_sec": 19.0,
+      "elapsed_sec": 0.2174,
+      "process": {
+        "allocated_mib": 327.6,
+        "reserved_mib": 988.0,
+        "peak_allocated_mib": 720.8,
+        "peak_reserved_mib": 988.0
+      },
+      "device_baseline_mib": 1715.6,
+      "device": {
+        "samples": 6,
+        "peak_used_mib": 2349.6,
+        "minimum_free_mib": 13953.0,
+        "total_mib": 16302.6
+      }
+    },
+    {
+      "language": "American English",
+      "voice": "am_onyx",
+      "name": "Onyx",
+      "characters": 328,
+      "audio_duration_sec": 18.8,
+      "elapsed_sec": 0.1923,
+      "process": {
+        "allocated_mib": 328.6,
+        "reserved_mib": 990.0,
+        "peak_allocated_mib": 714.8,
+        "peak_reserved_mib": 990.0
+      },
+      "device_baseline_mib": 1715.6,
+      "device": {
+        "samples": 5,
+        "peak_used_mib": 2351.6,
+        "minimum_free_mib": 13951.0,
+        "total_mib": 16302.6
+      }
+    },
+    {
+      "language": "American English",
+      "voice": "am_santa",
+      "name": "Santa",
+      "characters": 328,
+      "audio_duration_sec": 20.95,
+      "elapsed_sec": 0.2125,
+      "process": {
+        "allocated_mib": 327.6,
+        "reserved_mib": 982.0,
+        "peak_allocated_mib": 762.1,
+        "peak_reserved_mib": 982.0
+      },
+      "device_baseline_mib": 1715.6,
+      "device": {
+        "samples": 6,
+        "peak_used_mib": 2343.6,
+        "minimum_free_mib": 13959.0,
+        "total_mib": 16302.6
+      }
+    },
+    {
+      "language": "American English",
+      "voice": "am_adam",
+      "name": "Adam",
+      "characters": 328,
+      "audio_duration_sec": 20.7,
+      "elapsed_sec": 0.2288,
+      "process": {
+        "allocated_mib": 328.6,
+        "reserved_mib": 1094.0,
+        "peak_allocated_mib": 755.4,
+        "peak_reserved_mib": 1094.0
+      },
+      "device_baseline_mib": 1715.6,
+      "device": {
+        "samples": 6,
+        "peak_used_mib": 2455.6,
+        "minimum_free_mib": 13847.0,
+        "total_mib": 16302.6
+      }
+    },
+    {
+      "language": "British English",
+      "voice": "bf_emma",
+      "name": "Emma",
+      "characters": 328,
+      "audio_duration_sec": 20.25,
+      "elapsed_sec": 0.2422,
+      "process": {
+        "allocated_mib": 327.6,
+        "reserved_mib": 960.0,
+        "peak_allocated_mib": 746.3,
+        "peak_reserved_mib": 960.0
+      },
+      "device_baseline_mib": 1715.6,
+      "device": {
+        "samples": 6,
+        "peak_used_mib": 2321.6,
+        "minimum_free_mib": 13981.0,
+        "total_mib": 16302.6
+      }
+    },
+    {
+      "language": "British English",
+      "voice": "bf_isabella",
+      "name": "Isabella",
+      "characters": 328,
+      "audio_duration_sec": 20.45,
+      "elapsed_sec": 0.2375,
+      "process": {
+        "allocated_mib": 328.6,
+        "reserved_mib": 964.0,
+        "peak_allocated_mib": 748.7,
+        "peak_reserved_mib": 964.0
+      },
+      "device_baseline_mib": 1715.6,
+      "device": {
+        "samples": 6,
+        "peak_used_mib": 2325.6,
+        "minimum_free_mib": 13977.0,
+        "total_mib": 16302.6
+      }
+    },
+    {
+      "language": "British English",
+      "voice": "bf_alice",
+      "name": "Alice",
+      "characters": 328,
+      "audio_duration_sec": 20.375,
+      "elapsed_sec": 0.2111,
+      "process": {
+        "allocated_mib": 327.6,
+        "reserved_mib": 962.0,
+        "peak_allocated_mib": 748.7,
+        "peak_reserved_mib": 962.0
+      },
+      "device_baseline_mib": 1715.6,
+      "device": {
+        "samples": 6,
+        "peak_used_mib": 2323.6,
+        "minimum_free_mib": 13979.0,
+        "total_mib": 16302.6
+      }
+    },
+    {
+      "language": "British English",
+      "voice": "bf_lily",
+      "name": "Lily",
+      "characters": 328,
+      "audio_duration_sec": 20.225,
+      "elapsed_sec": 0.2088,
+      "process": {
+        "allocated_mib": 328.6,
+        "reserved_mib": 996.0,
+        "peak_allocated_mib": 746.6,
+        "peak_reserved_mib": 996.0
+      },
+      "device_baseline_mib": 1715.6,
+      "device": {
+        "samples": 6,
+        "peak_used_mib": 2357.6,
+        "minimum_free_mib": 13945.0,
+        "total_mib": 16302.6
+      }
+    },
+    {
+      "language": "British English",
+      "voice": "bm_george",
+      "name": "George",
+      "characters": 328,
+      "audio_duration_sec": 22.675,
+      "elapsed_sec": 0.2142,
+      "process": {
+        "allocated_mib": 327.6,
+        "reserved_mib": 1062.0,
+        "peak_allocated_mib": 796.5,
+        "peak_reserved_mib": 1062.0
+      },
+      "device_baseline_mib": 1715.6,
+      "device": {
+        "samples": 6,
+        "peak_used_mib": 2423.6,
+        "minimum_free_mib": 13879.0,
+        "total_mib": 16302.6
+      }
+    },
+    {
+      "language": "British English",
+      "voice": "bm_fable",
+      "name": "Fable",
+      "characters": 328,
+      "audio_duration_sec": 18.8,
+      "elapsed_sec": 0.1862,
+      "process": {
+        "allocated_mib": 328.6,
+        "reserved_mib": 988.0,
+        "peak_allocated_mib": 715.1,
+        "peak_reserved_mib": 988.0
+      },
+      "device_baseline_mib": 1715.6,
+      "device": {
+        "samples": 5,
+        "peak_used_mib": 2349.6,
+        "minimum_free_mib": 13953.0,
+        "total_mib": 16302.6
+      }
+    },
+    {
+      "language": "British English",
+      "voice": "bm_lewis",
+      "name": "Lewis",
+      "characters": 328,
+      "audio_duration_sec": 22.925,
+      "elapsed_sec": 0.2103,
+      "process": {
+        "allocated_mib": 327.6,
+        "reserved_mib": 1064.0,
+        "peak_allocated_mib": 800.2,
+        "peak_reserved_mib": 1064.0
+      },
+      "device_baseline_mib": 1715.6,
+      "device": {
+        "samples": 6,
+        "peak_used_mib": 2425.6,
+        "minimum_free_mib": 13877.0,
+        "total_mib": 16302.6
+      }
+    },
+    {
+      "language": "British English",
+      "voice": "bm_daniel",
+      "name": "Daniel",
+      "characters": 328,
+      "audio_duration_sec": 18.85,
+      "elapsed_sec": 0.1808,
+      "process": {
+        "allocated_mib": 328.6,
+        "reserved_mib": 988.0,
+        "peak_allocated_mib": 717.1,
+        "peak_reserved_mib": 988.0
+      },
+      "device_baseline_mib": 1715.6,
+      "device": {
+        "samples": 5,
+        "peak_used_mib": 2349.6,
+        "minimum_free_mib": 13953.0,
+        "total_mib": 16302.6
+      }
+    },
+    {
+      "language": "Japanese",
+      "voice": "jf_alpha",
+      "name": "Alpha",
+      "characters": 174,
+      "audio_duration_sec": 24.6,
+      "elapsed_sec": 0.3492,
+      "process": {
+        "allocated_mib": 327.6,
+        "reserved_mib": 1052.0,
+        "peak_allocated_mib": 833.7,
+        "peak_reserved_mib": 1052.0
+      },
+      "device_baseline_mib": 1715.6,
+      "device": {
+        "samples": 6,
+        "peak_used_mib": 2413.6,
+        "minimum_free_mib": 13889.0,
+        "total_mib": 16302.6
+      }
+    },
+    {
+      "language": "Japanese",
+      "voice": "jf_gongitsune",
+      "name": "Gongitsune",
+      "characters": 174,
+      "audio_duration_sec": 30.55,
+      "elapsed_sec": 0.2509,
+      "process": {
+        "allocated_mib": 328.6,
+        "reserved_mib": 1318.0,
+        "peak_allocated_mib": 956.7,
+        "peak_reserved_mib": 1318.0
+      },
+      "device_baseline_mib": 1715.6,
+      "device": {
+        "samples": 6,
+        "peak_used_mib": 2679.6,
+        "minimum_free_mib": 13623.0,
+        "total_mib": 16302.6
+      }
+    },
+    {
+      "language": "Japanese",
+      "voice": "jf_nezumi",
+      "name": "Nezumi",
+      "characters": 174,
+      "audio_duration_sec": 30.95,
+      "elapsed_sec": 0.252,
+      "process": {
+        "allocated_mib": 327.6,
+        "reserved_mib": 1430.0,
+        "peak_allocated_mib": 962.2,
+        "peak_reserved_mib": 1430.0
+      },
+      "device_baseline_mib": 1715.6,
+      "device": {
+        "samples": 6,
+        "peak_used_mib": 2791.6,
+        "minimum_free_mib": 13511.0,
+        "total_mib": 16302.6
+      }
+    },
+    {
+      "language": "Japanese",
+      "voice": "jf_tebukuro",
+      "name": "Tebukuro",
+      "characters": 174,
+      "audio_duration_sec": 30.35,
+      "elapsed_sec": 0.2466,
+      "process": {
+        "allocated_mib": 328.6,
+        "reserved_mib": 1318.0,
+        "peak_allocated_mib": 952.8,
+        "peak_reserved_mib": 1318.0
+      },
+      "device_baseline_mib": 1715.6,
+      "device": {
+        "samples": 6,
+        "peak_used_mib": 2679.6,
+        "minimum_free_mib": 13623.0,
+        "total_mib": 16302.6
+      }
+    },
+    {
+      "language": "Japanese",
+      "voice": "jm_kumo",
+      "name": "Kumo",
+      "characters": 174,
+      "audio_duration_sec": 25.975,
+      "elapsed_sec": 0.2128,
+      "process": {
+        "allocated_mib": 327.6,
+        "reserved_mib": 1150.0,
+        "peak_allocated_mib": 859.3,
+        "peak_reserved_mib": 1150.0
+      },
+      "device_baseline_mib": 1715.6,
+      "device": {
+        "samples": 6,
+        "peak_used_mib": 2511.6,
+        "minimum_free_mib": 13791.0,
+        "total_mib": 16302.6
+      }
+    },
+    {
+      "language": "Mandarin Chinese",
+      "voice": "zf_xiaobei",
+      "name": "Xiaobei",
+      "characters": 143,
+      "audio_duration_sec": 23.4,
+      "elapsed_sec": 0.8238,
+      "process": {
+        "allocated_mib": 328.6,
+        "reserved_mib": 1068.0,
+        "peak_allocated_mib": 809.6,
+        "peak_reserved_mib": 1068.0
+      },
+      "device_baseline_mib": 1715.6,
+      "device": {
+        "samples": 15,
+        "peak_used_mib": 2429.6,
+        "minimum_free_mib": 13873.0,
+        "total_mib": 16302.6
+      }
+    },
+    {
+      "language": "Mandarin Chinese",
+      "voice": "zf_xiaoni",
+      "name": "Xiaoni",
+      "characters": 143,
+      "audio_duration_sec": 20.725,
+      "elapsed_sec": 0.2496,
+      "process": {
+        "allocated_mib": 327.6,
+        "reserved_mib": 1082.0,
+        "peak_allocated_mib": 756.8,
+        "peak_reserved_mib": 1082.0
+      },
+      "device_baseline_mib": 1715.6,
+      "device": {
+        "samples": 6,
+        "peak_used_mib": 2443.6,
+        "minimum_free_mib": 13859.0,
+        "total_mib": 16302.6
+      }
+    },
+    {
+      "language": "Mandarin Chinese",
+      "voice": "zf_xiaoxiao",
+      "name": "Xiaoxiao",
+      "characters": 143,
+      "audio_duration_sec": 19.925,
+      "elapsed_sec": 0.2202,
+      "process": {
+        "allocated_mib": 328.6,
+        "reserved_mib": 928.0,
+        "peak_allocated_mib": 739.1,
+        "peak_reserved_mib": 928.0
+      },
+      "device_baseline_mib": 1715.6,
+      "device": {
+        "samples": 6,
+        "peak_used_mib": 2289.6,
+        "minimum_free_mib": 14013.0,
+        "total_mib": 16302.6
+      }
+    },
+    {
+      "language": "Mandarin Chinese",
+      "voice": "zf_xiaoyi",
+      "name": "Xiaoyi",
+      "characters": 143,
+      "audio_duration_sec": 19.8,
+      "elapsed_sec": 0.2142,
+      "process": {
+        "allocated_mib": 327.6,
+        "reserved_mib": 1020.0,
+        "peak_allocated_mib": 736.2,
+        "peak_reserved_mib": 1020.0
+      },
+      "device_baseline_mib": 1715.6,
+      "device": {
+        "samples": 6,
+        "peak_used_mib": 2381.6,
+        "minimum_free_mib": 13921.0,
+        "total_mib": 16302.6
+      }
+    },
+    {
+      "language": "Mandarin Chinese",
+      "voice": "zm_yunjian",
+      "name": "Yunjian",
+      "characters": 143,
+      "audio_duration_sec": 19.05,
+      "elapsed_sec": 0.2173,
+      "process": {
+        "allocated_mib": 328.6,
+        "reserved_mib": 964.0,
+        "peak_allocated_mib": 723.5,
+        "peak_reserved_mib": 964.0
+      },
+      "device_baseline_mib": 1715.6,
+      "device": {
+        "samples": 6,
+        "peak_used_mib": 2325.6,
+        "minimum_free_mib": 13977.0,
+        "total_mib": 16302.6
+      }
+    },
+    {
+      "language": "Mandarin Chinese",
+      "voice": "zm_yunxi",
+      "name": "Yunxi",
+      "characters": 143,
+      "audio_duration_sec": 18.025,
+      "elapsed_sec": 0.2138,
+      "process": {
+        "allocated_mib": 327.6,
+        "reserved_mib": 942.0,
+        "peak_allocated_mib": 700.8,
+        "peak_reserved_mib": 942.0
+      },
+      "device_baseline_mib": 1715.6,
+      "device": {
+        "samples": 6,
+        "peak_used_mib": 2303.6,
+        "minimum_free_mib": 13999.0,
+        "total_mib": 16302.6
+      }
+    },
+    {
+      "language": "Mandarin Chinese",
+      "voice": "zm_yunxia",
+      "name": "Yunxia",
+      "characters": 143,
+      "audio_duration_sec": 21.1,
+      "elapsed_sec": 0.2323,
+      "process": {
+        "allocated_mib": 328.6,
+        "reserved_mib": 988.0,
+        "peak_allocated_mib": 767.2,
+        "peak_reserved_mib": 988.0
+      },
+      "device_baseline_mib": 1715.6,
+      "device": {
+        "samples": 6,
+        "peak_used_mib": 2349.6,
+        "minimum_free_mib": 13953.0,
+        "total_mib": 16302.6
+      }
+    },
+    {
+      "language": "Mandarin Chinese",
+      "voice": "zm_yunyang",
+      "name": "Yunyang",
+      "characters": 143,
+      "audio_duration_sec": 17.675,
+      "elapsed_sec": 0.1973,
+      "process": {
+        "allocated_mib": 327.6,
+        "reserved_mib": 844.0,
+        "peak_allocated_mib": 695.8,
+        "peak_reserved_mib": 844.0
+      },
+      "device_baseline_mib": 1715.6,
+      "device": {
+        "samples": 5,
+        "peak_used_mib": 2205.6,
+        "minimum_free_mib": 14097.0,
+        "total_mib": 16302.6
+      }
+    },
+    {
+      "language": "Spanish",
+      "voice": "ef_dora",
+      "name": "Dora",
+      "characters": 354,
+      "audio_duration_sec": 20.7,
+      "elapsed_sec": 0.1871,
+      "process": {
+        "allocated_mib": 328.6,
+        "reserved_mib": 1096.0,
+        "peak_allocated_mib": 756.9,
+        "peak_reserved_mib": 1096.0
+      },
+      "device_baseline_mib": 1715.6,
+      "device": {
+        "samples": 5,
+        "peak_used_mib": 2457.6,
+        "minimum_free_mib": 13845.0,
+        "total_mib": 16302.6
+      }
+    },
+    {
+      "language": "Spanish",
+      "voice": "em_alex",
+      "name": "Alex",
+      "characters": 354,
+      "audio_duration_sec": 20.725,
+      "elapsed_sec": 0.2108,
+      "process": {
+        "allocated_mib": 327.6,
+        "reserved_mib": 1076.0,
+        "peak_allocated_mib": 756.4,
+        "peak_reserved_mib": 1076.0
+      },
+      "device_baseline_mib": 1715.6,
+      "device": {
+        "samples": 6,
+        "peak_used_mib": 2437.6,
+        "minimum_free_mib": 13865.0,
+        "total_mib": 16302.6
+      }
+    },
+    {
+      "language": "Spanish",
+      "voice": "em_santa",
+      "name": "Santa",
+      "characters": 354,
+      "audio_duration_sec": 20.625,
+      "elapsed_sec": 0.1951,
+      "process": {
+        "allocated_mib": 328.6,
+        "reserved_mib": 1090.0,
+        "peak_allocated_mib": 752.9,
+        "peak_reserved_mib": 1090.0
+      },
+      "device_baseline_mib": 1715.6,
+      "device": {
+        "samples": 5,
+        "peak_used_mib": 2451.6,
+        "minimum_free_mib": 13851.0,
+        "total_mib": 16302.6
+      }
+    },
+    {
+      "language": "French",
+      "voice": "ff_siwis",
+      "name": "Siwis",
+      "characters": 391,
+      "audio_duration_sec": 21.1,
+      "elapsed_sec": 0.2171,
+      "process": {
+        "allocated_mib": 327.6,
+        "reserved_mib": 982.0,
+        "peak_allocated_mib": 764.2,
+        "peak_reserved_mib": 982.0
+      },
+      "device_baseline_mib": 1715.6,
+      "device": {
+        "samples": 6,
+        "peak_used_mib": 2343.6,
+        "minimum_free_mib": 13959.0,
+        "total_mib": 16302.6
+      }
+    },
+    {
+      "language": "Hindi",
+      "voice": "hf_alpha",
+      "name": "Alpha",
+      "characters": 326,
+      "audio_duration_sec": 23.0,
+      "elapsed_sec": 0.2377,
+      "process": {
+        "allocated_mib": 328.6,
+        "reserved_mib": 1090.0,
+        "peak_allocated_mib": 801.8,
+        "peak_reserved_mib": 1090.0
+      },
+      "device_baseline_mib": 1715.6,
+      "device": {
+        "samples": 6,
+        "peak_used_mib": 2451.6,
+        "minimum_free_mib": 13851.0,
+        "total_mib": 16302.6
+      }
+    },
+    {
+      "language": "Hindi",
+      "voice": "hf_beta",
+      "name": "Beta",
+      "characters": 326,
+      "audio_duration_sec": 19.55,
+      "elapsed_sec": 0.2349,
+      "process": {
+        "allocated_mib": 327.6,
+        "reserved_mib": 916.0,
+        "peak_allocated_mib": 731.7,
+        "peak_reserved_mib": 916.0
+      },
+      "device_baseline_mib": 1715.6,
+      "device": {
+        "samples": 6,
+        "peak_used_mib": 2277.6,
+        "minimum_free_mib": 14025.0,
+        "total_mib": 16302.6
+      }
+    },
+    {
+      "language": "Hindi",
+      "voice": "hm_omega",
+      "name": "Omega",
+      "characters": 326,
+      "audio_duration_sec": 23.175,
+      "elapsed_sec": 0.2628,
+      "process": {
+        "allocated_mib": 328.6,
+        "reserved_mib": 1208.0,
+        "peak_allocated_mib": 805.8,
+        "peak_reserved_mib": 1208.0
+      },
+      "device_baseline_mib": 1715.6,
+      "device": {
+        "samples": 7,
+        "peak_used_mib": 2569.6,
+        "minimum_free_mib": 13733.0,
+        "total_mib": 16302.6
+      }
+    },
+    {
+      "language": "Hindi",
+      "voice": "hm_psi",
+      "name": "Psi",
+      "characters": 326,
+      "audio_duration_sec": 23.6,
+      "elapsed_sec": 0.2209,
+      "process": {
+        "allocated_mib": 327.6,
+        "reserved_mib": 1070.0,
+        "peak_allocated_mib": 817.3,
+        "peak_reserved_mib": 1070.0
+      },
+      "device_baseline_mib": 1715.6,
+      "device": {
+        "samples": 6,
+        "peak_used_mib": 2431.6,
+        "minimum_free_mib": 13871.0,
+        "total_mib": 16302.6
+      }
+    },
+    {
+      "language": "Italian",
+      "voice": "if_sara",
+      "name": "Sara",
+      "characters": 332,
+      "audio_duration_sec": 19.5,
+      "elapsed_sec": 0.2131,
+      "process": {
+        "allocated_mib": 328.6,
+        "reserved_mib": 944.0,
+        "peak_allocated_mib": 732.7,
+        "peak_reserved_mib": 944.0
+      },
+      "device_baseline_mib": 1715.6,
+      "device": {
+        "samples": 6,
+        "peak_used_mib": 2305.6,
+        "minimum_free_mib": 13997.0,
+        "total_mib": 16302.6
+      }
+    },
+    {
+      "language": "Italian",
+      "voice": "im_nicola",
+      "name": "Nicola",
+      "characters": 332,
+      "audio_duration_sec": 21.375,
+      "elapsed_sec": 0.2357,
+      "process": {
+        "allocated_mib": 327.6,
+        "reserved_mib": 1152.0,
+        "peak_allocated_mib": 767.0,
+        "peak_reserved_mib": 1152.0
+      },
+      "device_baseline_mib": 1715.6,
+      "device": {
+        "samples": 6,
+        "peak_used_mib": 2513.6,
+        "minimum_free_mib": 13789.0,
+        "total_mib": 16302.6
+      }
+    },
+    {
+      "language": "Brazilian Portuguese",
+      "voice": "pf_dora",
+      "name": "Dora",
+      "characters": 331,
+      "audio_duration_sec": 19.65,
+      "elapsed_sec": 0.2382,
+      "process": {
+        "allocated_mib": 328.6,
+        "reserved_mib": 1048.0,
+        "peak_allocated_mib": 733.1,
+        "peak_reserved_mib": 1048.0
+      },
+      "device_baseline_mib": 1715.6,
+      "device": {
+        "samples": 6,
+        "peak_used_mib": 2409.6,
+        "minimum_free_mib": 13893.0,
+        "total_mib": 16302.6
+      }
+    },
+    {
+      "language": "Brazilian Portuguese",
+      "voice": "pm_alex",
+      "name": "Alex",
+      "characters": 331,
+      "audio_duration_sec": 19.75,
+      "elapsed_sec": 0.1882,
+      "process": {
+        "allocated_mib": 327.6,
+        "reserved_mib": 1048.0,
+        "peak_allocated_mib": 735.1,
+        "peak_reserved_mib": 1048.0
+      },
+      "device_baseline_mib": 1715.6,
+      "device": {
+        "samples": 5,
+        "peak_used_mib": 2409.6,
+        "minimum_free_mib": 13893.0,
+        "total_mib": 16302.6
+      }
+    },
+    {
+      "language": "Brazilian Portuguese",
+      "voice": "pm_santa",
+      "name": "Santa",
+      "characters": 331,
+      "audio_duration_sec": 19.775,
+      "elapsed_sec": 0.1992,
+      "process": {
+        "allocated_mib": 328.6,
+        "reserved_mib": 1048.0,
+        "peak_allocated_mib": 735.4,
+        "peak_reserved_mib": 1048.0
+      },
+      "device_baseline_mib": 1715.6,
+      "device": {
+        "samples": 5,
+        "peak_used_mib": 2409.6,
+        "minimum_free_mib": 13893.0,
+        "total_mib": 16302.6
+      }
+    },
+    {
+      "language": "German",
+      "voice": "df_victoria",
+      "name": "Victoria",
+      "characters": 399,
+      "audio_duration_sec": 26.85,
+      "elapsed_sec": 1.2577,
+      "process": {
+        "allocated_mib": 647.3,
+        "reserved_mib": 1532.0,
+        "peak_allocated_mib": 1198.1,
+        "peak_reserved_mib": 1532.0
+      },
+      "device_baseline_mib": 1715.6,
+      "device": {
+        "samples": 26,
+        "peak_used_mib": 2893.6,
+        "minimum_free_mib": 13409.0,
+        "total_mib": 16302.6
+      }
+    },
+    {
+      "language": "German",
+      "voice": "dm_martin",
+      "name": "Martin",
+      "characters": 399,
+      "audio_duration_sec": 22.475,
+      "elapsed_sec": 1.0583,
+      "process": {
+        "allocated_mib": 965.9,
+        "reserved_mib": 1658.0,
+        "peak_allocated_mib": 1430.7,
+        "peak_reserved_mib": 1658.0
+      },
+      "device_baseline_mib": 2045.6,
+      "device": {
+        "samples": 22,
+        "peak_used_mib": 3019.6,
+        "minimum_free_mib": 13283.0,
+        "total_mib": 16302.6
+      }
+    },
+    {
+      "language": "Vietnamese",
+      "voice": "diem_trinh",
+      "name": "Diễm Trinh",
+      "characters": 330,
+      "audio_duration_sec": 16.575,
+      "elapsed_sec": 1.1771,
+      "process": {
+        "allocated_mib": 1283.5,
+        "reserved_mib": 1800.0,
+        "peak_allocated_mib": 1627.7,
+        "peak_reserved_mib": 1800.0
+      },
+      "device_baseline_mib": 2349.6,
+      "device": {
+        "samples": 24,
+        "peak_used_mib": 3161.6,
+        "minimum_free_mib": 13141.0,
+        "total_mib": 16302.6
+      }
+    },
+    {
+      "language": "Vietnamese",
+      "voice": "hung_thinh",
+      "name": "Hưng Thịnh",
+      "characters": 330,
+      "audio_duration_sec": 16.425,
+      "elapsed_sec": 0.2639,
+      "process": {
+        "allocated_mib": 1283.5,
+        "reserved_mib": 1876.0,
+        "peak_allocated_mib": 1624.5,
+        "peak_reserved_mib": 1876.0
+      },
+      "device_baseline_mib": 2665.6,
+      "device": {
+        "samples": 7,
+        "peak_used_mib": 3237.6,
+        "minimum_free_mib": 13065.0,
+        "total_mib": 16302.6
+      }
+    },
+    {
+      "language": "Vietnamese",
+      "voice": "mai_linh",
+      "name": "Mai Linh",
+      "characters": 330,
+      "audio_duration_sec": 16.35,
+      "elapsed_sec": 0.2755,
+      "process": {
+        "allocated_mib": 1285.5,
+        "reserved_mib": 1876.0,
+        "peak_allocated_mib": 1625.2,
+        "peak_reserved_mib": 1876.0
+      },
+      "device_baseline_mib": 2685.6,
+      "device": {
+        "samples": 7,
+        "peak_used_mib": 3237.6,
+        "minimum_free_mib": 13065.0,
+        "total_mib": 16302.6
+      }
+    },
+    {
+      "language": "Vietnamese",
+      "voice": "mai_loan",
+      "name": "Mai Loan",
+      "characters": 330,
+      "audio_duration_sec": 20.0,
+      "elapsed_sec": 0.2746,
+      "process": {
+        "allocated_mib": 1284.5,
+        "reserved_mib": 1932.0,
+        "peak_allocated_mib": 1699.2,
+        "peak_reserved_mib": 1932.0
+      },
+      "device_baseline_mib": 2665.6,
+      "device": {
+        "samples": 7,
+        "peak_used_mib": 3293.6,
+        "minimum_free_mib": 13009.0,
+        "total_mib": 16302.6
+      }
+    },
+    {
+      "language": "Vietnamese",
+      "voice": "manh_dung",
+      "name": "Mạnh Dũng",
+      "characters": 330,
+      "audio_duration_sec": 17.525,
+      "elapsed_sec": 0.2648,
+      "process": {
+        "allocated_mib": 1283.5,
+        "reserved_mib": 1826.0,
+        "peak_allocated_mib": 1649.0,
+        "peak_reserved_mib": 1826.0
+      },
+      "device_baseline_mib": 2685.6,
+      "device": {
+        "samples": 7,
+        "peak_used_mib": 3187.6,
+        "minimum_free_mib": 13115.0,
+        "total_mib": 16302.6
+      }
+    },
+    {
+      "language": "Vietnamese",
+      "voice": "my_yen",
+      "name": "Mỹ Yến",
+      "characters": 330,
+      "audio_duration_sec": 19.0,
+      "elapsed_sec": 0.2643,
+      "process": {
+        "allocated_mib": 1285.5,
+        "reserved_mib": 1946.0,
+        "peak_allocated_mib": 1680.0,
+        "peak_reserved_mib": 1946.0
+      },
+      "device_baseline_mib": 2685.6,
+      "device": {
+        "samples": 7,
+        "peak_used_mib": 3307.6,
+        "minimum_free_mib": 12995.0,
+        "total_mib": 16302.6
+      }
+    },
+    {
+      "language": "Vietnamese",
+      "voice": "ngoc_huyen",
+      "name": "Ngọc Huyền",
+      "characters": 330,
+      "audio_duration_sec": 17.75,
+      "elapsed_sec": 0.2739,
+      "process": {
+        "allocated_mib": 1284.5,
+        "reserved_mib": 1824.0,
+        "peak_allocated_mib": 1654.6,
+        "peak_reserved_mib": 1824.0
+      },
+      "device_baseline_mib": 2665.6,
+      "device": {
+        "samples": 7,
+        "peak_used_mib": 3185.6,
+        "minimum_free_mib": 13117.0,
+        "total_mib": 16302.6
+      }
+    },
+    {
+      "language": "Vietnamese",
+      "voice": "phat_tai",
+      "name": "Phát Tài",
+      "characters": 330,
+      "audio_duration_sec": 17.7,
+      "elapsed_sec": 0.2706,
+      "process": {
+        "allocated_mib": 1284.5,
+        "reserved_mib": 1794.0,
+        "peak_allocated_mib": 1652.7,
+        "peak_reserved_mib": 1794.0
+      },
+      "device_baseline_mib": 2685.6,
+      "device": {
+        "samples": 7,
+        "peak_used_mib": 3155.6,
+        "minimum_free_mib": 13147.0,
+        "total_mib": 16302.6
+      }
+    },
+    {
+      "language": "Vietnamese",
+      "voice": "thanh_dat",
+      "name": "Thành Đạt",
+      "characters": 330,
+      "audio_duration_sec": 18.675,
+      "elapsed_sec": 0.2697,
+      "process": {
+        "allocated_mib": 1283.5,
+        "reserved_mib": 1814.0,
+        "peak_allocated_mib": 1670.3,
+        "peak_reserved_mib": 1814.0
+      },
+      "device_baseline_mib": 2685.6,
+      "device": {
+        "samples": 7,
+        "peak_used_mib": 3175.6,
+        "minimum_free_mib": 13127.0,
+        "total_mib": 16302.6
+      }
+    },
+    {
+      "language": "Vietnamese",
+      "voice": "thuc_trinh",
+      "name": "Thục Trinh",
+      "characters": 330,
+      "audio_duration_sec": 16.4,
+      "elapsed_sec": 0.2693,
+      "process": {
+        "allocated_mib": 1283.5,
+        "reserved_mib": 1848.0,
+        "peak_allocated_mib": 1624.2,
+        "peak_reserved_mib": 1848.0
+      },
+      "device_baseline_mib": 2665.6,
+      "device": {
+        "samples": 7,
+        "peak_used_mib": 3209.6,
+        "minimum_free_mib": 13093.0,
+        "total_mib": 16302.6
+      }
+    },
+    {
+      "language": "Vietnamese",
+      "voice": "tuan_ngoc",
+      "name": "Tuấn Ngọc",
+      "characters": 330,
+      "audio_duration_sec": 16.975,
+      "elapsed_sec": 0.2685,
+      "process": {
+        "allocated_mib": 1284.5,
+        "reserved_mib": 1778.0,
+        "peak_allocated_mib": 1638.7,
+        "peak_reserved_mib": 1778.0
+      },
+      "device_baseline_mib": 2685.6,
+      "device": {
+        "samples": 7,
+        "peak_used_mib": 3139.6,
+        "minimum_free_mib": 13163.0,
+        "total_mib": 16302.6
+      }
+    },
+    {
+      "language": "Vietnamese",
+      "voice": "storyvert",
+      "name": "Storyvert",
+      "characters": 330,
+      "audio_duration_sec": 21.375,
+      "elapsed_sec": 0.246,
+      "process": {
+        "allocated_mib": 1285.5,
+        "reserved_mib": 2052.0,
+        "peak_allocated_mib": 1725.1,
+        "peak_reserved_mib": 2052.0
+      },
+      "device_baseline_mib": 2685.6,
+      "device": {
+        "samples": 6,
+        "peak_used_mib": 3413.6,
+        "minimum_free_mib": 12889.0,
+        "total_mib": 16302.6
+      }
+    },
+    {
+      "language": "Vietnamese",
+      "voice": "duc_an",
+      "name": "Đức An",
+      "characters": 330,
+      "audio_duration_sec": 17.25,
+      "elapsed_sec": 0.2598,
+      "process": {
+        "allocated_mib": 1284.5,
+        "reserved_mib": 1872.0,
+        "peak_allocated_mib": 1642.2,
+        "peak_reserved_mib": 1872.0
+      },
+      "device_baseline_mib": 2665.6,
+      "device": {
+        "samples": 7,
+        "peak_used_mib": 3235.6,
+        "minimum_free_mib": 13067.0,
+        "total_mib": 16302.6
+      }
+    },
+    {
+      "language": "Vietnamese",
+      "voice": "duc_duy",
+      "name": "Đức Duy",
+      "characters": 330,
+      "audio_duration_sec": 16.0,
+      "elapsed_sec": 0.2597,
+      "process": {
+        "allocated_mib": 1283.5,
+        "reserved_mib": 1758.0,
+        "peak_allocated_mib": 1618.1,
+        "peak_reserved_mib": 1758.0
+      },
+      "device_baseline_mib": 2687.6,
+      "device": {
+        "samples": 6,
+        "peak_used_mib": 3121.6,
+        "minimum_free_mib": 13181.0,
+        "total_mib": 16302.6
+      }
+    }
+  ]
+}

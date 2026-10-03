@@ -289,6 +289,8 @@ task benchmark-vram VRAM_BENCHMARK_COMMENT="clean GPU baseline"
 
 The report separates process-specific allocated/reserved VRAM from whole-device usage, and records lifecycle, per-language, and per-voice peaks. Use `task benchmark-vram-smoke` for a one-voice implementation check that does not update history. See [`benchmarks/vram`](benchmarks/vram/) for the full methodology and reports.
 
+The official `v0.4-snapshot` baseline was recorded on a quiet NVIDIA GeForce RTX 5070 Ti across all 70 voices and 11 languages, with no failed generation. The initial standard Kokoro model used 317.6 MiB allocated and 332.0 MiB reserved before inference; the German and Vietnamese checkpoints then loaded lazily as their voices were reached. The sequential single-request run peaked at 1725.1 MiB allocated and 2052.0 MiB reserved by the Kokoro process. Whole-device usage rose from the benchmark's 1293.6 MiB idle reference to 3413.6 MiB; this includes the Windows display stack and other non-Kokoro GPU allocations. Vietnamese was the heaviest model family, with `storyvert` setting the overall process peak. The complete lifecycle, language, and voice measurements are in [`VRAM_BENCHMARKS.md`](benchmarks/vram/VRAM_BENCHMARKS.md) and [`DETAILS.md`](benchmarks/vram/DETAILS.md).
+
 ---
 
 ## Version History
@@ -346,6 +348,7 @@ The data volume is recommended but optional. Without it, the same files are stor
 - Ported shared UI hardening from Qwen3-ASR-STT: malformed GPU responses no longer break the System view, the icon font is served with the correct MIME type, and Lucide is reduced to the glyphs the Kokoro workspace actually uses.
 - Added a repeatable HTTP voice-generation benchmark sourced directly from the examples in `examples/voices.js`. It warms one voice per language, measures every voice five times, and records overall, per-language, and per-voice latency, audio duration, realtime factor, and realtime speed in machine-readable and Markdown reports.
 - Added a separate isolated-container VRAM benchmark that records memory before runtime initialization, after voice preparation, after model loading, and during every voice. It reports exact Kokoro-process PyTorch peaks alongside sampled whole-device peaks without changing the public API.
+- Recorded the official quiet-GPU RTX 5070 Ti VRAM baseline across all 70 voices and 11 languages with no failures: 317.6 MiB allocated for the initial standard model, 1725.1 MiB peak process allocation, and 2052.0 MiB peak process reservation after lazy model-family loading.
 - Added German synthesis with dedicated Misaki normalization/G2P, Martin and Victoria voice packs, and their matching Kokoro-compatible checkpoints. The full image bakes only deployable inference assets; each model family remains lazy in CPU/GPU memory.
 - Added Vietnamese synthesis using the ContextBoxAI Kokoro Vietnamese checkpoint, its custom vocabulary, all fourteen upstream voice packs, and pinned `vig2p`/`sea-g2p` phonemization. The shared Vietnamese weights appear as one independently selectable model pack and the unused ONNX export is not baked into the image.
 - Added a third-party notice covering the upstream Kokoro implementation, language processing dependencies, model and voice assets, bundled browser libraries, and Docker runtime components.
@@ -356,10 +359,9 @@ The data volume is recommended but optional. Without it, the same files are stor
 
 #### Planned Work
 
-1. Record the official VRAM baseline on a quiet GPU using the new lifecycle, per-language, and per-voice benchmark.
-2. Standardize the API surface, including an OpenAI-compatible speech endpoint, while retaining the existing `/tts/*` endpoints for backward compatibility.
-3. Prove whether the system `espeak-ng` package can be removed in favor of the bundled `espeakng-loader` runtime without reducing language support or offline reliability.
-4. Record fresh Docker and GitHub Actions build baselines with only the immutable UniDic archive cached. Add another selective cache only when measurements show that restoring and saving it is faster than downloading or rebuilding it. The checksum-verified local-network UniDic mirror is implemented for development builds; complete full/tiny BuildKit graphs must not be cached again.
+1. Standardize the API surface, including an OpenAI-compatible speech endpoint, while retaining the existing `/tts/*` endpoints for backward compatibility.
+2. Prove whether the system `espeak-ng` package can be removed in favor of the bundled `espeakng-loader` runtime without reducing language support or offline reliability.
+3. Record fresh Docker and GitHub Actions build baselines with only the immutable UniDic archive cached. Add another selective cache only when measurements show that restoring and saving it is faster than downloading or rebuilding it. The checksum-verified local-network UniDic mirror is implemented for development builds; complete full/tiny BuildKit graphs must not be cached again.
 
 ### v0.3
 
