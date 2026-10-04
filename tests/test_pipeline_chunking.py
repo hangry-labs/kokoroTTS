@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import unittest
+from unittest.mock import patch
 
 from kokorotts.pipeline import KPipeline
 
@@ -31,6 +32,12 @@ class PipelineChunkingTest(unittest.TestCase):
 
     def test_cjk_sentence_punctuation_is_used_without_losing_text(self) -> None:
         self.assert_complete_chunks((("文" * 260) + "。") * 5)
+
+    def test_japanese_pipeline_uses_pyopenjtalk(self) -> None:
+        with patch("misaki.ja.JAG2P") as g2p:
+            KPipeline(lang_code="j", model=False)
+
+        g2p.assert_called_once_with(version="pyopenjtalk")
 
 
 if __name__ == "__main__":

@@ -21,6 +21,9 @@ COPY --from=pyopenjtalk-wheel-builder /wheels/ /
 FROM python:3.13-slim AS base
 
 ARG PYOPENJTALK_VERSION
+ARG OPEN_JTALK_DICT_VERSION=1.11
+ARG OPEN_JTALK_DICT_URL=https://github.com/r9y9/open_jtalk/releases/download/v1.11.1/open_jtalk_dic_utf_8-1.11.tar.gz
+ARG OPEN_JTALK_DICT_SHA256=fe6ba0e43542cef98339abdffd903e062008ea170b04e7e2a35da805902f382a
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -50,23 +53,15 @@ RUN --mount=type=bind,source=.build-cache/wheels,target=/tmp/wheel-cache,ro \
 RUN python -m pip install --extra-index-url https://download.pytorch.org/whl/cu130 -r /app/requirements.txt \
     && python -m pip install https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl
 
-FROM base AS language-builder
+COPY scripts/install_open_jtalk_dictionary.py /tmp/install_open_jtalk_dictionary.py
 
-ARG UNIDIC_VERSION=3.1.0+2021-08-31
-ARG UNIDIC_DOWNLOAD_URL=https://cotonoha-dic.s3-ap-northeast-1.amazonaws.com/unidic-3.1.0.zip
-ARG UNIDIC_SHA256=638718c4c63625ab300de4c92c67925d54c0e9e3830009eaa992f29819d59c43
+RUN python /tmp/install_open_jtalk_dictionary.py \
+        --version "${OPEN_JTALK_DICT_VERSION}" \
+        --url "${OPEN_JTALK_DICT_URL}" \
+        --sha256 "${OPEN_JTALK_DICT_SHA256}" \
+    && rm /tmp/install_open_jtalk_dictionary.py
 
-COPY scripts/install_unidic.py /tmp/install_unidic.py
-
-RUN --mount=type=bind,source=.build-cache/unidic,target=/tmp/unidic-cache,ro \
-    python /tmp/install_unidic.py \
-        --version "${UNIDIC_VERSION}" \
-        --url "${UNIDIC_DOWNLOAD_URL}" \
-        --sha256 "${UNIDIC_SHA256}" \
-        --archive /tmp/unidic-cache/unidic-3.1.0.zip \
-    && rm /tmp/install_unidic.py
-
-FROM language-builder AS app-builder
+FROM base AS app-builder
 
 COPY pyproject.toml README.md LICENSE THIRD_PARTY_NOTICES.md VERSION /app/
 COPY kokorotts /app/kokorotts

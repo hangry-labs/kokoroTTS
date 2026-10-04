@@ -427,8 +427,8 @@ The data volume is recommended but optional. Without it, the same files are stor
 - Added German synthesis with dedicated Misaki normalization/G2P, Martin and Victoria voice packs, and their matching Kokoro-compatible checkpoints. The full image bakes only deployable inference assets; each model family remains lazy in CPU/GPU memory.
 - Added Vietnamese synthesis using the ContextBoxAI Kokoro Vietnamese checkpoint, its custom vocabulary, all fourteen upstream voice packs, and pinned `vig2p`/`sea-g2p` phonemization. The shared Vietnamese weights appear as one independently selectable model pack and the unused ONNX export is not baked into the image.
 - Added a third-party notice covering the upstream Kokoro implementation, language processing dependencies, model and voice assets, bundled browser libraries, and Docker runtime components.
-- Added a checksum-verified UniDic download override for fast local-network builds while retaining the public upstream source as the portable default.
-- Replaced the separate full/tiny `mode=max` GitHub Actions caches with selective inputs: the checksum-verified immutable UniDic archive and an integrity-tested compiled `pyopenjtalk` wheel keyed by platform, Python ABI, package version, and Dockerfile recipe. Complete Docker build graphs, CUDA dependencies, and model layers are not imported or exported through the Actions cache.
+- Replaced the Japanese Cutlet/Fugashi frontend with pyopenjtalk for pitch-aware Japanese phonemization, removing the much larger UniDic runtime while preserving offline Japanese synthesis.
+- Replaced the separate full/tiny `mode=max` GitHub Actions caches with a selective, integrity-tested compiled `pyopenjtalk` wheel keyed by platform, Python ABI, package version, and Dockerfile recipe. Complete Docker build graphs, CUDA dependencies, and model layers are not imported or exported through the Actions cache.
 - Unified full and tiny publishing in one Buildx workflow so both variants reuse the same dependency graph without loading either image into the runner's Docker store. Baked model prefetch depends only on the pinned catalog/manifest files, and its assets occupy an independent final-image layer, so unrelated UI/API changes reuse both the download step and large model layer.
 - Added GitHub Container Registry as an official mirror. One workflow publishes identical full and tiny tags to Docker Hub and GHCR: `main` owns the moving `latest`/`latest_tiny` tags, while a release tag owns immutable `vX.Y`/`vX.Y_tiny` images.
 - Added persisted deployment model-pack settings to the System tab and HTTP API. Operators can enable independently loaded checkpoints while voices that share the same weights remain together, making each choice meaningful for downloads and VRAM without changing the backward-compatible all-models default.
@@ -478,7 +478,7 @@ docker run -p 7860:7860 --gpus all -v kokorotts_hf_cache:/app/.cache/huggingface
 - Removed the obsolete espeak language warning that incorrectly claimed non-English long-text chunking was unavailable.
 - Added a persistent Docker Hugging Face cache volume for task-run containers, with `task nuke` removing it for from-scratch validation.
 - Added a separate tiny Docker image target and task workflow for cache-volume-based model downloads while keeping the normal image fully baked for offline use.
-- Reordered Docker build stages so documentation, version, and application edits reuse the pinned dependency and UniDic layers instead of repeating the expensive cold build.
+- Reordered Docker build stages so documentation, version, and application edits reuse pinned dependency and language-data layers instead of repeating the expensive cold build.
 - Added persistent BuildKit layer caches to the full and tiny GitHub Actions workflows so hosted builds can reuse those boundaries across runs.
 - Hardened Taskfile API readiness checks so transient startup responses are retried before smoke and client tests begin.
 - Updated Docker publish workflows for separate full (`vX.Y`/`latest`) and tiny (`vX.Y_tiny`/`latest_tiny`) image tracks, explicit `hangrylabs/kokorotts` publishing, and manual release dispatch with a selected checkout ref.
@@ -505,7 +505,7 @@ docker run -p 7860:7860 --gpus "device=1" -e CUDA_VISIBLE_DEVICES=1 hangrylabs/k
 - Added a Hangry Labs examples page with generated MP3 product-intro samples, native-language page selection, and language filtering.
 - Added pinned dependency workflow with `requirements.in`, resolved `requirements.txt`, and `task deps`.
 - Removed old Gatsby/Frankenstein long-text demo buttons and unused bundled text files.
-- Added multilingual Docker prefetch support, including UniDic for offline Japanese synthesis.
+- Added multilingual Docker prefetch support, including Japanese language data for offline synthesis.
 - Added `task imageapi-voice` and `task imageapi-format` for practical smoke tests.
 
 ### v0.0.1

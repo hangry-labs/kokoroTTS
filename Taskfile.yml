@@ -12,7 +12,6 @@ vars:
   LEGACY_HF_CACHE_VOLUME: kokorotts_hf_cache
   HF_HUB_OFFLINE: '1'
   TRANSFORMERS_OFFLINE: '1'
-  UNIDIC_LAN_URL: 'http://192.168.0.54:5080/unidic/unidic-3.1.0.zip'
   CONTAINER: kokorotts
   CONTAINER_LOCAL: kokorotts_local
   TEMP_WAV: '%TEMP%\\kokorotts_task.wav'
@@ -47,16 +46,6 @@ tasks:
     desc: Build local tiny KokoroTTS Docker image without baked model/voice cache
     cmds:
       - cmd /c docker build --target tiny -t {{.TINY_IMAGE}} .
-
-  image-lan:
-    desc: Build the baked image using the LAN UniDic mirror
-    cmds:
-      - cmd /c docker build --build-arg UNIDIC_DOWNLOAD_URL={{.UNIDIC_LAN_URL}} --target baked -t {{.IMAGE}} .
-
-  image-tiny-lan:
-    desc: Build the tiny image using the LAN UniDic mirror
-    cmds:
-      - cmd /c docker build --build-arg UNIDIC_DOWNLOAD_URL={{.UNIDIC_LAN_URL}} --target tiny -t {{.TINY_IMAGE}} .
 
   data-init:
     desc: Seed the persistent model and settings volume from the baked image
@@ -240,8 +229,6 @@ tasks:
       - cmd: cmd /c docker volume rm -f {{.DATA_VOLUME}} >nul 2>&1
         ignore_error: true
       - cmd: cmd /c docker volume rm -f {{.LEGACY_HF_CACHE_VOLUME}} >nul 2>&1
-        ignore_error: true
-      - cmd: powershell -NoProfile -Command "Remove-Item -LiteralPath '.build-cache\unidic\unidic-3.1.0.zip' -Force -ErrorAction SilentlyContinue"
         ignore_error: true
       - cmd: powershell -NoProfile -Command "Get-ChildItem -LiteralPath '.build-cache\wheels' -Filter '*.whl' -File -ErrorAction SilentlyContinue | Remove-Item -Force"
         ignore_error: true

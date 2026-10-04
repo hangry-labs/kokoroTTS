@@ -101,9 +101,11 @@ language data installed during the build:
   licenses. The installed package preserves its complete record at
   `/usr/share/doc/ffmpeg/copyright` and the corresponding license texts under
   `/usr/share/common-licenses/`.
-- **UniDic 3.1.0:** copyright the UniDic Consortium and offered under a choice
-  of GPL, LGPL, or BSD terms. Its complete license set is retained inside the
-  installed dictionary under `unidic/dicdir/licenses/`.
+- **Open JTalk Dictionary 1.11:** includes work copyright Nara Institute of
+  Science and Technology, the UniDic Consortium, and Nagoya Institute of
+  Technology, distributed under three-clause BSD-style terms. The complete
+  combined notice is retained at
+  `pyopenjtalk/open_jtalk_dic_utf_8-1.11/COPYING` inside the Python runtime.
 
 Python packages installed into the image retain the metadata and license files
 supplied by their distributions. Transitive packages remain governed by their
