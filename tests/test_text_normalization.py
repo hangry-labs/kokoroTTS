@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import unittest
 
+from kokorotts.catalog import DEFAULT_MODEL_REPO_ID
 from kokorotts.pipeline import KPipeline
 from kokorotts.text_normalization import (
     expand_english_eras,
@@ -178,6 +179,58 @@ class EnglishIssue217NormalizationTest(unittest.TestCase):
             [],
         )
         self.assertEqual(pipeline.g2p.inputs, ["You *shouldn't* panic."])
+
+
+class EnglishPronunciationRegressionTest(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.american = KPipeline(
+            lang_code="a", repo_id=DEFAULT_MODEL_REPO_ID, model=False
+        )
+        cls.british = KPipeline(
+            lang_code="b", repo_id=DEFAULT_MODEL_REPO_ID, model=False
+        )
+
+    @staticmethod
+    def phonemes(pipeline: KPipeline, text: str) -> str:
+        return "".join(result.phonemes for result in pipeline(text, model=False))
+
+    def test_pinned_frontend_pronounces_midair_in_both_english_variants(self) -> None:
+        text = "The planes collided in midair."
+        american_phonemes = self.phonemes(self.american, text)
+        british_phonemes = self.phonemes(self.british, text)
+
+        self.assertIn("mˌɪdˈɛɹ", american_phonemes)
+        self.assertIn("mɪdˈAə", british_phonemes)
+
+    def test_arithmetic_uses_noun_pronunciation_outside_noun_modifiers(self) -> None:
+        cases = (
+            "arithmetic",
+            "Basic arithmetic is useful.",
+            "She teaches arithmetic.",
+            "Check the arithmetic.",
+        )
+        for text in cases:
+            with self.subTest(dialect="us", text=text):
+                self.assertIn(
+                    "əɹˈɪθmətˌɪk", self.phonemes(self.american, text)
+                )
+            with self.subTest(dialect="gb", text=text):
+                self.assertIn("əɹˈɪθmətɪk", self.phonemes(self.british, text))
+
+    def test_arithmetic_uses_adjective_pronunciation_before_nouns(self) -> None:
+        cases = (
+            "This arithmetic operation is simple.",
+            "Calculate the arithmetic mean.",
+            "The arithmetic logic unit is ready.",
+        )
+        for text in cases:
+            with self.subTest(dialect="us", text=text):
+                self.assertIn(
+                    "ˌɛɹɪθmˈɛTɪk", self.phonemes(self.american, text)
+                )
+            with self.subTest(dialect="gb", text=text):
+                self.assertIn("ˌaɹɪθmˈɛtɪk", self.phonemes(self.british, text))
 
 
 if __name__ == "__main__":

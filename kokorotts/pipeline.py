@@ -1,4 +1,5 @@
 from .catalog import DEFAULT_MODEL_REPO_ID, LANGUAGE_ALIASES, PIPELINE_LANGUAGE_CODES
+from .english_pronunciation import correct_english_pronunciations
 from .model import KModel
 from .text_normalization import normalize_english_text
 from dataclasses import dataclass
@@ -380,6 +381,9 @@ class KPipeline:
                     normalize_markdown_emphasis=normalize_markdown_emphasis,
                 )
                 _, tokens = self.g2p(spoken_graphemes)
+                correct_english_pronunciations(
+                    tokens, british=self.lang_code == 'b'
+                )
                 for gs, ps, tks in self.en_tokenize(tokens):
                     if not ps:
                         continue
