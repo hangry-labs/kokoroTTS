@@ -91,6 +91,21 @@ class InferenceRuntimeTest(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "invalid tensor shape"):
             runtime.synthesize("text", "af_heart", 1.0, "cuda:0")
 
+    def test_ssml_synthesis_inserts_exact_silence_samples(self) -> None:
+        runtime = self.runtime(lambda _model_family, device: FakeModel(device))
+
+        result = runtime.synthesize(
+            "<speak>Hello.<break time='500ms'/>World.</speak>",
+            "af_heart",
+            1.0,
+            "cpu",
+            "ssml",
+        )
+
+        self.assertIsNotNone(result)
+        self.assertEqual(len(result.audio), 12_004)
+        self.assertEqual(result.phonemes, "abc\nabc")
+
     def test_purge_collects_objects_and_releases_cuda_cache(self) -> None:
         runtime = self.runtime(lambda _model_family, device: FakeModel(device))
         with runtime.use_model("cuda:0") as model:

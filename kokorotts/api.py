@@ -64,6 +64,7 @@ from .schemas import (
     StreamingTTSRequest,
     TTSRequest,
 )
+from .ssml import SSMLSynthesisUnit, SSMLValidationError
 
 APP_VERSION = os.getenv("APP_VERSION", KOKORO_VERSION)
 BUILD_ID = os.getenv("BUILD_ID", "stable")
@@ -185,7 +186,16 @@ def apply_request_effects(waveform: np.ndarray, payload: TTSRequest) -> np.ndarr
 
 def synthesize_payload(payload: TTSRequest) -> ProcessedSynthesis:
     output_format, device = validate_request(payload)
-    inference = RUNTIME.synthesize(payload.text, payload.voice, payload.speed, device)
+    try:
+        inference = RUNTIME.synthesize(
+            payload.text,
+            payload.voice,
+            payload.speed,
+            device,
+            payload.input_type,
+        )
+    except SSMLValidationError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
     waveform = inference.audio if inference else np.zeros(0, dtype=np.int16)
     return ProcessedSynthesis(
         output_format=output_format,
@@ -216,6 +226,8 @@ def audio_response(payload: TTSRequest, route_name: str) -> StreamingResponse:
     }
     if result.output_format != "wav":
         headers["X-KokoroTTS-Format"] = result.output_format
+    if payload.input_type != "text":
+        headers["X-KokoroTTS-Input-Type"] = payload.input_type
     if result.inference:
         headers["X-KokoroTTS-Inference-Device"] = ",".join(
             result.inference.inference_devices
@@ -231,10 +243,18 @@ def audio_response(payload: TTSRequest, route_name: str) -> StreamingResponse:
 
 
 def iter_stream_audio(
-    payload: StreamingTTSRequest, stream_format: str, device: str
+    payload: StreamingTTSRequest,
+    stream_format: str,
+    device: str,
+    plan: list[SSMLSynthesisUnit] | None = None,
 ) -> Iterator[bytes]:
     for chunk in RUNTIME.iter_synthesis(
-        payload.text, payload.voice, payload.speed, device
+        payload.text,
+        payload.voice,
+        payload.speed,
+        device,
+        payload.input_type,
+        plan,
     ):
         audio = apply_request_effects(to_int16_audio(chunk.audio), payload)
         if stream_format == "pcm_s16le":
@@ -243,12 +263,16 @@ def iter_stream_audio(
             yield encode_audio_bytes(audio, "mp3", SAMPLE_RATE)
 
 
-def get_text_metrics(text: str, voice: str = "af_heart") -> dict[str, int | str]:
+def get_text_metrics(
+    text: str, voice: str = "af_heart", input_type: str = "text"
+) -> dict[str, int | str]:
     phoneme_segments = []
     if text.strip():
         try:
-            phoneme_segments = RUNTIME.phoneme_segments(text, voice)
+            phoneme_segments = RUNTIME.phoneme_segments(text, voice, input_type)
         except Exception:  # noqa: BLE001 - metrics stay best-effort for UI compatibility
+            if input_type == "ssml":
+                raise
             phoneme_segments = []
     return {
         "characters": len(text or ""),
@@ -258,10 +282,12 @@ def get_text_metrics(text: str, voice: str = "af_heart") -> dict[str, int | str]
     }
 
 
-def get_phoneme_segments(text: str, voice: str = "af_heart") -> list[str]:
+def get_phoneme_segments(
+    text: str, voice: str = "af_heart", input_type: str = "text"
+) -> list[str]:
     if not RUNTIME.serves_voice(voice):
         raise ValueError(f"Voice '{voice}' is not served by this deployment")
-    return RUNTIME.phoneme_segments(text, voice) if text.strip() else []
+    return RUNTIME.phoneme_segments(text, voice, input_type) if text.strip() else []
 
 
 api = FastAPI(
@@ -418,6 +444,10 @@ def status() -> dict:
         ],
         "output_formats": get_supported_output_formats(),
         "stream_formats": STREAM_FORMATS,
+        "input_types": {
+            "text": {"label": "Plain text", "experimental": False},
+            "ssml": {"label": "SSML", "experimental": True},
+        },
     }
 
 
@@ -427,6 +457,11 @@ def defaults() -> dict:
     default_voice = "af_heart" if "af_heart" in served_voices else served_voices[0]
     return {
         "text": get_initial_text(),
+        "input_type": "text",
+        "input_types": {
+            "text": {"label": "Plain text", "experimental": False},
+            "ssml": {"label": "SSML", "experimental": True},
+        },
         "voice": default_voice,
         "speed": 1.0,
         "device": "auto",
@@ -559,22 +594,30 @@ def metrics(payload: MetricsRequest) -> dict:
             status_code=400,
             detail=f"Voice '{payload.voice}' is not served by this deployment",
         )
+    try:
+        result = get_text_metrics(payload.text, payload.voice, payload.input_type)
+    except SSMLValidationError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
     return {
         "voice": payload.voice,
         "language": voice_language(payload.voice),
-        "metrics": get_text_metrics(payload.text, payload.voice),
+        "input_type": payload.input_type,
+        "metrics": result,
     }
 
 
 @api.post("/tts/tokenize", tags=["KokoroTTS native API"])
 def tokenize(payload: MetricsRequest) -> dict:
     try:
-        segments = get_phoneme_segments(payload.text, payload.voice)
-    except ValueError as exc:
+        segments = get_phoneme_segments(
+            payload.text, payload.voice, payload.input_type
+        )
+    except (ValueError, SSMLValidationError) as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     return {
         "voice": payload.voice,
         "language": voice_language(payload.voice),
+        "input_type": payload.input_type,
         "segments": segments,
         "phonemes": "\n".join(segments),
         "metrics": {
@@ -620,9 +663,15 @@ async def stream_tts(
 ) -> StreamingResponse:
     stream_format, device = validate_request(payload, streaming=True)
     config = STREAM_FORMATS[stream_format]
+    try:
+        plan = RUNTIME.prepare_synthesis(
+            payload.text, payload.voice, payload.input_type
+        )
+    except SSMLValidationError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
 
     async def disconnected_stream():
-        iterator = iter(iter_stream_audio(payload, stream_format, device))
+        iterator = iter(iter_stream_audio(payload, stream_format, device, plan))
         try:
             async for chunk in iterate_in_threadpool(iterator):
                 if await request.is_disconnected():
@@ -633,16 +682,19 @@ async def stream_tts(
             if close is not None:
                 close()
 
+    headers = {
+        "Content-Disposition": f"attachment; filename=kokorotts_{payload.voice}_stream.{config['extension']}",
+        "X-KokoroTTS-Voice": payload.voice,
+        "X-KokoroTTS-Language": voice_language(payload.voice),
+        "X-KokoroTTS-Sample-Rate": str(SAMPLE_RATE),
+        "X-KokoroTTS-Stream-Format": stream_format,
+    }
+    if payload.input_type != "text":
+        headers["X-KokoroTTS-Input-Type"] = payload.input_type
     return StreamingResponse(
         disconnected_stream(),
         media_type=config["media_type"].format(sample_rate=SAMPLE_RATE),
-        headers={
-            "Content-Disposition": f"attachment; filename=kokorotts_{payload.voice}_stream.{config['extension']}",
-            "X-KokoroTTS-Voice": payload.voice,
-            "X-KokoroTTS-Language": voice_language(payload.voice),
-            "X-KokoroTTS-Sample-Rate": str(SAMPLE_RATE),
-            "X-KokoroTTS-Stream-Format": stream_format,
-        },
+        headers=headers,
     )
 
 

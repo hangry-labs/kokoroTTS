@@ -396,7 +396,8 @@ class KPipeline:
     @staticmethod
     def _split_graphemes(text: str, max_characters: int = 400) -> List[str]:
         """Split on multilingual sentence boundaries, then enforce a hard size cap."""
-        sentences = re.findall(r".*?(?:[.!?。！？；;]+\s*|$)", text, flags=re.DOTALL)
+        sentence_end = r"(?:(?<!\d)\.|\.(?!\d)|[!?。！？；;])+\s*"
+        sentences = re.findall(rf".*?(?:{sentence_end}|$)", text, flags=re.DOTALL)
         chunks: List[str] = []
         current = ""
 

@@ -21,6 +21,11 @@ python kokorotts/app.py
 - Native streaming: `POST /tts/stream`
 - Backward-compatible native synthesis alias: `POST /tts/convert`
 
+Native generation, conversion, streaming, metrics, and token inspection accept
+experimental SSML only when `input_type` is explicitly set to `ssml`. Plain
+text remains the backward-compatible default. See the root README for the
+supported bounded SSML subset and examples.
+
 ## Docker and Task workflow
 
 From repository root:
@@ -95,6 +100,13 @@ from kokorotts import KokoroTTSClient
 
 tts = KokoroTTSClient("http://localhost:7860")
 tts.generate("Hello from Python.", voice="af_heart", output_format="mp3").save("hello.mp3")
+
+tts.generate(
+    '<speak>Hello.<break time="500ms"/>Welcome.</speak>',
+    voice="af_heart",
+    output_format="mp3",
+    input_type="ssml",
+).save("ssml.mp3")
 ```
 
 Optional post-synthesis audio controls are available in the UI and API:

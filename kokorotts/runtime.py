@@ -15,7 +15,7 @@ import numpy as np
 import torch
 from huggingface_hub import hf_hub_download
 
-from .audio import to_int16_audio
+from .audio import SAMPLE_RATE, to_int16_audio
 from .catalog import (
     CUSTOM_VOICE_ASSETS,
     DEFAULT_MODEL_REPO_ID,
@@ -29,6 +29,7 @@ from .catalog import (
 from .model import KModel
 from .pipeline import KPipeline
 from .settings import RuntimeSettingsStore
+from .ssml import SSMLSynthesisUnit, SSMLValidationError, compile_ssml
 
 logger = logging.getLogger(__name__)
 
@@ -262,8 +263,11 @@ class InferenceRuntime:
         voice: str,
         speed: float,
         device: str,
+        input_type: str = "text",
+        plan: list[SSMLSynthesisUnit] | None = None,
     ) -> Iterator[SynthesisChunk]:
-        pipeline = self.pipelines[voice_language(voice)]
+        if plan is None:
+            plan = self.prepare_synthesis(text, voice, input_type)
         pack = self._load_voice(voice)
         model_family = voice_model_family(voice)
         fallback_reason = None
@@ -271,7 +275,31 @@ class InferenceRuntime:
         with ExitStack() as stack:
             model = stack.enter_context(self.use_model(device, model_family))
             inference_device = device
-            for _, phonemes, _ in pipeline(text, voice, speed):
+            for unit in plan:
+                if unit.kind == "break":
+                    yield SynthesisChunk(
+                        audio=np.zeros(
+                            round(unit.duration_ms * SAMPLE_RATE / 1000),
+                            dtype=np.float32,
+                        ),
+                        phonemes="",
+                        requested_device=device,
+                        inference_device=inference_device,
+                        fallback_reason=fallback_reason,
+                    )
+                    continue
+                phonemes = unit.phonemes
+                if unit.contains_phoneme_override and hasattr(model, "vocab"):
+                    unsupported = sorted(
+                        character
+                        for character in unit.phoneme_override_characters
+                        if character not in model.vocab
+                    )
+                    if unsupported:
+                        rendered = ", ".join(repr(character) for character in unsupported[:12])
+                        raise SSMLValidationError(
+                            f"Phoneme override contains characters outside this model's vocabulary: {rendered}."
+                        )
                 ref_s = pack[len(phonemes) - 1]
                 try:
                     generated = model(phonemes, ref_s, speed)
@@ -308,14 +336,19 @@ class InferenceRuntime:
                 )
 
     def synthesize(
-        self, text: str, voice: str, speed: float, device: str
+        self,
+        text: str,
+        voice: str,
+        speed: float,
+        device: str,
+        input_type: str = "text",
     ) -> SynthesisResult | None:
-        chunks = list(self.iter_synthesis(text, voice, speed, device))
+        chunks = list(self.iter_synthesis(text, voice, speed, device, input_type))
         if not chunks:
             return None
         return SynthesisResult(
             audio=to_int16_audio(np.concatenate([chunk.audio for chunk in chunks])),
-            phonemes="\n".join(chunk.phonemes for chunk in chunks),
+            phonemes="\n".join(chunk.phonemes for chunk in chunks if chunk.phonemes),
             requested_device=device,
             inference_devices=tuple(
                 dict.fromkeys(chunk.inference_device for chunk in chunks)
@@ -326,6 +359,29 @@ class InferenceRuntime:
             ),
         )
 
-    def phoneme_segments(self, text: str, voice: str) -> list[str]:
+    def prepare_synthesis(
+        self, text: str, voice: str, input_type: str = "text"
+    ) -> list[SSMLSynthesisUnit]:
         pipeline = self.pipelines[voice_language(voice)]
-        return [phonemes for _, phonemes, _ in pipeline(text, voice)]
+
+        def phonemize(value: str) -> Iterator[str]:
+            for _, phonemes, _ in pipeline(value, voice, 1.0):
+                yield phonemes
+
+        if input_type == "text":
+            return [
+                SSMLSynthesisUnit("speech", phonemes=phonemes)
+                for phonemes in phonemize(text)
+            ]
+        if input_type == "ssml":
+            return compile_ssml(text, voice_language(voice), phonemize)
+        raise ValueError("input_type must be 'text' or 'ssml'")
+
+    def phoneme_segments(
+        self, text: str, voice: str, input_type: str = "text"
+    ) -> list[str]:
+        return [
+            unit.phonemes
+            for unit in self.prepare_synthesis(text, voice, input_type)
+            if unit.kind == "speech"
+        ]

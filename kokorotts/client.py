@@ -122,11 +122,23 @@ class KokoroTTSClient:
             {"model_families": model_families},
         )
 
-    def metrics(self, text: str, voice: str = "af_heart") -> dict[str, Any]:
-        return self._json("POST", "/tts/metrics", {"text": text, "voice": voice})
+    def metrics(
+        self, text: str, voice: str = "af_heart", input_type: str = "text"
+    ) -> dict[str, Any]:
+        return self._json(
+            "POST",
+            "/tts/metrics",
+            {"text": text, "voice": voice, "input_type": input_type},
+        )
 
-    def tokenize(self, text: str, voice: str = "af_heart") -> dict[str, Any]:
-        return self._json("POST", "/tts/tokenize", {"text": text, "voice": voice})
+    def tokenize(
+        self, text: str, voice: str = "af_heart", input_type: str = "text"
+    ) -> dict[str, Any]:
+        return self._json(
+            "POST",
+            "/tts/tokenize",
+            {"text": text, "voice": voice, "input_type": input_type},
+        )
 
     def purge(self, device: str | None = None) -> dict[str, Any]:
         payload = {} if device is None else {"device": device}
@@ -143,6 +155,7 @@ class KokoroTTSClient:
         tempo: float = 1.0,
         volume: float = 1.0,
         normalize: bool = False,
+        input_type: str = "text",
     ) -> AudioResponse:
         return self._audio(
             "/tts/generate",
@@ -156,6 +169,7 @@ class KokoroTTSClient:
                 tempo,
                 volume,
                 normalize,
+                input_type,
             ),
         )
 
@@ -170,6 +184,7 @@ class KokoroTTSClient:
         tempo: float = 1.0,
         volume: float = 1.0,
         normalize: bool = False,
+        input_type: str = "text",
     ) -> AudioResponse:
         return self._audio(
             "/tts/convert",
@@ -183,6 +198,7 @@ class KokoroTTSClient:
                 tempo,
                 volume,
                 normalize,
+                input_type,
             ),
         )
 
@@ -197,6 +213,7 @@ class KokoroTTSClient:
         tempo: float = 1.0,
         volume: float = 1.0,
         normalize: bool = False,
+        input_type: str = "text",
     ) -> AudioResponse:
         with self.iter_stream(
             text=text,
@@ -208,6 +225,7 @@ class KokoroTTSClient:
             tempo=tempo,
             volume=volume,
             normalize=normalize,
+            input_type=input_type,
         ) as stream:
             return AudioResponse(
                 content=b"".join(stream),
@@ -227,6 +245,7 @@ class KokoroTTSClient:
         volume: float = 1.0,
         normalize: bool = False,
         chunk_size: int = 64 * 1024,
+        input_type: str = "text",
     ) -> AudioStream:
         """Open a streaming request and yield bytes as they arrive."""
         if chunk_size < 1:
@@ -241,6 +260,7 @@ class KokoroTTSClient:
             tempo,
             volume,
             normalize,
+            input_type,
         )
         payload["stream_format"] = stream_format
         response, media_type, headers = self._open_with_headers(
@@ -259,6 +279,7 @@ class KokoroTTSClient:
         tempo: float,
         volume: float,
         normalize: bool,
+        input_type: str,
     ) -> dict[str, Any]:
         return {
             "text": text,
@@ -270,6 +291,7 @@ class KokoroTTSClient:
             "tempo": tempo,
             "volume": volume,
             "normalize": normalize,
+            "input_type": input_type,
         }
 
     def _json(

@@ -19,6 +19,9 @@ const state = {
   gpuRefreshActive: false,
   gpuHovering: false,
   headerAnimation: null,
+  inputType: 'text',
+  plainTextDraft: '',
+  ssmlDraft: '',
 }
 
 const GPU_HISTORY_RETENTION_MS = 10 * 60 * 1000
@@ -250,13 +253,79 @@ function resetVoiceControls() {
 
 $('#reset-voice-controls').addEventListener('click', resetVoiceControls)
 
+function escapeXml(value) {
+  return value
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&apos;')
+}
+
+function ssmlTemplate(value) {
+  return `<speak>\n  ${escapeXml(value.trim())}\n</speak>`
+}
+
+function setComposerText(value) {
+  state.plainTextDraft = value
+  if (state.inputType === 'ssml') {
+    state.ssmlDraft = ssmlTemplate(value)
+    $('#text-input').value = state.ssmlDraft
+  } else {
+    $('#text-input').value = value
+  }
+  updateTextMetrics()
+}
+
+function setInputType(inputType) {
+  const input = $('#text-input')
+  if (state.inputType === 'ssml') state.ssmlDraft = input.value
+  else state.plainTextDraft = input.value
+
+  state.inputType = inputType
+  if (inputType === 'ssml') {
+    if (!state.ssmlDraft) state.ssmlDraft = ssmlTemplate(state.plainTextDraft)
+    input.value = state.ssmlDraft
+  } else {
+    input.value = state.plainTextDraft
+  }
+
+  const active = inputType === 'ssml'
+  const button = $('#ssml-mode-button')
+  button.classList.toggle('active', active)
+  button.setAttribute('aria-pressed', String(active))
+  button.title = active ? 'Disable experimental SSML input' : 'Enable experimental SSML input'
+  $('#composer').dataset.inputType = inputType
+  $('#input-mode-label').textContent = active ? 'SSML' : 'Text'
+  input.spellcheck = !active
+  input.setAttribute('aria-label', active ? 'Experimental SSML to synthesize' : 'Text to synthesize')
+  updateTextMetrics()
+  setStatus(active ? 'Experimental SSML input enabled' : 'Plain text input enabled', active ? 'warning' : 'success')
+}
+
 function updateTextMetrics() {
   const text = $('#text-input').value
   const words = text.trim() ? text.trim().split(/\s+/u).length : 0
-  $('#text-metrics').textContent = `${text.length} characters / ${words} words`
+  const label = state.inputType === 'ssml' ? 'SSML characters' : 'characters'
+  $('#text-metrics').textContent = `${text.length} ${label} / ${words} words`
 }
 
-$('#text-input').addEventListener('input', updateTextMetrics)
+$('#text-input').addEventListener('input', () => {
+  if (state.inputType === 'ssml') state.ssmlDraft = $('#text-input').value
+  else state.plainTextDraft = $('#text-input').value
+  updateTextMetrics()
+})
+
+$('#ssml-mode-button').addEventListener('click', () => {
+  setInputType(state.inputType === 'ssml' ? 'text' : 'ssml')
+})
+
+const ssmlDialog = $('#ssml-help-dialog')
+$('#ssml-help-button').addEventListener('click', () => ssmlDialog.showModal())
+$('#ssml-help-close').addEventListener('click', () => ssmlDialog.close())
+ssmlDialog.addEventListener('click', (event) => {
+  if (event.target === ssmlDialog) ssmlDialog.close()
+})
 
 function setSelectOptions(select, entries, selectedValue) {
   select.replaceChildren()
@@ -390,8 +459,7 @@ $('#save-model-settings').addEventListener('click', async () => {
 async function loadSample(random = false) {
   const language = $('#language').value
   const payload = await fetchJson(`/tts/samples?language=${encodeURIComponent(language)}&random=${random}`)
-  $('#text-input').value = payload.text
-  updateTextMetrics()
+  setComposerText(payload.text)
 }
 
 $('#language').addEventListener('change', async () => {
@@ -417,6 +485,7 @@ function requestPayload(outputFormat = $('#output-format').value) {
   const normalize = $('#normalize').checked
   return {
     text: $('#text-input').value,
+    input_type: state.inputType,
     voice: $('#voice').value,
     speed: Number($('#speed').value),
     device: $('#device').value,
@@ -482,7 +551,7 @@ $('#tokenize-button').addEventListener('click', async () => {
     const payload = await fetchJson('/tts/tokenize', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ text: $('#text-input').value, voice: $('#voice').value }),
+      body: JSON.stringify({ text: $('#text-input').value, voice: $('#voice').value, input_type: state.inputType }),
     })
     $('#token-output').textContent = JSON.stringify(payload, null, 2)
     $('#token-details').open = true
@@ -1047,7 +1116,11 @@ async function loadWorkspace() {
     formats.formats.mp3 ? 'mp3' : formats.default,
   )
 
+  state.inputType = 'text'
+  state.plainTextDraft = defaults.text
+  state.ssmlDraft = ''
   $('#text-input').value = defaults.text
+  setInputType(defaults.input_type || 'text')
   setVoiceControlValue('speed', defaults.speed)
   setVoiceControlValue('pitch', defaults.audio_controls.pitch_semitones)
   setVoiceControlValue('tempo', defaults.audio_controls.tempo)

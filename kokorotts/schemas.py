@@ -1,5 +1,7 @@
 """HTTP request schemas shared by KokoroTTS routes."""
 
+from typing import Literal
+
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -7,6 +9,10 @@ class TTSRequest(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
     text: str = Field(..., min_length=1, description="Text to synthesize.")
+    input_type: Literal["text", "ssml"] = Field(
+        "text",
+        description="Input interpretation. Experimental SSML must be selected explicitly.",
+    )
     voice: str = Field("af_heart", description="Kokoro voice id. See /tts/voices.")
     speed: float = Field(1.0, ge=0.5, le=2.0, description="Speech speed multiplier.")
     device: str = Field("auto", description="auto, cpu, or cuda:N.")
@@ -73,6 +79,9 @@ class OpenAISpeechRequest(BaseModel):
 
 class MetricsRequest(BaseModel):
     text: str = Field("", description="Text to inspect.")
+    input_type: Literal["text", "ssml"] = Field(
+        "text", description="Input interpretation used for token inspection."
+    )
     voice: str = Field(
         "af_heart", description="Kokoro voice id used for language-aware tokenization."
     )

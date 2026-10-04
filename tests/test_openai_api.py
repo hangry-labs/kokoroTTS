@@ -133,6 +133,49 @@ class OpenAICompatibilityApiTests(unittest.TestCase):
         self.assertEqual(legacy.status_code, 200)
         self.assertEqual(purge.call_count, 2)
 
+    def test_native_input_type_defaults_to_plain_text(self) -> None:
+        defaults = self.client.get("/tts/defaults")
+
+        self.assertEqual(defaults.status_code, 200)
+        self.assertEqual(defaults.json()["input_type"], "text")
+        self.assertTrue(defaults.json()["input_types"]["ssml"]["experimental"])
+
+    def test_native_tokenize_accepts_explicit_ssml(self) -> None:
+        response = self.client.post(
+            "/tts/tokenize",
+            json={
+                "text": "<speak>Hello <sub alias='World Wide Web Consortium'>W3C</sub>.</speak>",
+                "voice": "af_heart",
+                "input_type": "ssml",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["input_type"], "ssml")
+        self.assertGreater(len(response.json()["phonemes"]), 0)
+
+    def test_native_ssml_rejects_malformed_and_implicit_markup(self) -> None:
+        malformed = self.client.post(
+            "/tts/tokenize",
+            json={
+                "text": "<speak><break time='500ms'></speak>",
+                "voice": "af_heart",
+                "input_type": "ssml",
+            },
+        )
+        plain = self.client.post(
+            "/tts/tokenize",
+            json={
+                "text": "The value 2 < 3 remains plain text.",
+                "voice": "af_heart",
+            },
+        )
+
+        self.assertEqual(malformed.status_code, 400)
+        self.assertIn("Invalid or unsafe SSML", malformed.json()["detail"])
+        self.assertEqual(plain.status_code, 200)
+        self.assertEqual(plain.json()["input_type"], "text")
+
 
 if __name__ == "__main__":
     unittest.main()

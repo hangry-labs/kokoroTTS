@@ -26,6 +26,14 @@ components below is available in [`LICENSE`](LICENSE).
 - License: Apache License 2.0
 - Use here: grapheme-to-phoneme processing and language support.
 
+### defusedxml
+
+- Project: [tiran/defusedxml](https://github.com/tiran/defusedxml)
+- Copyright: Christian Heimes and contributors
+- License: Python Software Foundation License Version 2
+- Use here: hardened parsing for explicitly selected experimental SSML input,
+  including rejection of DTD and entity-based XML attacks.
+
 ### Kokoro Vietnamese Integration
 
 - Project: [iamdinhthuan/Kokoro-Vietnamese](https://github.com/iamdinhthuan/Kokoro-Vietnamese)

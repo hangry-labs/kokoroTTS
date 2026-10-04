@@ -88,6 +88,7 @@ button:disabled { cursor: not-allowed; opacity: 0.45; }
 @media (prefers-reduced-motion: reduce) {
   .labs-badge { animation: none; }
   .labs-badge-shine { display: none; animation: none; }
+  .ssml-mode-button.active { animation: none; }
 }
 
 html[data-header-collapsed="true"] .brand-hero { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 16px; height: auto; min-height: 74px; padding-top: 9px; padding-bottom: 9px; }
@@ -128,6 +129,7 @@ input[readonly] { color: #c7c9cf; cursor: default; }
 .status-line { margin-top: 24px; padding: 10px 11px; border-left: 3px solid var(--line); background: var(--surface); color: var(--muted); font-size: 0.78rem; overflow-wrap: anywhere; }
 .status-line[data-tone="success"] { border-color: var(--green); color: #bcebd2; }
 .status-line[data-tone="error"] { border-color: var(--red); color: #ffc2c6; }
+.status-line[data-tone="warning"] { border-color: var(--accent); color: #ffc59e; }
 .toggle-field { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 40px; margin-top: 18px; color: var(--muted); font-size: 0.75rem; font-weight: 700; cursor: pointer; }
 .toggle-field input { position: absolute; width: 1px; min-height: 1px; opacity: 0; }
 .toggle-track { position: relative; flex: 0 0 auto; width: 38px; height: 22px; border: 1px solid var(--line); border-radius: 11px; background: var(--surface); transition: background 120ms ease, border-color 120ms ease; }
@@ -205,7 +207,15 @@ input[readonly] { color: #c7c9cf; cursor: default; }
 .output-section { margin-top: 30px; padding-top: 22px; border-top: 1px solid var(--line); }
 .composer { margin-bottom: 18px; padding-bottom: 18px; border-bottom: 1px solid var(--line); }
 .composer-heading { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-bottom: 12px; }
-.composer-actions { display: flex; align-items: center; gap: 12px; }
+.composer-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 12px; }
+.ssml-mode-control { display: inline-flex; align-items: center; gap: 5px; }
+.ssml-mode-button > span { padding: 2px 5px; border: 1px solid #6b6e77; border-radius: 3px; color: var(--muted); font-size: 0.56rem; line-height: 1; text-transform: uppercase; }
+.ssml-mode-button.active { border-color: #ff9a55; background: #4b2511; color: #ffd7bc; animation: ssml-active-pulse 1.8s ease-in-out infinite; }
+.ssml-mode-button.active > span { border-color: #d96518; background: #71320d; color: #ffd7bc; }
+.ssml-help-button { display: grid; place-items: center; width: 28px; height: 28px; padding: 0; border: 1px solid #6b6e77; border-radius: 50%; background: #292a30; color: #d8d9dd; font-family: Georgia, serif; font-size: 0.75rem; font-weight: 700; }
+.ssml-help-button:hover, .ssml-help-button:focus-visible { border-color: var(--accent); color: #ffad75; outline: none; box-shadow: 0 0 0 2px rgba(238, 111, 33, 0.18); }
+@keyframes ssml-active-pulse { 0%, 100% { box-shadow: 0 0 0 rgba(255, 122, 26, 0); } 50% { box-shadow: 0 0 12px rgba(255, 122, 26, 0.44); } }
+.composer[data-input-type="ssml"] #text-input { border-color: #bd5611; background: #16120f; color: #ffdcca; font-family: Consolas, "Cascadia Code", "SFMono-Regular", monospace; }
 .text-metrics { color: var(--muted); font-size: 0.72rem; font-variant-numeric: tabular-nums; }
 .compact-command { min-height: 34px; padding: 0 12px; }
 #text-input { min-height: 180px; padding: 14px; font-size: 0.92rem; line-height: 1.55; }
@@ -227,6 +237,19 @@ details { margin-top: 12px; }
 summary { color: var(--muted); font-size: 0.78rem; cursor: pointer; }
 pre { margin: 10px 0 0; white-space: pre-wrap; overflow-wrap: anywhere; }
 #response-output { max-height: 340px; padding: 12px; overflow: auto; border: 1px solid var(--line-soft); background: #121315; color: #c9cbd1; font-size: 0.74rem; }
+
+.ssml-dialog { width: min(760px, calc(100vw - 32px)); max-height: calc(100vh - 48px); padding: 22px; overflow: auto; border: 1px solid #6c3b22; border-radius: 6px; background: #171719; color: var(--text); box-shadow: 0 24px 80px rgba(0, 0, 0, 0.68); }
+.ssml-dialog::backdrop { background: rgba(0, 0, 0, 0.72); backdrop-filter: blur(3px); }
+.ssml-dialog-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
+.ssml-dialog-heading h2 { margin: 3px 0 0; font-size: 1.15rem; }
+.ssml-dialog-heading > div > span { color: #ff9d5a; font-size: 0.62rem; font-weight: 800; text-transform: uppercase; }
+.ssml-dialog > p { color: var(--muted); font-size: 0.78rem; line-height: 1.55; }
+.ssml-dialog pre { padding: 13px; overflow-x: auto; border: 1px solid var(--line); border-radius: 4px; background: #101113; color: #ffd0b0; font-size: 0.74rem; white-space: pre; }
+.ssml-rule-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; margin-top: 18px; border: 1px solid var(--line); background: var(--line); }
+.ssml-rule-grid > div { display: grid; min-width: 0; gap: 7px; padding: 12px; background: #1d1e22; }
+.ssml-rule-grid code { color: #ffb27d; font-size: 0.7rem; overflow-wrap: anywhere; }
+.ssml-rule-grid span { color: var(--muted); font-size: 0.7rem; line-height: 1.45; }
+.ssml-dialog .ssml-dialog-note { margin-bottom: 0; padding-top: 14px; border-top: 1px solid var(--line); }
 
 .live-recorder { border: 1px solid #555861; border-radius: 5px; overflow: hidden; background: #202126; }
 #realtime-wave { display: block; width: 100%; height: 180px; background: #202126; }
@@ -406,6 +429,9 @@ pre { margin: 10px 0 0; white-space: pre-wrap; overflow-wrap: anywhere; }
   .live-controls .device-field { width: 100%; min-width: 0; margin-left: 0; }
   .range-grid, .range-stack { grid-template-columns: 1fr; }
   .composer-heading, .composer-actions { align-items: stretch; flex-direction: column; }
+  .ssml-mode-control { justify-content: space-between; }
+  .ssml-mode-button { flex: 1; }
+  .ssml-rule-grid { grid-template-columns: 1fr; }
   .command-row { grid-template-columns: 1fr; }
   .setting-tooltip { width: min(270px, calc(100vw - 48px)); }
   .range-grid label:last-child .setting-tooltip { right: auto; left: 0; }

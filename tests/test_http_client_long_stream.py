@@ -201,6 +201,27 @@ class HttpClientServerSmokeTest(unittest.TestCase):
         self.assertGreater(len(audio.content), 10_000)
         self.assertEqual(audio.headers["x-kokorotts-language"], "v")
 
+    def test_tts_generate_experimental_ssml_mp3(self) -> None:
+        audio = self.client.generate(
+            "<speak>Hello.<break time='500ms'/>Welcome to Kokoro TTS.</speak>",
+            voice="af_heart",
+            output_format="mp3",
+            input_type="ssml",
+        )
+
+        self.assertEqual(audio.media_type, "audio/mpeg")
+        self.assertGreater(len(audio.content), 10_000)
+        self.assertEqual(audio.headers["x-kokorotts-input-type"], "ssml")
+
+    def test_tts_generate_rejects_malformed_experimental_ssml(self) -> None:
+        with self.assertRaises(KokoroTTSClientError) as error:
+            self.client.generate(
+                "<speak><break time='500ms'></speak>", input_type="ssml"
+            )
+
+        self.assertIn("400", str(error.exception))
+        self.assertIn("Invalid or unsafe SSML", str(error.exception))
+
     def test_tts_convert_wav_compatibility_alias(self) -> None:
         audio = self.client.convert(
             "Testing compatibility convert from the Python client.",
@@ -256,6 +277,18 @@ class HttpClientServerSmokeTest(unittest.TestCase):
 
         self.assertEqual(audio.media_type, "audio/pcm")
         self.assertGreater(len(audio.content), 200_000)
+
+    def test_tts_stream_experimental_ssml_pcm(self) -> None:
+        audio = self.client.stream(
+            "<speak>Streaming.<break time='250ms'/>Continues.</speak>",
+            voice="af_heart",
+            stream_format="pcm_s16le",
+            input_type="ssml",
+        )
+
+        self.assertEqual(audio.media_type, "audio/pcm")
+        self.assertGreater(len(audio.content), 12_000)
+        self.assertEqual(audio.headers["x-kokorotts-input-type"], "ssml")
 
     def test_tts_generate_rejects_invalid_audio_control(self) -> None:
         with self.assertRaises(KokoroTTSClientError) as error:

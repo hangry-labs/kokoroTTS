@@ -31,6 +31,7 @@ Hangry Labs home: [nuggies.website](https://nuggies.website/).
 - [API Usage](#api-usage)
   - [OpenAI-Compatible API](#openai-compatible-api)
   - [KokoroTTS Native API](#kokorotts-native-api)
+  - [Experimental SSML Input](#experimental-ssml-input)
   - [Native Python Client](#native-python-client)
 - [About This Fork](#about-this-fork)
 - [Support & Issues](#support--issues)
@@ -201,6 +202,26 @@ curl -X POST "http://localhost:7860/tts/generate" \
   -d '{"text":"Hello world!","voice":"af_heart","output_format":"mp3","pitch_semitones":2,"tempo":1.1,"volume":0.9,"normalize":true}' \
   -o output.mp3
 ```
+
+#### Experimental SSML Input
+
+The native generation, streaming, metrics, and token-inspection endpoints accept experimental SSML when `input_type` is explicitly set to `ssml`. The default remains `text`; markup is never detected or enabled automatically. The browser UI exposes the same opt-in mode with an experimental indicator and an in-app rules guide.
+
+```bash
+curl -X POST "http://localhost:7860/tts/generate" \
+  -H "Content-Type: application/json" \
+  -d '{"input_type":"ssml","text":"<speak>Hello.<break time=\"500ms\"/>Welcome to Kokoro TTS.</speak>","voice":"af_heart","output_format":"mp3"}' \
+  -o ssml.mp3
+```
+
+Supported elements:
+
+- `<break time="500ms"/>`: insert up to 10 seconds of silence per break, with a 30-second total per request.
+- `<sub alias="spoken text">label</sub>`: speak the alias.
+- `<say-as interpret-as="characters|number|ordinal">...</say-as>`: spell characters, read a number, or read an English ordinal. Ordinals are currently limited to English voices.
+- `<phoneme alphabet="ipa" ph="...">label</phoneme>`: bypass G2P with Kokoro/eSpeak-compatible IPA.
+
+One `<speak>` root is required. Documents are limited to 50,000 characters and 256 elements; direct phoneme values are limited to 510 characters and experimental ordinals to 18 digits. Unsupported elements, nested inline tags, malformed or unsafe XML, and inputs above these limits return HTTP 400. SSML is currently a native KokoroTTS feature; the OpenAI-compatible endpoint continues to treat `input` as plain text.
 
 Native and system endpoints:
 
@@ -416,6 +437,8 @@ The data volume is recommended but optional. Without it, the same files are stor
 - Upgraded the Docker runtime and dependency workflow to Python 3.13 with the Qwen3-ASR-STT-proven Torch 2.11/CUDA 13 baseline, while independently pinning Kokoro's language and model dependencies.
 - Reorganized the server into focused API, audio, catalog, schema, runtime, and launcher modules while preserving the existing `/tts/*` contracts and intentionally eager preparation of all advertised voices.
 - Fixed long non-English input handling so multilingual sentence punctuation and punctuation-free text are split into model-safe phoneme segments without silently dropping content.
+- Added explicit experimental SSML input to native generation, streaming, metrics, token inspection, the Python HTTP client, and the browser UI. The bounded hardened parser supports pauses, substitutions, character/number/English-ordinal reading, and direct IPA overrides while plain text remains the default.
+- Fixed multilingual chunking so periods inside decimals and version-like numbers remain in one text chunk while sentence-final periods still form boundaries.
 - Improved English pronunciation of compact large-number forms by expanding unambiguous uppercase `K`, `M`, `B`, and `T` suffixes before G2P, including decimal and dollar/pound values such as `20K` and `$1.5M`, while leaving lowercase measurements and identifiers untouched.
 - Added concurrency-safe model initialization without serializing normal inference, made model purge wait for active use and release Python/PyTorch CUDA caches, and limited CPU fallback to CUDA-class failures with headers, status metadata, and server warnings.
 - Replaced the duplicate-initialization script startup with a lightweight Uvicorn launcher, reducing the development reload supervisor from roughly 1 GB to about 33 MB RSS in local measurements.

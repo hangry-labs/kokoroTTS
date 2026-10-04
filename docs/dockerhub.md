@@ -169,6 +169,17 @@ Health check:
 curl http://localhost:7860/health/ready
 ```
 
+Experimental SSML is opt-in on the native API and in the browser UI. Plain text remains the default:
+
+```bash
+curl -X POST "http://localhost:7860/tts/generate" \
+  -H "Content-Type: application/json" \
+  -d '{"input_type":"ssml","text":"<speak>Hello.<break time=\"500ms\"/>Welcome.</speak>","voice":"af_heart","output_format":"mp3"}' \
+  -o ssml.mp3
+```
+
+The supported experimental subset includes bounded `<break>`, `<sub>`, `<say-as>`, and direct IPA `<phoneme>` elements. Open the SSML guide beside the UI mode button for exact rules and limits.
+
 `GET /tts/ping` remains available for native API clients. Interactive API documentation is served at `http://localhost:7860/tts/docs`.
 
 ## Image Tags
