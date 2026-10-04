@@ -69,6 +69,13 @@ _REGNAL_ROMAN_CONTEXT = re.compile(
     r"(?:\s+[A-Z][a-z]+(?:[-'][A-Za-z]+)?){0,3})\s+"
     r"(?P<roman>[IVXLCDM]+)\b"
 )
+_ENGLISH_MARKDOWN_ASTERISK_EMPHASIS = re.compile(
+    r"(?<![\w\\*])"
+    r"(?P<marker>\*{1,3})"
+    r"(?P<content>\S(?:[^\n*]*?\S)?)"
+    r"(?P=marker)"
+    r"(?![\w*])"
+)
 
 
 def expand_english_large_units(text: str) -> str:
@@ -178,9 +185,21 @@ def expand_english_roman_numerals(text: str) -> str:
     )
 
 
-def normalize_english_text(text: str) -> str:
+def strip_english_markdown_emphasis(text: str) -> str:
+    """Remove bounded asterisk emphasis without consuming literal operators."""
+
+    return _ENGLISH_MARKDOWN_ASTERISK_EMPHASIS.sub(
+        lambda match: match.group("content"), text
+    )
+
+
+def normalize_english_text(
+    text: str, *, normalize_markdown_emphasis: bool = True
+) -> str:
     """Apply product-owned English normalization before Misaki G2P."""
 
+    if normalize_markdown_emphasis:
+        text = strip_english_markdown_emphasis(text)
     text = expand_english_large_units(text)
     text = expand_english_measurements(text)
     text = expand_english_eras(text)

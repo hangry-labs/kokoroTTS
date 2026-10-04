@@ -9,6 +9,7 @@ from kokorotts.text_normalization import (
     expand_english_measurements,
     expand_english_roman_numerals,
     normalize_english_text,
+    strip_english_markdown_emphasis,
 )
 
 
@@ -127,6 +128,56 @@ class EnglishIssue108NormalizationTest(unittest.TestCase):
 
         self.assertEqual(pipeline.g2p.inputs, ["Thutmose II, 10m, 1479 BC"])
         self.assertEqual(results[0].phonemes, "Thutmose II, 10m, 1479 BC")
+
+
+class EnglishIssue217NormalizationTest(unittest.TestCase):
+    def test_strips_balanced_emphasis_around_contractions(self) -> None:
+        self.assertEqual(
+            strip_english_markdown_emphasis("You *shouldn't* and *don't* panic."),
+            "You shouldn't and don't panic.",
+        )
+
+    def test_strips_single_double_and_triple_emphasis(self) -> None:
+        self.assertEqual(
+            strip_english_markdown_emphasis(
+                "This is *important*, **very important**, and ***urgent***."
+            ),
+            "This is important, very important, and urgent.",
+        )
+
+    def test_preserves_literal_asterisk_uses(self) -> None:
+        text = (
+            "Use 2 * 3, 2*x*3, *.txt, \\*literal\\*, and * unmatched.\n"
+            "* First item\n* Second item\nUse * as a symbol and * again."
+        )
+        self.assertEqual(strip_english_markdown_emphasis(text), text)
+
+    def test_plain_english_pipeline_strips_emphasis_before_g2p(self) -> None:
+        pipeline = KPipeline.__new__(KPipeline)
+        pipeline.lang_code = "a"
+        pipeline.model = None
+        pipeline.g2p = RecordingG2P()
+
+        self.assertEqual(list(pipeline("You *shouldn't* panic.", model=False)), [])
+        self.assertEqual(pipeline.g2p.inputs, ["You shouldn't panic."])
+
+    def test_explicit_ssml_pipeline_can_preserve_asterisks(self) -> None:
+        pipeline = KPipeline.__new__(KPipeline)
+        pipeline.lang_code = "a"
+        pipeline.model = None
+        pipeline.g2p = RecordingG2P()
+
+        self.assertEqual(
+            list(
+                pipeline(
+                    "You *shouldn't* panic.",
+                    model=False,
+                    normalize_markdown_emphasis=False,
+                )
+            ),
+            [],
+        )
+        self.assertEqual(pipeline.g2p.inputs, ["You *shouldn't* panic."])
 
 
 if __name__ == "__main__":

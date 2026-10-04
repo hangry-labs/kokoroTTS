@@ -355,7 +355,8 @@ class KPipeline:
         voice: Optional[str] = None,
         speed: Union[float, Callable[[int], float]] = 1,
         split_pattern: Optional[str] = r'\n+',
-        model: Optional[KModel] = None
+        model: Optional[KModel] = None,
+        normalize_markdown_emphasis: bool = True,
     ) -> Generator['KPipeline.Result', None, None]:
         model = model or self.model
         if model and voice is None:
@@ -374,7 +375,10 @@ class KPipeline:
             # English processing
             if self.lang_code in 'ab':
                 logger.debug(f"Processing English text: {graphemes[:50]}{'...' if len(graphemes) > 50 else ''}")
-                spoken_graphemes = normalize_english_text(graphemes)
+                spoken_graphemes = normalize_english_text(
+                    graphemes,
+                    normalize_markdown_emphasis=normalize_markdown_emphasis,
+                )
                 _, tokens = self.g2p(spoken_graphemes)
                 for gs, ps, tks in self.en_tokenize(tokens):
                     if not ps:

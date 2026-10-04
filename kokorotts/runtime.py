@@ -365,7 +365,12 @@ class InferenceRuntime:
         pipeline = self.pipelines[voice_language(voice)]
 
         def phonemize(value: str) -> Iterator[str]:
-            for _, phonemes, _ in pipeline(value, voice, 1.0):
+            for _, phonemes, _ in pipeline(
+                value,
+                voice,
+                1.0,
+                normalize_markdown_emphasis=input_type == "text",
+            ):
                 yield phonemes
 
         if input_type == "text":

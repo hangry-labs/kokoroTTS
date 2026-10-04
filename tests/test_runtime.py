@@ -17,11 +17,13 @@ from kokorotts.settings import RuntimeSettingsStore
 class FakePipeline:
     def __init__(self):
         self.voices = {}
+        self.calls = []
 
     def load_voice(self, _voice):
         return [None] * 512
 
-    def __call__(self, _text, _voice, _speed):
+    def __call__(self, _text, _voice, _speed, **kwargs):
+        self.calls.append(kwargs)
         yield "text", "abc", None
 
 
@@ -105,6 +107,24 @@ class InferenceRuntimeTest(unittest.TestCase):
         self.assertIsNotNone(result)
         self.assertEqual(len(result.audio), 12_004)
         self.assertEqual(result.phonemes, "abc\nabc")
+
+    def test_markdown_cleanup_is_limited_to_plain_text(self) -> None:
+        pipeline = FakePipeline()
+        runtime = InferenceRuntime(
+            model_factory=lambda _model_family, device: FakeModel(device),
+            pipeline_factory=lambda _language: pipeline,
+            eager_voices=False,
+        )
+
+        runtime.phoneme_segments("You *shouldn't* panic.", "af_heart", "text")
+        runtime.phoneme_segments(
+            "<speak>You *shouldn't* panic.</speak>", "af_heart", "ssml"
+        )
+
+        self.assertEqual(
+            [call["normalize_markdown_emphasis"] for call in pipeline.calls],
+            [True, False],
+        )
 
     def test_purge_collects_objects_and_releases_cuda_cache(self) -> None:
         runtime = self.runtime(lambda _model_family, device: FakeModel(device))
