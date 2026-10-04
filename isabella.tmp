@@ -1,0 +1,16 @@
+<speak>
+  <voice name="bf_isabella">
+     <prosody speed="1" pitch="+4st" tempo="1.05" volume="0.9">Mommy mommy I want this</prosody>
+     <prosody speed="0.9" pitch="-1st" tempo="1.1" volume="0.9">Isabel this is not for you</prosody>
+     <prosody speed="1.3" pitch="-1st" tempo="1.1" volume="0.9">Put it down please !</prosody>
+     <break time="500ms"/>
+     <prosody speed="1" pitch="+4st" tempo="1.05" volume="0.9"> But, I </prosody>
+     <break time="200ms"/>
+     <prosody speed="1" pitch="+4st" tempo="1.05" volume="0.9"> I </prosody>
+     <break time="200ms"/>
+     <prosody speed="1" pitch="+4st" tempo="1.05" volume="0.9"> But, I really really want it. I spotted it first !</prosody>
+     <break time="400ms"/>
+     <prosody speed="0.8" pitch="-1st" tempo="1.1" volume="0.9">No, put it down right now.</prosody>
+     <prosody speed="1.3" pitch="-1st" tempo="1.1" volume="0.9"> This is the end of this discussion.</prosody>
+  </voice>
+</speak>

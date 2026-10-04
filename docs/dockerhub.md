@@ -174,11 +174,11 @@ Experimental SSML is opt-in on the native API and in the browser UI. Plain text 
 ```bash
 curl -X POST "http://localhost:7860/tts/generate" \
   -H "Content-Type: application/json" \
-  -d '{"input_type":"ssml","text":"<speak>Hello.<break time=\"500ms\"/>Welcome.</speak>","voice":"af_heart","output_format":"mp3"}' \
-  -o ssml.mp3
+  -d '{"input_type":"ssml","text":"<speak><voice name=\"af_heart\">Good morning.</voice><voice name=\"am_michael\">Coffee first?</voice></speak>","voice":"af_heart","output_format":"mp3"}' \
+  -o dialogue.mp3
 ```
 
-The supported experimental subset includes bounded `<break>`, `<sub>`, `<say-as>`, and direct IPA `<phoneme>` elements. Open the SSML guide beside the UI mode button for exact rules and limits.
+The supported experimental subset includes multi-voice dialogue with `<voice>`, explicit language routing with `<lang>`, optional per-segment `<prosody speed="0.9" pitch="+2st" tempo="1.05" volume="0.9">`, bounded `<break>`, `<sub>`, `<say-as>`, and direct IPA `<phoneme>` elements. Every prosody attribute is optional and omitted values do not change the sound. `<lang>` keeps the current voice and may retain its accent; `<voice>` selects an enabled native voice for reliable multilingual dialogue. Hidden model padding is removed between SSML turns: adjacent turns use a 100 ms default handoff, while `<break>` sets the complete pause and accepts `0ms` for no gap. Open the SSML guide beside the UI mode button for exact rules and limits, or listen to five complete scripts on the public [SSML examples page](https://hangry-labs.github.io/kokoroTTS/examples/ssml.html).
 
 `GET /tts/ping` remains available for native API clients. Interactive API documentation is served at `http://localhost:7860/tts/docs`.
 

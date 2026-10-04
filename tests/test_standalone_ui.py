@@ -1,7 +1,9 @@
 from __future__ import annotations
 
-import unittest
+import re
 import time
+import unittest
+from pathlib import Path
 from unittest.mock import patch
 
 from fastapi import FastAPI
@@ -21,6 +23,36 @@ class StandaloneUiTests(unittest.TestCase):
             return {"msg": "pong"}
 
         return backend
+
+    def test_ssml_examples_page_includes_playable_dialogue(self) -> None:
+        examples = Path(__file__).resolve().parents[1] / "examples"
+        page = (examples / "ssml.html").read_text(encoding="utf-8")
+
+        self.assertRegex(
+            page,
+            r'src="kokorotts\-ssml\-dialogue\.mp3(?:\?[^\"]*)?"',
+        )
+        self.assertIn('&lt;voice name="af_heart"&gt;', page)
+        self.assertIn('&lt;lang xml:lang="en-US"&gt;', page)
+        self.assertIn('&lt;prosody speed="0.95" pitch="+1st"&gt;', page)
+        self.assertIn('id="gallery-title"', page)
+        self.assertIn('id="british-script"', page)
+        self.assertIn('id="navigation-script"', page)
+        self.assertIn('id="mother-daughter-script"', page)
+        self.assertIn('id="multilingual-script"', page)
+        self.assertIn('href="index.html"', page)
+        self.assertTrue((examples / "ssml.css").is_file())
+        self.assertTrue((examples / "ssml.js").is_file())
+        for filename in (
+            "kokorotts-ssml-dialogue.mp3",
+            "kokorotts-ssml-british-deploy.mp3",
+            "kokorotts-ssml-moon-navigation.mp3",
+            "kokorotts-ssml-mother-daughter.mp3",
+            "kokorotts-ssml-multilingual-coffee.mp3",
+        ):
+            with self.subTest(filename=filename):
+                self.assertRegex(page, rf'src="{re.escape(filename)}(?:\?[^\"]*)?"')
+                self.assertGreater((examples / filename).stat().st_size, 100_000)
 
     def test_static_workspace_and_api_are_available(self) -> None:
         gpu_payload = {"gpus": [], "history": {}, "sample_interval_seconds": 1, "idle_timeout_seconds": 60}
@@ -54,6 +86,9 @@ class StandaloneUiTests(unittest.TestCase):
         self.assertIn('aria-pressed="false"', index.text)
         self.assertIn('id="ssml-help-dialog"', index.text)
         self.assertIn('id="ssml-dialog-title">SSML input', index.text)
+        self.assertIn('&lt;voice name="af_heart"&gt;', index.text)
+        self.assertIn('&lt;lang xml:lang="en-US"&gt;', index.text)
+        self.assertIn('&lt;prosody speed="0.9" pitch="+2st"', index.text)
         self.assertIn('src="/assets/kokoro_logo_horizontal.webp"', index.text)
         self.assertIn('href="/assets/kokoro_favicon.webp"', index.text)
         self.assertIn('class="collapsed-mascot"', index.text)

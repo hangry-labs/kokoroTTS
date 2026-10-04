@@ -102,12 +102,26 @@ tts = KokoroTTSClient("http://localhost:7860")
 tts.generate("Hello from Python.", voice="af_heart", output_format="mp3").save("hello.mp3")
 
 tts.generate(
-    '<speak>Hello.<break time="500ms"/>Welcome.</speak>',
+    '''<speak>
+      <voice name="af_heart">Good morning.</voice>
+      <break time="250ms"/>
+      <voice name="am_michael"><prosody speed="0.9" pitch="-1st">Coffee first?</prosody></voice>
+    </speak>''',
     voice="af_heart",
     output_format="mp3",
     input_type="ssml",
-).save("ssml.mp3")
+).save("dialogue.mp3")
 ```
+
+Experimental `<voice>` segments create dialogue with enabled voices. A `<lang>`
+element with `xml:lang="en-US"` routes a segment through another language
+frontend while retaining the current voice and its accent. Optional `<prosody>`
+attributes apply inheritable per-segment speed, pitch, tempo, and volume; omitted
+or blank attributes leave that control unchanged. Internal model padding is
+compacted to a 100 ms default handoff; an explicit `<break>` replaces that gap,
+and `<break time="0ms"/>` joins turns immediately. The complete recording's
+leading and trailing padding is retained. See the root README and public SSML
+examples page for the complete bounded subset.
 
 Optional post-synthesis audio controls are available in the UI and API:
 

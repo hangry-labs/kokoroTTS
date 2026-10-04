@@ -22,6 +22,7 @@ from .catalog import (
     LANGUAGE_CHOICES,
     STANDARD_MODEL_FAMILY,
     model_families_for_voices,
+    resolve_language_code,
     voice_language,
     voice_model_family,
     voices_for_model_families,
@@ -29,7 +30,7 @@ from .catalog import (
 from .model import KModel
 from .pipeline import KPipeline
 from .settings import RuntimeSettingsStore
-from .ssml import SSMLSynthesisUnit, SSMLValidationError, compile_ssml
+from .ssml import SSMLProsody, SSMLSynthesisUnit, SSMLValidationError, compile_ssml
 
 logger = logging.getLogger(__name__)
 
@@ -47,8 +48,11 @@ CUDA_ERROR_MARKERS = (
 class SynthesisChunk:
     audio: np.ndarray
     phonemes: str
+    voice: str
+    language: str
     requested_device: str
     inference_device: str
+    prosody: SSMLProsody = SSMLProsody()
     fallback_reason: str | None = None
 
 
@@ -56,8 +60,11 @@ class SynthesisChunk:
 class SynthesisResult:
     audio: np.ndarray
     phonemes: str
+    voices: tuple[str, ...]
+    languages: tuple[str, ...]
     requested_device: str
     inference_devices: tuple[str, ...]
+    chunks: tuple[SynthesisChunk, ...] = ()
     fallback_reason: str | None = None
 
 
@@ -268,14 +275,14 @@ class InferenceRuntime:
     ) -> Iterator[SynthesisChunk]:
         if plan is None:
             plan = self.prepare_synthesis(text, voice, input_type)
-        pack = self._load_voice(voice)
-        model_family = voice_model_family(voice)
         fallback_reason = None
+        packs: dict[str, object] = {}
+        model_states: dict[str, tuple[KModel, str]] = {}
 
         with ExitStack() as stack:
-            model = stack.enter_context(self.use_model(device, model_family))
-            inference_device = device
             for unit in plan:
+                unit_voice = unit.voice or voice
+                unit_language = unit.language or voice_language(unit_voice)
                 if unit.kind == "break":
                     yield SynthesisChunk(
                         audio=np.zeros(
@@ -283,11 +290,27 @@ class InferenceRuntime:
                             dtype=np.float32,
                         ),
                         phonemes="",
+                        voice=unit_voice,
+                        language=unit_language,
                         requested_device=device,
-                        inference_device=inference_device,
+                        inference_device=device,
+                        prosody=unit.prosody,
                         fallback_reason=fallback_reason,
                     )
                     continue
+                pack = packs.get(unit_voice)
+                if pack is None:
+                    pack = self._load_voice(unit_voice)
+                    packs[unit_voice] = pack
+                model_family = voice_model_family(unit_voice)
+                state = model_states.get(model_family)
+                if state is None:
+                    state = (
+                        stack.enter_context(self.use_model(device, model_family)),
+                        device,
+                    )
+                    model_states[model_family] = state
+                model, inference_device = state
                 phonemes = unit.phonemes
                 if unit.contains_phoneme_override and hasattr(model, "vocab"):
                     unsupported = sorted(
@@ -302,7 +325,7 @@ class InferenceRuntime:
                         )
                 ref_s = pack[len(phonemes) - 1]
                 try:
-                    generated = model(phonemes, ref_s, speed)
+                    generated = model(phonemes, ref_s, speed * unit.prosody.speed)
                 except RuntimeError as error:
                     if (
                         inference_device != device
@@ -326,12 +349,16 @@ class InferenceRuntime:
                         torch.cuda.empty_cache()
                     model = stack.enter_context(self.use_model("cpu", model_family))
                     inference_device = "cpu"
-                    generated = model(phonemes, ref_s, speed)
+                    model_states[model_family] = (model, inference_device)
+                    generated = model(phonemes, ref_s, speed * unit.prosody.speed)
                 yield SynthesisChunk(
                     audio=generated.numpy(),
                     phonemes=phonemes,
+                    voice=unit_voice,
+                    language=unit_language,
                     requested_device=device,
                     inference_device=inference_device,
+                    prosody=unit.prosody,
                     fallback_reason=fallback_reason,
                 )
 
@@ -342,17 +369,27 @@ class InferenceRuntime:
         speed: float,
         device: str,
         input_type: str = "text",
+        plan: list[SSMLSynthesisUnit] | None = None,
     ) -> SynthesisResult | None:
-        chunks = list(self.iter_synthesis(text, voice, speed, device, input_type))
+        chunks = list(
+            self.iter_synthesis(text, voice, speed, device, input_type, plan)
+        )
         if not chunks:
             return None
         return SynthesisResult(
             audio=to_int16_audio(np.concatenate([chunk.audio for chunk in chunks])),
             phonemes="\n".join(chunk.phonemes for chunk in chunks if chunk.phonemes),
+            voices=tuple(
+                dict.fromkeys(chunk.voice for chunk in chunks if chunk.phonemes)
+            ),
+            languages=tuple(
+                dict.fromkeys(chunk.language for chunk in chunks if chunk.phonemes)
+            ),
             requested_device=device,
             inference_devices=tuple(
                 dict.fromkeys(chunk.inference_device for chunk in chunks)
             ),
+            chunks=tuple(chunks),
             fallback_reason=next(
                 (chunk.fallback_reason for chunk in chunks if chunk.fallback_reason),
                 None,
@@ -362,24 +399,44 @@ class InferenceRuntime:
     def prepare_synthesis(
         self, text: str, voice: str, input_type: str = "text"
     ) -> list[SSMLSynthesisUnit]:
-        pipeline = self.pipelines[voice_language(voice)]
-
-        def phonemize(value: str) -> Iterator[str]:
+        def phonemize(
+            value: str, language: str, segment_voice: str
+        ) -> Iterator[str]:
+            pipeline = self.pipelines[language]
             for _, phonemes, _ in pipeline(
                 value,
-                voice,
+                segment_voice,
                 1.0,
                 normalize_markdown_emphasis=input_type == "text",
             ):
                 yield phonemes
 
+        def resolve_voice_language(voice_id: str) -> str:
+            if not self.serves_voice(voice_id):
+                raise ValueError(
+                    f"Voice '{voice_id}' is not served by this deployment."
+                )
+            return voice_language(voice_id)
+
         if input_type == "text":
             return [
-                SSMLSynthesisUnit("speech", phonemes=phonemes)
-                for phonemes in phonemize(text)
+                SSMLSynthesisUnit(
+                    "speech",
+                    phonemes=phonemes,
+                    language=voice_language(voice),
+                    voice=voice,
+                )
+                for phonemes in phonemize(text, voice_language(voice), voice)
             ]
         if input_type == "ssml":
-            return compile_ssml(text, voice_language(voice), phonemize)
+            return compile_ssml(
+                text,
+                voice_language(voice),
+                phonemize,
+                default_voice=voice,
+                resolve_language=resolve_language_code,
+                resolve_voice_language=resolve_voice_language,
+            )
         raise ValueError("input_type must be 'text' or 'ssml'")
 
     def phoneme_segments(

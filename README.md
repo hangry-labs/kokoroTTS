@@ -13,6 +13,7 @@ This Hangry Labs fork is made for ease of use. The aim is that anyone should be 
 You get:
 - A responsive browser audio workspace for generation, streaming, playback, and downloads
 - OpenAI-compatible and KokoroTTS-native HTTP APIs for applications and tools
+- Experimental multi-character and multilingual dialogue scripting through SSML
 - No manual Python, model, or audio dependency setup
 - 70 voices across 11 supported languages, including dedicated German and Vietnamese checkpoints
 - WAV, MP3, FLAC, OGG Vorbis, Opus, AAC, and raw PCM output
@@ -20,7 +21,7 @@ You get:
 
 Official container images are published to both [Docker Hub](https://hub.docker.com/r/hangrylabs/kokorotts/tags) and [GitHub Container Registry](https://github.com/Hangry-Labs/kokoroTTS/pkgs/container/kokorotts).
 
-Examples and voice previews: [hangry-labs.github.io/kokoroTTS/examples](https://hangry-labs.github.io/kokoroTTS/examples/).
+Examples and voice previews: [hangry-labs.github.io/kokoroTTS/examples](https://hangry-labs.github.io/kokoroTTS/examples/). Dialogue and mixed-language SSML examples: [SSML examples](https://hangry-labs.github.io/kokoroTTS/examples/ssml.html).
 
 Hangry Labs home: [nuggies.website](https://nuggies.website/).
 
@@ -48,6 +49,8 @@ Hangry Labs home: [nuggies.website](https://nuggies.website/).
 Hear all 70 voices in their supported languages on the interactive examples page. Choose a language, compare speakers, and listen directly in the browser:
 
 **[Open the KokoroTTS examples page](https://hangry-labs.github.io/kokoroTTS/examples/)**
+
+To hear multiple characters generated in one request and see the exact scripts, open the dedicated **[SSML dialogue examples](https://hangry-labs.github.io/kokoroTTS/examples/ssml.html)**.
 
 The included interface provides generation and streaming workflows, precise voice controls, waveform playback and downloads, live API information, and runtime/GPU monitoring.
 
@@ -210,18 +213,23 @@ The native generation, streaming, metrics, and token-inspection endpoints accept
 ```bash
 curl -X POST "http://localhost:7860/tts/generate" \
   -H "Content-Type: application/json" \
-  -d '{"input_type":"ssml","text":"<speak>Hello.<break time=\"500ms\"/>Welcome to Kokoro TTS.</speak>","voice":"af_heart","output_format":"mp3"}' \
-  -o ssml.mp3
+  -d '{"input_type":"ssml","text":"<speak><voice name=\"af_heart\">Good morning, Michael.</voice><break time=\"250ms\"/><voice name=\"am_michael\">Good morning. Coffee first?</voice></speak>","voice":"af_heart","output_format":"mp3"}' \
+  -o dialogue.mp3
 ```
 
 Supported elements:
 
-- `<break time="500ms"/>`: insert up to 10 seconds of silence per break, with a 30-second total per request.
+- `<voice name="af_heart">...</voice>`: select an enabled voice for a dialogue turn. The selected voice also selects its native language unless a containing or nested `<lang>` is explicit.
+- `<lang xml:lang="en-US">...</lang>`: use a different language frontend while preserving the current voice. This retains character identity, but a voice that was not trained for that language can retain a strong accent or pronounce unsupported sounds poorly.
+- `<prosody speed="0.9" pitch="+2st" tempo="1.05" volume="0.9">...</prosody>`: style one segment. Every attribute is optional; omitted or blank values inherit unchanged. Speed and tempo accept `0.5-2`, pitch accepts `-12st` to `+12st`, and volume accepts `0-2`.
+- `<break time="500ms"/>`: set the complete pause at that boundary, up to 10 seconds per break and 30 seconds per request. Use `0ms` for an immediate handoff.
 - `<sub alias="spoken text">label</sub>`: speak the alias.
 - `<say-as interpret-as="characters|number|ordinal">...</say-as>`: spell characters, read a number, or read an English ordinal. Ordinals are currently limited to English voices.
 - `<phoneme alphabet="ipa" ph="...">label</phoneme>`: bypass G2P with Kokoro/eSpeak-compatible IPA.
 
-One `<speak>` root is required. Documents are limited to 50,000 characters and 256 elements; direct phoneme values are limited to 510 characters and experimental ordinals to 18 digits. Unsupported elements, nested inline tags, malformed or unsafe XML, and inputs above these limits return HTTP 400. SSML is currently a native KokoroTTS feature; the OpenAI-compatible endpoint continues to treat `input` as plain text.
+`<voice>`, `<lang>`, and `<prosody>` can contain the other supported elements, up to eight nesting levels. Nested prosody multiplies speed, tempo, and volume while adding pitch; the effective values, including request-level controls, must remain inside the documented ranges. Speed controls model delivery. Pitch, tempo, and volume are optional post-effects and neutral values skip that work. Complete-file loudness normalization remains request-wide. Kokoro's model-generated padding is removed only at internal SSML boundaries: adjacent speech units receive a short 100 ms handoff by default, while an explicit `<break>` replaces that default with its requested duration. The beginning and end of the complete recording remain untouched. Voice switching provides reliable multilingual dialogue by selecting an appropriate voice for each segment; `<lang>` alone changes pronunciation processing but cannot turn a monolingual checkpoint into a bilingual model. Voice names must be enabled in the deployment. Common BCP-47 forms such as `en-US`, `en-GB`, `zh-CN`, `ja-JP`, `de-DE`, and `vi-VN` are accepted.
+
+One `<speak>` root is required. Documents are limited to 50,000 characters and 256 elements; direct phoneme values are limited to 510 characters and experimental ordinals to 18 digits. Unsupported markup, malformed or unsafe XML, and inputs above these limits return HTTP 400. SSML is currently a native KokoroTTS feature; the OpenAI-compatible endpoint continues to treat `input` as plain text.
 
 Native and system endpoints:
 
@@ -316,6 +324,9 @@ task imagerun
 task imagerun-tiny
 task imageweb
 task imageapi
+task ssml-test
+task unit-test
+task ui-test
 task client-test
 task openai-client-test
 ```
@@ -439,7 +450,9 @@ The data volume is recommended but optional. Without it, the same files are stor
 - Upgraded the Docker runtime and dependency workflow to Python 3.13 with the Qwen3-ASR-STT-proven Torch 2.11/CUDA 13 baseline, while independently pinning Kokoro's language and model dependencies.
 - Reorganized the server into focused API, audio, catalog, schema, runtime, and launcher modules while preserving the existing `/tts/*` contracts and intentionally eager preparation of all advertised voices.
 - Fixed long non-English input handling so multilingual sentence punctuation and punctuation-free text are split into model-safe phoneme segments without silently dropping content.
-- Added explicit experimental SSML input to native generation, streaming, metrics, token inspection, the Python HTTP client, and the browser UI. The bounded hardened parser supports pauses, substitutions, character/number/English-ordinal reading, and direct IPA overrides while plain text remains the default.
+- Added explicit experimental SSML input to native generation, streaming, metrics, token inspection, the Python HTTP client, and the browser UI. The bounded hardened parser supports pauses, substitutions, character/number/English-ordinal reading, direct IPA overrides, explicit language routing, multi-voice dialogue, and inheritable per-segment speed, pitch, tempo, and volume while plain text remains the default.
+- Removed excessive model padding between SSML speech units. Unmarked dialogue boundaries now use a 100 ms handoff, and explicit `<break>` values, including `0ms`, control the complete internal pause in both full and streamed audio without trimming the recording's outer edges.
+- Added a dedicated public SSML examples page with five playable one-request dialogues, complete scripts, mixed-language guidance, varied per-character direction, and direct navigation from the voice gallery and README.
 - Fixed multilingual chunking so periods inside decimals and version-like numbers remain in one text chunk while sentence-final periods still form boundaries.
 - Improved English pronunciation of compact large-number forms by expanding unambiguous uppercase `K`, `M`, `B`, and `T` suffixes before G2P, including decimal and dollar/pound values such as `20K` and `$1.5M`, while preserving longer identifiers and reserving lowercase suffixes for measurement normalization.
 - Improved English normalization for contextual Roman numerals, common compact measurements, and year-adjacent era abbreviations. Regnal names such as `Thutmose II` become ordinals, labels such as `World War II` and `Chapter XI` become cardinal numbers, and forms such as `10m`, `32ft`, `40cm`, and `1479 BC` are spoken as words without changing non-English input or unrelated identifiers.

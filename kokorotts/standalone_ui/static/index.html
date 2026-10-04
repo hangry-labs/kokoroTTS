@@ -160,21 +160,26 @@
       <div><span>Experimental</span><h2 id="ssml-dialog-title">SSML input</h2></div>
       <button class="icon-button bordered" id="ssml-help-close" type="button" aria-label="Close SSML guide" title="Close"><i class="icon-x"></i></button>
     </div>
-    <p>SSML is used only when the orange SSML mode is active. Plain text remains the default.</p>
+    <p>SSML is used only when the orange SSML mode is active. Plain text remains the default. Language segments keep the current voice; voice segments create characters and multilingual dialogue.</p>
     <pre><code>&lt;speak&gt;
-  Hello &lt;sub alias="World Wide Web Consortium"&gt;W3C&lt;/sub&gt;.
-  &lt;break time="500ms"/&gt;
-  Attempt &lt;say-as interpret-as="ordinal"&gt;3&lt;/say-as&gt;.
+  &lt;voice name="af_heart"&gt;Good morning, Michael.&lt;/voice&gt;
+  &lt;break time="250ms"/&gt;
+  &lt;voice name="am_michael"&gt;
+    &lt;prosody speed="0.9" pitch="-1st"&gt;Good morning. Coffee first?&lt;/prosody&gt;
+  &lt;/voice&gt;
 &lt;/speak&gt;</code></pre>
     <div class="ssml-rule-grid">
-      <div><code>&lt;break time="500ms"/&gt;</code><span>Pause for up to 10 seconds.</span></div>
+      <div><code>&lt;voice name="af_heart"&gt;...&lt;/voice&gt;</code><span>Switch voices between dialogue turns. The voice selects its native language unless a nested language is explicit.</span></div>
+      <div><code>&lt;lang xml:lang="en-US"&gt;...&lt;/lang&gt;</code><span>Use another language frontend while preserving the current voice and its character.</span></div>
+      <div><code>&lt;prosody speed="0.9" pitch="+2st" tempo="1.05" volume="0.9"&gt;...&lt;/prosody&gt;</code><span>Style one segment. Every attribute is optional; omitted or blank values inherit unchanged.</span></div>
+      <div><code>&lt;break time="500ms"/&gt;</code><span>Set the complete pause at this boundary, up to 10 seconds. Use 0ms for no gap; adjacent turns without a break use 100ms.</span></div>
       <div><code>&lt;sub alias="spoken text"&gt;label&lt;/sub&gt;</code><span>Speak the alias instead of the label.</span></div>
       <div><code>&lt;say-as interpret-as="characters"&gt;SQL&lt;/say-as&gt;</code><span>Read characters separately.</span></div>
       <div><code>&lt;say-as interpret-as="number"&gt;42&lt;/say-as&gt;</code><span>Read a numeric value normally.</span></div>
       <div><code>&lt;say-as interpret-as="ordinal"&gt;3&lt;/say-as&gt;</code><span>Read an English ordinal. Experimental English voices only.</span></div>
       <div><code>&lt;phoneme alphabet="ipa" ph="wˈɜːld"&gt;world&lt;/phoneme&gt;</code><span>Use Kokoro/eSpeak-compatible IPA directly.</span></div>
     </div>
-    <p class="ssml-dialog-note">One <code>&lt;speak&gt;</code> root is required. Documents are limited to 50,000 characters and 256 elements, direct phonemes to 510 characters, and ordinals to 18 digits. Unsupported elements, nested inline tags, unsafe XML, breaks over 10 seconds, and more than 30 seconds of total silence are rejected.</p>
+    <p class="ssml-dialog-note">Prosody ranges are speed and tempo <code>0.5-2</code>, pitch <code>-12st</code> to <code>+12st</code>, and volume <code>0-2</code>. Nested values compose with request-level controls and must remain in range; speed changes model delivery, while pitch, tempo, and volume are post-effects. Loudness normalization remains request-wide for complete files. One <code>&lt;speak&gt;</code> root is required. Voice names must be enabled by the deployment. Language tags accept served Kokoro codes and common BCP-47 forms such as <code>en-US</code>, <code>zh-CN</code>, and <code>de-DE</code>. Documents are limited to 50,000 characters, 256 elements, and eight nesting levels; direct phonemes to 510 characters and ordinals to 18 digits. Unsupported markup, unsafe XML, breaks over 10 seconds, and more than 30 seconds of total silence are rejected.</p>
   </dialog>
 
   <div class="toast" id="toast" role="alert" hidden></div>

@@ -8,12 +8,15 @@ MODEL_FILES = {
 }
 
 LANGUAGE_ALIASES = {
+    "en": "a",
     "en-us": "a",
     "en-gb": "b",
     "es": "e",
+    "fr": "f",
     "fr-fr": "f",
     "hi": "h",
     "it": "i",
+    "pt": "p",
     "pt-br": "p",
     "ja": "j",
     "zh": "z",
@@ -197,6 +200,21 @@ MODEL_FAMILY_CHOICES = {
 
 def voice_ids() -> list[str]:
     return list(VOICE_CHOICES.values())
+
+
+def resolve_language_code(language: str) -> str:
+    """Resolve a Kokoro code or BCP-47-style language tag."""
+    normalized = language.strip().lower().replace("_", "-")
+    if normalized in LANGUAGE_CHOICES:
+        return normalized
+    resolved = LANGUAGE_ALIASES.get(normalized)
+    if resolved:
+        return resolved
+    base = normalized.partition("-")[0]
+    resolved = LANGUAGE_ALIASES.get(base)
+    if resolved:
+        return resolved
+    raise ValueError(f"Unsupported language '{language}'.")
 
 
 def voice_language(voice_id: str) -> str:

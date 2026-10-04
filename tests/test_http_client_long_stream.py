@@ -213,6 +213,100 @@ class HttpClientServerSmokeTest(unittest.TestCase):
         self.assertGreater(len(audio.content), 10_000)
         self.assertEqual(audio.headers["x-kokorotts-input-type"], "ssml")
 
+    def test_tts_generate_ssml_dialogue_uses_multiple_voices(self) -> None:
+        audio = self.client.generate(
+            """<speak>
+              <voice name="af_heart">Good morning, Michael.</voice>
+              <break time="250ms"/>
+              <voice name="am_michael">Good morning. Coffee first?</voice>
+            </speak>""",
+            voice="af_heart",
+            output_format="mp3",
+            input_type="ssml",
+        )
+
+        self.assertGreater(len(audio.content), 10_000)
+        self.assertEqual(audio.headers["x-kokorotts-dialogue"], "true")
+        self.assertEqual(
+            audio.headers["x-kokorotts-voices"], "af_heart,am_michael"
+        )
+        self.assertEqual(audio.headers["x-kokorotts-languages"], "a")
+
+    def test_tts_generate_ssml_dialogue_applies_local_prosody(self) -> None:
+        audio = self.client.generate(
+            """<speak>
+              <voice name="af_heart"><prosody speed="0.95" pitch="+1.5st" volume="0.95">The first performance.</prosody></voice>
+              <voice name="am_michael"><prosody speed="0.9" pitch="-1st" tempo="0.98">The second performance.</prosody></voice>
+            </speak>""",
+            voice="af_heart",
+            output_format="mp3",
+            input_type="ssml",
+        )
+
+        self.assertGreater(len(audio.content), 10_000)
+        self.assertEqual(audio.headers["x-kokorotts-dialogue"], "true")
+
+    def test_tts_generate_ssml_dialogue_honors_boundary_pause_duration(self) -> None:
+        def duration(break_markup: str) -> float:
+            audio = self.client.generate(
+                f'''<speak>
+                  <voice name="af_heart">Hello!</voice>
+                  {break_markup}
+                  <voice name="am_michael">Hi there!</voice>
+                </speak>''',
+                voice="af_heart",
+                output_format="wav",
+                input_type="ssml",
+            )
+            return float(audio.headers["x-kokorotts-duration"])
+
+        implicit = duration("")
+        explicit_zero = duration('<break time="0ms"/>')
+        explicit_250 = duration('<break time="250ms"/>')
+
+        self.assertAlmostEqual(implicit - explicit_zero, 0.1, delta=0.04)
+        self.assertAlmostEqual(explicit_250 - explicit_zero, 0.25, delta=0.04)
+
+    def test_tts_tokenize_ssml_reports_voice_and_language_units(self) -> None:
+        result = self.client.tokenize(
+            """<speak>
+              <voice name="zf_xiaoxiao">你好。</voice>
+              <voice name="af_heart">Hello.</voice>
+            </speak>""",
+            voice="zf_xiaoxiao",
+            input_type="ssml",
+        )
+
+        self.assertEqual(
+            [unit["voice"] for unit in result["synthesis_units"]],
+            ["zf_xiaoxiao", "af_heart"],
+        )
+        self.assertEqual(
+            [unit["language"] for unit in result["synthesis_units"]],
+            ["z", "a"],
+        )
+
+    def test_tts_tokenize_ssml_reports_inherited_prosody(self) -> None:
+        result = self.client.tokenize(
+            """<speak>
+              Normal.
+              <prosody speed="" pitch="+2st" tempo="1.1" volume="0.8">
+                Styled.<prosody pitch="-1st" volume="1.25">Nested.</prosody>
+              </prosody>
+            </speak>""",
+            voice="af_heart",
+            input_type="ssml",
+        )
+
+        prosody = [unit["prosody"] for unit in result["synthesis_units"]]
+        self.assertEqual(prosody[0]["pitch_semitones"], 0.0)
+        self.assertEqual(prosody[1]["speed"], 1.0)
+        self.assertEqual(prosody[1]["pitch_semitones"], 2.0)
+        self.assertEqual(prosody[1]["tempo"], 1.1)
+        self.assertEqual(prosody[1]["volume"], 0.8)
+        self.assertEqual(prosody[2]["pitch_semitones"], 1.0)
+        self.assertEqual(prosody[2]["volume"], 1.0)
+
     def test_tts_generate_rejects_malformed_experimental_ssml(self) -> None:
         with self.assertRaises(KokoroTTSClientError) as error:
             self.client.generate(
@@ -221,6 +315,27 @@ class HttpClientServerSmokeTest(unittest.TestCase):
 
         self.assertIn("400", str(error.exception))
         self.assertIn("Invalid or unsafe SSML", str(error.exception))
+
+    def test_tts_generate_rejects_unserved_ssml_voice(self) -> None:
+        with self.assertRaises(KokoroTTSClientError) as error:
+            self.client.generate(
+                '<speak><voice name="not_a_voice">Hello.</voice></speak>',
+                input_type="ssml",
+            )
+
+        self.assertIn("400", str(error.exception))
+        self.assertIn("not served by this deployment", str(error.exception))
+
+    def test_tts_generate_rejects_out_of_range_effective_ssml_prosody(self) -> None:
+        with self.assertRaises(KokoroTTSClientError) as error:
+            self.client.generate(
+                '<speak><prosody speed="1.1">Too fast.</prosody></speak>',
+                speed=2.0,
+                input_type="ssml",
+            )
+
+        self.assertIn("400", str(error.exception))
+        self.assertIn("Effective SSML speed", str(error.exception))
 
     def test_tts_convert_wav_compatibility_alias(self) -> None:
         audio = self.client.convert(
@@ -289,6 +404,31 @@ class HttpClientServerSmokeTest(unittest.TestCase):
         self.assertEqual(audio.media_type, "audio/pcm")
         self.assertGreater(len(audio.content), 12_000)
         self.assertEqual(audio.headers["x-kokorotts-input-type"], "ssml")
+
+    def test_tts_stream_ssml_dialogue_pcm(self) -> None:
+        audio = self.client.stream(
+            """<speak>
+              <voice name="af_heart">The first speaker.</voice>
+              <voice name="am_michael">The second speaker.</voice>
+            </speak>""",
+            voice="af_heart",
+            stream_format="pcm_s16le",
+            input_type="ssml",
+        )
+
+        self.assertGreater(len(audio.content), 20_000)
+        self.assertEqual(audio.headers["x-kokorotts-dialogue"], "true")
+
+    def test_tts_stream_ssml_prosody_pcm(self) -> None:
+        audio = self.client.stream(
+            "<speak>Normal.<prosody tempo='0.9' pitch='+1st'>Styled.</prosody></speak>",
+            voice="af_heart",
+            stream_format="pcm_s16le",
+            input_type="ssml",
+        )
+
+        self.assertEqual(audio.media_type, "audio/pcm")
+        self.assertGreater(len(audio.content), 20_000)
 
     def test_tts_generate_rejects_invalid_audio_control(self) -> None:
         with self.assertRaises(KokoroTTSClientError) as error:

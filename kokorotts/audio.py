@@ -7,6 +7,9 @@ import wave
 import numpy as np
 
 SAMPLE_RATE = 24000
+SSML_IMPLICIT_PAUSE_MS = 100
+SSML_SILENCE_THRESHOLD_DB = -50.0
+SSML_SILENCE_FRAME_MS = 10
 
 OUTPUT_FORMATS = {
     "wav": {
@@ -241,6 +244,69 @@ def apply_audio_effects(
         command, audio_to_wav_bytes(audio, sample_rate), "apply audio controls"
     )
     return np.frombuffer(output, dtype="<i2").astype(np.int16, copy=True)
+
+
+def trim_silent_audio_edges(
+    audio: np.ndarray,
+    sample_rate: int = SAMPLE_RATE,
+    *,
+    leading: bool = False,
+    trailing: bool = False,
+    threshold_db: float = SSML_SILENCE_THRESHOLD_DB,
+    frame_ms: int = SSML_SILENCE_FRAME_MS,
+) -> np.ndarray:
+    """Trim low-energy outer frames while leaving all interior audio untouched."""
+    if audio.size == 0 or not (leading or trailing):
+        return audio
+
+    normalized = (
+        audio.astype(np.float32) / 32768.0
+        if np.issubdtype(audio.dtype, np.integer)
+        else audio.astype(np.float32, copy=False)
+    )
+    frame_samples = max(1, round(sample_rate * frame_ms / 1000))
+    frame_count = (len(normalized) + frame_samples - 1) // frame_samples
+    padded = np.pad(
+        normalized,
+        (0, frame_count * frame_samples - len(normalized)),
+    )
+    frames = padded.reshape(frame_count, frame_samples)
+    rms = np.sqrt(np.mean(np.square(frames), axis=1))
+    active_frames = np.flatnonzero(rms >= 10 ** (threshold_db / 20))
+    if active_frames.size == 0:
+        return audio
+
+    start = int(active_frames[0]) * frame_samples if leading else 0
+    end = (
+        min((int(active_frames[-1]) + 1) * frame_samples, len(audio))
+        if trailing
+        else len(audio)
+    )
+    return audio[start:end]
+
+
+def compact_ssml_speech_audio(
+    audio: np.ndarray,
+    *,
+    trim_leading: bool,
+    trim_trailing: bool,
+    append_implicit_pause: bool,
+    sample_rate: int = SAMPLE_RATE,
+) -> np.ndarray:
+    """Remove model boundary padding and add the SSML default turn gap."""
+    compacted = trim_silent_audio_edges(
+        audio,
+        sample_rate,
+        leading=trim_leading,
+        trailing=trim_trailing,
+    )
+    if not append_implicit_pause:
+        return compacted
+    pause = np.zeros(
+        round(SSML_IMPLICIT_PAUSE_MS * sample_rate / 1000),
+        dtype=compacted.dtype,
+    )
+    return np.concatenate((compacted, pause))
 
 
 def encode_audio_bytes(

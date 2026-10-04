@@ -15,7 +15,8 @@ from kokorotts.settings import RuntimeSettingsStore
 
 
 class FakePipeline:
-    def __init__(self):
+    def __init__(self, language: str = "a"):
+        self.language = language
         self.voices = {}
         self.calls = []
 
@@ -23,8 +24,8 @@ class FakePipeline:
         return [None] * 512
 
     def __call__(self, _text, _voice, _speed, **kwargs):
-        self.calls.append(kwargs)
-        yield "text", "abc", None
+        self.calls.append({"voice": _voice, **kwargs})
+        yield "text", f"{self.language}abc", None
 
 
 class FakeAudio:
@@ -36,8 +37,10 @@ class FakeModel:
     def __init__(self, device: str, error: RuntimeError | None = None):
         self.device = device
         self.error = error
+        self.speeds = []
 
     def __call__(self, _phonemes, _ref_s, _speed):
+        self.speeds.append(_speed)
         if self.error:
             raise self.error
         return FakeAudio()
@@ -47,7 +50,7 @@ class InferenceRuntimeTest(unittest.TestCase):
     def runtime(self, model_factory):
         return InferenceRuntime(
             model_factory=model_factory,
-            pipeline_factory=lambda _language: FakePipeline(),
+            pipeline_factory=lambda language: FakePipeline(language),
             eager_voices=False,
         )
 
@@ -106,7 +109,71 @@ class InferenceRuntimeTest(unittest.TestCase):
 
         self.assertIsNotNone(result)
         self.assertEqual(len(result.audio), 12_004)
-        self.assertEqual(result.phonemes, "abc\nabc")
+        self.assertEqual(result.phonemes, "aabc\naabc")
+
+    def test_ssml_dialogue_switches_voice_and_model_family_in_order(self) -> None:
+        model_calls = []
+
+        def model_factory(model_family, device):
+            model_calls.append((model_family, device))
+            return FakeModel(device)
+
+        runtime = self.runtime(model_factory)
+        chunks = list(
+            runtime.iter_synthesis(
+                """<speak>
+                  <voice name="af_heart">Hello.</voice>
+                  <voice name="dm_martin">Guten Tag.</voice>
+                  <voice name="af_heart">Welcome back.</voice>
+                </speak>""",
+                "af_heart",
+                1.0,
+                "cpu",
+                "ssml",
+            )
+        )
+
+        speech = [chunk for chunk in chunks if chunk.phonemes]
+        self.assertEqual(
+            [(chunk.voice, chunk.language) for chunk in speech],
+            [("af_heart", "a"), ("dm_martin", "d"), ("af_heart", "a")],
+        )
+        self.assertEqual(
+            model_calls,
+            [("kokoro-v1.0", "cpu"), ("kikiri-german-martin", "cpu")],
+        )
+
+    def test_ssml_language_tag_preserves_selected_voice(self) -> None:
+        runtime = self.runtime(lambda _model_family, device: FakeModel(device))
+
+        units = runtime.prepare_synthesis(
+            '<speak>你好。<lang xml:lang="en-US">Hello.</lang></speak>',
+            "zf_xiaoxiao",
+            "ssml",
+        )
+
+        self.assertEqual(
+            [(unit.language, unit.voice) for unit in units],
+            [("z", "zf_xiaoxiao"), ("a", "zf_xiaoxiao")],
+        )
+
+    def test_ssml_prosody_speed_is_applied_per_speech_unit(self) -> None:
+        model = FakeModel("cpu")
+        runtime = self.runtime(lambda _model_family, _device: model)
+
+        list(
+            runtime.iter_synthesis(
+                "<speak>Normal.<prosody speed='0.75'>Slower.</prosody></speak>",
+                "af_heart",
+                1.2,
+                "cpu",
+                "ssml",
+            )
+        )
+
+        self.assertEqual(len(model.speeds), 2)
+        self.assertAlmostEqual(model.speeds[0], 1.2)
+        self.assertAlmostEqual(model.speeds[1], 0.9)
 
     def test_markdown_cleanup_is_limited_to_plain_text(self) -> None:
         pipeline = FakePipeline()

@@ -29,6 +29,7 @@ from .audio import (
     STREAM_FORMAT_ALIASES,
     STREAM_FORMATS,
     apply_audio_effects,
+    compact_ssml_speech_audio,
     encode_audio_bytes,
     encode_pcm_s16le,
     get_supported_output_formats,
@@ -53,7 +54,7 @@ from .openai_compat import (
     require_openai_api_key,
     resolve_openai_model,
 )
-from .runtime import InferenceRuntime, SynthesisResult
+from .runtime import InferenceRuntime, SynthesisChunk, SynthesisResult
 from .sample_texts import get_initial_text, get_intro_text, get_random_quote
 from .schemas import (
     MetricsRequest,
@@ -64,7 +65,19 @@ from .schemas import (
     StreamingTTSRequest,
     TTSRequest,
 )
-from .ssml import SSMLSynthesisUnit, SSMLValidationError
+from .ssml import (
+    MAX_PITCH_SEMITONES,
+    MAX_SPEED,
+    MAX_TEMPO,
+    MAX_VOLUME,
+    MIN_PITCH_SEMITONES,
+    MIN_SPEED,
+    MIN_TEMPO,
+    MIN_VOLUME,
+    SSMLProsody,
+    SSMLSynthesisUnit,
+    SSMLValidationError,
+)
 
 APP_VERSION = os.getenv("APP_VERSION", KOKORO_VERSION)
 BUILD_ID = os.getenv("BUILD_ID", "stable")
@@ -184,19 +197,141 @@ def apply_request_effects(waveform: np.ndarray, payload: TTSRequest) -> np.ndarr
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
 
+def effective_prosody(prosody: SSMLProsody, payload: TTSRequest) -> SSMLProsody:
+    effective = SSMLProsody(
+        speed=payload.speed * prosody.speed,
+        pitch_semitones=payload.pitch_semitones + prosody.pitch_semitones,
+        tempo=payload.tempo * prosody.tempo,
+        volume=payload.volume * prosody.volume,
+    )
+    ranges = (
+        ("speed", effective.speed, MIN_SPEED, MAX_SPEED),
+        (
+            "pitch",
+            effective.pitch_semitones,
+            MIN_PITCH_SEMITONES,
+            MAX_PITCH_SEMITONES,
+        ),
+        ("tempo", effective.tempo, MIN_TEMPO, MAX_TEMPO),
+        ("volume", effective.volume, MIN_VOLUME, MAX_VOLUME),
+    )
+    for name, value, minimum, maximum in ranges:
+        if not minimum <= value <= maximum:
+            raise SSMLValidationError(
+                f"Effective SSML {name}, including the request-level control, "
+                f"must be between {minimum:g} and {maximum:g}."
+            )
+    return effective
+
+
+def validate_plan_prosody(
+    plan: list[SSMLSynthesisUnit], payload: TTSRequest
+) -> None:
+    for unit in plan:
+        if unit.kind == "speech":
+            effective_prosody(unit.prosody, payload)
+
+
+def apply_chunk_effects(
+    waveform: np.ndarray,
+    prosody: SSMLProsody,
+    payload: TTSRequest,
+    *,
+    normalize: bool | None = None,
+) -> np.ndarray:
+    effective = effective_prosody(prosody, payload)
+    try:
+        return apply_audio_effects(
+            waveform,
+            SAMPLE_RATE,
+            effective.pitch_semitones,
+            effective.tempo,
+            effective.volume,
+            payload.normalize if normalize is None else normalize,
+        )
+    except RuntimeError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+def iter_processed_ssml_audio(
+    chunks: tuple[SynthesisChunk, ...] | Iterator[SynthesisChunk],
+    plan: list[SSMLSynthesisUnit],
+    payload: TTSRequest,
+    *,
+    normalize_chunks: bool,
+) -> Iterator[np.ndarray]:
+    for index, (chunk, unit) in enumerate(zip(chunks, plan, strict=True)):
+        if unit.kind == "break":
+            yield to_int16_audio(chunk.audio)
+            continue
+
+        audio = apply_chunk_effects(
+            to_int16_audio(chunk.audio),
+            chunk.prosody,
+            payload,
+            normalize=False,
+        )
+        audio = compact_ssml_speech_audio(
+            audio,
+            trim_leading=index > 0,
+            trim_trailing=index < len(plan) - 1,
+            append_implicit_pause=(
+                index < len(plan) - 1 and plan[index + 1].kind == "speech"
+            ),
+        )
+        if normalize_chunks and payload.normalize:
+            try:
+                audio = apply_audio_effects(audio, SAMPLE_RATE, normalize=True)
+            except RuntimeError as exc:
+                raise HTTPException(status_code=400, detail=str(exc)) from exc
+        yield audio
+
+
 def synthesize_payload(payload: TTSRequest) -> ProcessedSynthesis:
     output_format, device = validate_request(payload)
     try:
+        plan = RUNTIME.prepare_synthesis(
+            payload.text, payload.voice, payload.input_type
+        )
+        validate_plan_prosody(plan, payload)
         inference = RUNTIME.synthesize(
             payload.text,
             payload.voice,
             payload.speed,
             device,
             payload.input_type,
+            plan,
         )
     except SSMLValidationError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     waveform = inference.audio if inference else np.zeros(0, dtype=np.int16)
+    if inference and payload.input_type == "ssml":
+        processed_chunks = list(
+            iter_processed_ssml_audio(
+                inference.chunks,
+                plan,
+                payload,
+                normalize_chunks=False,
+            )
+        )
+        waveform = (
+            np.concatenate(processed_chunks)
+            if processed_chunks
+            else np.zeros(0, dtype=np.int16)
+        )
+        if payload.normalize:
+            try:
+                waveform = apply_audio_effects(
+                    waveform, SAMPLE_RATE, normalize=True
+                )
+            except RuntimeError as exc:
+                raise HTTPException(status_code=400, detail=str(exc)) from exc
+        return ProcessedSynthesis(
+            output_format=output_format,
+            sample_rate=SAMPLE_RATE,
+            waveform=waveform,
+            inference=inference,
+        )
     return ProcessedSynthesis(
         output_format=output_format,
         sample_rate=SAMPLE_RATE,
@@ -232,6 +367,10 @@ def audio_response(payload: TTSRequest, route_name: str) -> StreamingResponse:
         headers["X-KokoroTTS-Inference-Device"] = ",".join(
             result.inference.inference_devices
         )
+        headers["X-KokoroTTS-Voices"] = ",".join(result.inference.voices)
+        headers["X-KokoroTTS-Languages"] = ",".join(result.inference.languages)
+        if len(result.inference.voices) > 1:
+            headers["X-KokoroTTS-Dialogue"] = "true"
         if result.inference.fallback_reason:
             headers["X-KokoroTTS-Fallback"] = "cpu"
             headers["X-KokoroTTS-Warning"] = (
@@ -248,15 +387,31 @@ def iter_stream_audio(
     device: str,
     plan: list[SSMLSynthesisUnit] | None = None,
 ) -> Iterator[bytes]:
-    for chunk in RUNTIME.iter_synthesis(
+    chunks = RUNTIME.iter_synthesis(
         payload.text,
         payload.voice,
         payload.speed,
         device,
         payload.input_type,
         plan,
-    ):
-        audio = apply_request_effects(to_int16_audio(chunk.audio), payload)
+    )
+    if payload.input_type == "ssml" and plan is not None:
+        audio_chunks = iter_processed_ssml_audio(
+            chunks,
+            plan,
+            payload,
+            normalize_chunks=True,
+        )
+    else:
+        audio_chunks = (
+            apply_chunk_effects(to_int16_audio(chunk.audio), chunk.prosody, payload)
+            if chunk.phonemes
+            else apply_request_effects(to_int16_audio(chunk.audio), payload)
+            for chunk in chunks
+        )
+    for audio in audio_chunks:
+        if audio.size == 0:
+            continue
         if stream_format == "pcm_s16le":
             yield encode_pcm_s16le(audio)
         else:
@@ -288,6 +443,14 @@ def get_phoneme_segments(
     if not RUNTIME.serves_voice(voice):
         raise ValueError(f"Voice '{voice}' is not served by this deployment")
     return RUNTIME.phoneme_segments(text, voice, input_type) if text.strip() else []
+
+
+def get_synthesis_units(
+    text: str, voice: str = "af_heart", input_type: str = "text"
+) -> list[SSMLSynthesisUnit]:
+    if not RUNTIME.serves_voice(voice):
+        raise ValueError(f"Voice '{voice}' is not served by this deployment")
+    return RUNTIME.prepare_synthesis(text, voice, input_type) if text.strip() else []
 
 
 api = FastAPI(
@@ -609,16 +772,33 @@ def metrics(payload: MetricsRequest) -> dict:
 @api.post("/tts/tokenize", tags=["KokoroTTS native API"])
 def tokenize(payload: MetricsRequest) -> dict:
     try:
-        segments = get_phoneme_segments(
+        units = get_synthesis_units(
             payload.text, payload.voice, payload.input_type
         )
     except (ValueError, SSMLValidationError) as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+    speech_units = [unit for unit in units if unit.kind == "speech"]
+    segments = [unit.phonemes for unit in speech_units]
     return {
         "voice": payload.voice,
         "language": voice_language(payload.voice),
         "input_type": payload.input_type,
         "segments": segments,
+        "synthesis_units": [
+            {
+                "voice": unit.voice or payload.voice,
+                "language": unit.language
+                or voice_language(unit.voice or payload.voice),
+                "phonemes": unit.phonemes,
+                "prosody": {
+                    "speed": unit.prosody.speed,
+                    "pitch_semitones": unit.prosody.pitch_semitones,
+                    "tempo": unit.prosody.tempo,
+                    "volume": unit.prosody.volume,
+                },
+            }
+            for unit in speech_units
+        ],
         "phonemes": "\n".join(segments),
         "metrics": {
             "characters": len(payload.text or ""),
@@ -667,6 +847,7 @@ async def stream_tts(
         plan = RUNTIME.prepare_synthesis(
             payload.text, payload.voice, payload.input_type
         )
+        validate_plan_prosody(plan, payload)
     except SSMLValidationError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
@@ -689,6 +870,24 @@ async def stream_tts(
         "X-KokoroTTS-Sample-Rate": str(SAMPLE_RATE),
         "X-KokoroTTS-Stream-Format": stream_format,
     }
+    plan_voices = list(
+        dict.fromkeys(
+            (unit.voice or payload.voice)
+            for unit in plan
+            if unit.kind == "speech"
+        )
+    )
+    plan_languages = list(
+        dict.fromkeys(
+            (unit.language or voice_language(unit.voice or payload.voice))
+            for unit in plan
+            if unit.kind == "speech"
+        )
+    )
+    headers["X-KokoroTTS-Voices"] = ",".join(plan_voices)
+    headers["X-KokoroTTS-Languages"] = ",".join(plan_languages)
+    if len(plan_voices) > 1:
+        headers["X-KokoroTTS-Dialogue"] = "true"
     if payload.input_type != "text":
         headers["X-KokoroTTS-Input-Type"] = payload.input_type
     return StreamingResponse(

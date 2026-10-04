@@ -5,12 +5,15 @@ import unittest
 import numpy as np
 
 from kokorotts.audio import (
+    SSML_IMPLICIT_PAUSE_MS,
     audio_to_wav_bytes,
     build_audio_effect_filters,
+    compact_ssml_speech_audio,
     encode_audio_bytes,
     get_supported_output_formats,
     normalize_output_format,
     normalize_stream_format,
+    trim_silent_audio_edges,
 )
 
 
@@ -54,6 +57,45 @@ class AudioTest(unittest.TestCase):
 
         self.assertFalse(formats["pcm"]["browser_playback"])
         self.assertTrue(formats["opus"]["browser_playback"])
+
+    def test_silent_audio_edges_trim_only_requested_outer_frames(self) -> None:
+        audio = np.concatenate(
+            (
+                np.zeros(4_800, dtype=np.float32),
+                np.full(2_400, 0.25, dtype=np.float32),
+                np.zeros(7_200, dtype=np.float32),
+            )
+        )
+
+        leading = trim_silent_audio_edges(audio, leading=True)
+        trailing = trim_silent_audio_edges(audio, trailing=True)
+        both = trim_silent_audio_edges(audio, leading=True, trailing=True)
+
+        self.assertEqual(len(leading), 9_600)
+        self.assertEqual(len(trailing), 7_200)
+        self.assertEqual(len(both), 2_400)
+        self.assertTrue(np.all(both == 0.25))
+
+    def test_ssml_speech_compaction_adds_100ms_implicit_pause(self) -> None:
+        audio = np.concatenate(
+            (
+                np.zeros(4_800, dtype=np.int16),
+                np.full(2_400, 8_000, dtype=np.int16),
+                np.zeros(7_200, dtype=np.int16),
+            )
+        )
+
+        compacted = compact_ssml_speech_audio(
+            audio,
+            trim_leading=True,
+            trim_trailing=True,
+            append_implicit_pause=True,
+        )
+
+        pause_samples = round(SSML_IMPLICIT_PAUSE_MS * 24_000 / 1000)
+        self.assertEqual(len(compacted), 2_400 + pause_samples)
+        self.assertTrue(np.all(compacted[:2_400] == 8_000))
+        self.assertTrue(np.all(compacted[2_400:] == 0))
 
 
 if __name__ == "__main__":
