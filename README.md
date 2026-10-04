@@ -371,6 +371,8 @@ task benchmark-tts BENCHMARK_COMMENT="describe this configuration"
 
 Before measurement, the benchmark generates one voice per language so every language path and its required weights are warm. It then exercises full WAV generation through the public HTTP API and reports overall, per-language, and per-voice latency, audio duration, realtime factor, and realtime speed. See [`benchmarks/tts`](benchmarks/tts/) for the methodology, current results, and comparison guidance.
 
+The current `v1.0-snapshot` RTX 5070 Ti result covers all 70 voices and 11 languages with five measured generations per voice. All 350 requests passed with a 1.369-second mean, 2.308-second P95, and 15.60x realtime speed. This run shared the GPU with a resident idle Qwen container, so it is a conservative development validation rather than a quiet-GPU record.
+
 ### VRAM Usage
 
 VRAM measurement is a separate isolated-container benchmark because it requires a quiet GPU and direct access to the Kokoro process's PyTorch allocator. Stop the local server and other avoidable GPU workloads before recording an official result:
@@ -440,6 +442,7 @@ The data volume is recommended but optional. Without it, the same files are stor
 - Added explicit experimental SSML input to native generation, streaming, metrics, token inspection, the Python HTTP client, and the browser UI. The bounded hardened parser supports pauses, substitutions, character/number/English-ordinal reading, and direct IPA overrides while plain text remains the default.
 - Fixed multilingual chunking so periods inside decimals and version-like numbers remain in one text chunk while sentence-final periods still form boundaries.
 - Improved English pronunciation of compact large-number forms by expanding unambiguous uppercase `K`, `M`, `B`, and `T` suffixes before G2P, including decimal and dollar/pound values such as `20K` and `$1.5M`, while leaving lowercase measurements and identifiers untouched.
+- Removed an ineffective harmonic-source random draw from normal Kokoro inference while preserving the reusable generator's pulse-mode behavior; exact legacy-output, RNG-state, and CUDA regression checks cover the change.
 - Added concurrency-safe model initialization without serializing normal inference, made model purge wait for active use and release Python/PyTorch CUDA caches, and limited CPU fallback to CUDA-class failures with headers, status metadata, and server warnings.
 - Replaced the duplicate-initialization script startup with a lightweight Uvicorn launcher, reducing the development reload supervisor from roughly 1 GB to about 33 MB RSS in local measurements.
 - Added a genuinely incremental Python streaming client while retaining the buffered `stream()` compatibility method, made the default package install client-only with an optional full server dependency set, and stopped package imports from modifying host Loguru configuration.
