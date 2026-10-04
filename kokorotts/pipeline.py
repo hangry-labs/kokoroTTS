@@ -1,5 +1,6 @@
 from .catalog import DEFAULT_MODEL_REPO_ID, LANGUAGE_ALIASES, PIPELINE_LANGUAGE_CODES
 from .model import KModel
+from .text_normalization import expand_english_large_units
 from dataclasses import dataclass
 from huggingface_hub import hf_hub_download
 from loguru import logger
@@ -370,10 +371,11 @@ class KPipeline:
             if not graphemes.strip():  # Skip empty segments
                 continue
                 
-            # English processing (unchanged)
+            # English processing
             if self.lang_code in 'ab':
                 logger.debug(f"Processing English text: {graphemes[:50]}{'...' if len(graphemes) > 50 else ''}")
-                _, tokens = self.g2p(graphemes)
+                spoken_graphemes = expand_english_large_units(graphemes)
+                _, tokens = self.g2p(spoken_graphemes)
                 for gs, ps, tks in self.en_tokenize(tokens):
                     if not ps:
                         continue

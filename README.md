@@ -416,6 +416,7 @@ The data volume is recommended but optional. Without it, the same files are stor
 - Upgraded the Docker runtime and dependency workflow to Python 3.13 with the Qwen3-ASR-STT-proven Torch 2.11/CUDA 13 baseline, while independently pinning Kokoro's language and model dependencies.
 - Reorganized the server into focused API, audio, catalog, schema, runtime, and launcher modules while preserving the existing `/tts/*` contracts and intentionally eager preparation of all advertised voices.
 - Fixed long non-English input handling so multilingual sentence punctuation and punctuation-free text are split into model-safe phoneme segments without silently dropping content.
+- Improved English pronunciation of compact large-number forms by expanding unambiguous uppercase `K`, `M`, `B`, and `T` suffixes before G2P, including decimal and dollar/pound values such as `20K` and `$1.5M`, while leaving lowercase measurements and identifiers untouched.
 - Added concurrency-safe model initialization without serializing normal inference, made model purge wait for active use and release Python/PyTorch CUDA caches, and limited CPU fallback to CUDA-class failures with headers, status metadata, and server warnings.
 - Replaced the duplicate-initialization script startup with a lightweight Uvicorn launcher, reducing the development reload supervisor from roughly 1 GB to about 33 MB RSS in local measurements.
 - Added a genuinely incremental Python streaming client while retaining the buffered `stream()` compatibility method, made the default package install client-only with an optional full server dependency set, and stopped package imports from modifying host Loguru configuration.
@@ -435,7 +436,7 @@ The data volume is recommended but optional. Without it, the same files are stor
 
 #### Planned Work
 
-1. Record the first GitHub Actions baseline for the combined full/tiny workflow and verify its shared graph stays within hosted-runner disk limits. Compare its timings with the separate-workflow UniDic-only baseline before considering another narrow input cache; complete BuildKit graphs must not be cached again.
+1. Complete the remaining applicable upstream community improvements selected for the v1.0 release, validating each change independently against the Docker UI/API product.
 
 ### v0.3
 

@@ -209,9 +209,9 @@ tasks:
       - 'cmd /c docker run --rm --entrypoint python -v "{{.TASKFILE_DIR}}\kokorotts:/app/kokorotts:ro" -v "{{.TASKFILE_DIR}}\assets:/app/assets:ro" -v "{{.TASKFILE_DIR}}\tests:/app/tests:ro" {{.IMAGE}} -m unittest tests.test_standalone_ui -v'
 
   unit-test:
-    desc: Run focused runtime, chunking, audio, benchmark, and standalone UI tests in Docker
+    desc: Run focused runtime, normalization, chunking, audio, benchmark, and standalone UI tests in Docker
     cmds:
-      - 'cmd /c docker run --rm --entrypoint python -v "{{.TASKFILE_DIR}}\kokorotts:/app/kokorotts:ro" -v "{{.TASKFILE_DIR}}\assets:/app/assets:ro" -v "{{.TASKFILE_DIR}}\benchmarks:/app/benchmarks:ro" -v "{{.TASKFILE_DIR}}\examples:/app/examples:ro" -v "{{.TASKFILE_DIR}}\tests:/app/tests:ro" {{.IMAGE}} -m unittest tests.test_audio tests.test_benchmark tests.test_vram_benchmark tests.test_german_support tests.test_vietnamese_support tests.test_openai_api tests.test_pipeline_chunking tests.test_runtime tests.test_settings tests.test_standalone_ui -v'
+      - 'cmd /c docker run --rm --entrypoint python -v "{{.TASKFILE_DIR}}\kokorotts:/app/kokorotts:ro" -v "{{.TASKFILE_DIR}}\assets:/app/assets:ro" -v "{{.TASKFILE_DIR}}\benchmarks:/app/benchmarks:ro" -v "{{.TASKFILE_DIR}}\examples:/app/examples:ro" -v "{{.TASKFILE_DIR}}\tests:/app/tests:ro" {{.IMAGE}} -m unittest tests.test_audio tests.test_benchmark tests.test_vram_benchmark tests.test_german_support tests.test_vietnamese_support tests.test_openai_api tests.test_pipeline_chunking tests.test_text_normalization tests.test_runtime tests.test_settings tests.test_standalone_ui -v'
 
   imagestop:
     desc: Stop running KokoroTTS containers
