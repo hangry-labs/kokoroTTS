@@ -1,14 +1,29 @@
 from __future__ import annotations
 
 import unittest
+from types import SimpleNamespace
 from unittest.mock import patch
 
-from kokorotts.pipeline import KPipeline
+from kokorotts.pipeline import (
+    ENGLISH_QUALITY_PHONEME_LIMIT,
+    MODEL_PHONEME_LIMIT,
+    KPipeline,
+)
 
 
 class IdentityG2P:
     def __call__(self, text):
         return text, None
+
+
+LONG_ENGLISH_SENTENCE = (
+    "Although the patient reader followed every careful distinction through the "
+    "argument, while the old philosopher returned repeatedly to questions of memory "
+    "and perception, while each qualification introduced another condition that "
+    "demanded close attention, while the apparent conclusion remained suspended "
+    "between doubt and certainty, while the examples wandered from quiet libraries "
+    "to crowded railway platforms, the final answer was clarity."
+)
 
 
 class PipelineChunkingTest(unittest.TestCase):
@@ -25,10 +40,46 @@ class PipelineChunkingTest(unittest.TestCase):
         self.assertGreater(len(results), 1)
         self.assertEqual("".join(result.graphemes for result in results), text)
         self.assertEqual("".join(result.phonemes for result in results), text)
-        self.assertTrue(all(len(result.phonemes) <= 510 for result in results))
+        self.assertTrue(
+            all(len(result.phonemes) <= MODEL_PHONEME_LIMIT for result in results)
+        )
 
     def test_non_english_unpunctuated_text_is_not_truncated(self) -> None:
         self.assert_complete_chunks("文" * 1_200)
+
+    def test_english_quality_limit_prefers_punctuation_without_losing_tokens(self) -> None:
+        tokens = [
+            SimpleNamespace(text="First", phonemes="a" * 190, whitespace=""),
+            SimpleNamespace(text=",", phonemes=",", whitespace=" "),
+            SimpleNamespace(text="second", phonemes="b" * 190, whitespace=""),
+            SimpleNamespace(text=",", phonemes=",", whitespace=" "),
+            SimpleNamespace(text="third", phonemes="c" * 100, whitespace=""),
+        ]
+
+        chunks = list(KPipeline.__new__(KPipeline).en_tokenize(tokens))
+
+        self.assertEqual([chunk[0] for chunk in chunks], ["First, second,", "third"])
+        self.assertEqual(
+            "".join(token.phonemes for token in tokens),
+            ("a" * 190) + "," + ("b" * 190) + "," + ("c" * 100),
+        )
+        self.assertTrue(
+            all(len(chunk[1]) <= ENGLISH_QUALITY_PHONEME_LIMIT for chunk in chunks)
+        )
+
+    def test_real_english_long_sentence_uses_quality_sized_complete_chunks(self) -> None:
+        chunks = list(KPipeline(lang_code="a", model=False)(LONG_ENGLISH_SENTENCE))
+
+        self.assertGreater(len(chunks), 1)
+        self.assertEqual(
+            " ".join(chunk.graphemes for chunk in chunks), LONG_ENGLISH_SENTENCE
+        )
+        self.assertTrue(
+            all(
+                0 < len(chunk.phonemes) <= ENGLISH_QUALITY_PHONEME_LIMIT
+                for chunk in chunks
+            )
+        )
 
     def test_cjk_sentence_punctuation_is_used_without_losing_text(self) -> None:
         self.assert_complete_chunks((("文" * 260) + "。") * 5)

@@ -13,6 +13,9 @@ import os
 
 ALIASES = LANGUAGE_ALIASES
 LANG_CODES = PIPELINE_LANGUAGE_CODES
+MODEL_PHONEME_LIMIT = 510
+ENGLISH_QUALITY_PHONEME_LIMIT = 400
+
 
 class KPipeline:
     '''
@@ -176,6 +179,7 @@ class KPipeline:
     def waterfall_last(
         tokens: List[en.MToken],
         next_count: int,
+        max_phonemes: int = MODEL_PHONEME_LIMIT,
         waterfall: List[str] = ['!.?…', ':;', ',—'],
         bumps: List[str] = [')', '”']
     ) -> int:
@@ -186,7 +190,7 @@ class KPipeline:
             z += 1
             if z < len(tokens) and tokens[z].phonemes in bumps:
                 z += 1
-            if next_count - len(KPipeline.tokens_to_ps(tokens[:z])) <= 510:
+            if next_count - len(KPipeline.tokens_to_ps(tokens[:z])) <= max_phonemes:
                 return z
         return len(tokens)
 
@@ -205,8 +209,12 @@ class KPipeline:
             t.phonemes = '' if t.phonemes is None else t.phonemes#.replace('ɾ', 'T')
             next_ps = t.phonemes + (' ' if t.whitespace else '')
             next_pcount = pcount + len(next_ps.rstrip())
-            if next_pcount > 510:
-                z = KPipeline.waterfall_last(tks, next_pcount)
+            if next_pcount > ENGLISH_QUALITY_PHONEME_LIMIT:
+                z = KPipeline.waterfall_last(
+                    tks,
+                    next_pcount,
+                    max_phonemes=ENGLISH_QUALITY_PHONEME_LIMIT,
+                )
                 text = KPipeline.tokens_to_text(tks[:z])
                 logger.debug(f"Chunking text at {z}: '{text[:30]}{'...' if len(text) > 30 else ''}'")
                 ps = KPipeline.tokens_to_ps(tks[:z])
@@ -263,8 +271,10 @@ class KPipeline:
         # Handle raw phoneme string
         if isinstance(tokens, str):
             logger.debug("Processing phonemes from raw string")
-            if len(tokens) > 510:
-                raise ValueError(f'Phoneme string too long: {len(tokens)} > 510')
+            if len(tokens) > MODEL_PHONEME_LIMIT:
+                raise ValueError(
+                    f'Phoneme string too long: {len(tokens)} > {MODEL_PHONEME_LIMIT}'
+                )
             output = KPipeline.infer(model, tokens, pack, speed) if model else None
             yield self.Result(graphemes='', phonemes=tokens, output=output)
             return
@@ -274,10 +284,12 @@ class KPipeline:
         for gs, ps, tks in self.en_tokenize(tokens):
             if not ps:
                 continue
-            elif len(ps) > 510:
-                logger.warning(f"Unexpected len(ps) == {len(ps)} > 510 and ps == '{ps}'")
-                logger.warning("Truncating to 510 characters")
-                ps = ps[:510]
+            elif len(ps) > MODEL_PHONEME_LIMIT:
+                logger.warning(
+                    f"Unexpected len(ps) == {len(ps)} > {MODEL_PHONEME_LIMIT} and ps == '{ps}'"
+                )
+                logger.warning(f"Truncating to {MODEL_PHONEME_LIMIT} characters")
+                ps = ps[:MODEL_PHONEME_LIMIT]
             output = KPipeline.infer(model, ps, pack, speed) if model else None
             if output is not None and output.pred_dur is not None:
                 KPipeline.join_timestamps(tks, output.pred_dur)
@@ -387,9 +399,11 @@ class KPipeline:
                 for gs, ps, tks in self.en_tokenize(tokens):
                     if not ps:
                         continue
-                    elif len(ps) > 510:
-                        logger.warning(f"Unexpected len(ps) == {len(ps)} > 510 and ps == '{ps}'")
-                        ps = ps[:510]
+                    elif len(ps) > MODEL_PHONEME_LIMIT:
+                        logger.warning(
+                            f"Unexpected len(ps) == {len(ps)} > {MODEL_PHONEME_LIMIT} and ps == '{ps}'"
+                        )
+                        ps = ps[:MODEL_PHONEME_LIMIT]
                     output = KPipeline.infer(model, ps, pack, speed) if model else None
                     if output is not None and output.pred_dur is not None:
                         KPipeline.join_timestamps(tks, output.pred_dur)
@@ -443,13 +457,16 @@ class KPipeline:
             ps, _ = self.g2p(chunk)
             if not ps:
                 continue
-            if len(ps) <= 510:
+            if len(ps) <= MODEL_PHONEME_LIMIT:
                 yield chunk, ps
                 continue
 
             if len(chunk) <= 1:
-                logger.warning(f"Unable to split single grapheme with {len(ps)} phonemes; truncating to 510")
-                yield chunk, ps[:510]
+                logger.warning(
+                    f"Unable to split single grapheme with {len(ps)} phonemes; "
+                    f"truncating to {MODEL_PHONEME_LIMIT}"
+                )
+                yield chunk, ps[:MODEL_PHONEME_LIMIT]
                 continue
 
             split_at = self._preferred_split(chunk, max(1, len(chunk) // 2))
