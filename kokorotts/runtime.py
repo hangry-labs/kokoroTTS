@@ -20,6 +20,7 @@ from .catalog import (
     CUSTOM_VOICE_ASSETS,
     DEFAULT_MODEL_REPO_ID,
     LANGUAGE_CHOICES,
+    MODEL_FAMILY_CHOICES,
     STANDARD_MODEL_FAMILY,
     model_families_for_voices,
     resolve_language_code,
@@ -77,12 +78,16 @@ class InferenceRuntime:
         *,
         model_factory: Callable[[str, str], KModel] | None = None,
         pipeline_factory: Callable[[str], KPipeline] | None = None,
+        family_pipeline_factory: Callable[[str, str], KPipeline] | None = None,
         settings: RuntimeSettingsStore | None = None,
         eager_voices: bool = True,
     ) -> None:
         self.repo_id = repo_id or os.getenv("KOKORO_REPO_ID", DEFAULT_MODEL_REPO_ID)
         self._model_factory = model_factory or self._create_model
         self._pipeline_factory = pipeline_factory or self._create_pipeline
+        self._family_pipeline_factory = (
+            family_pipeline_factory or self._create_family_pipeline
+        )
         self.settings = settings or RuntimeSettingsStore()
         self._served_voices = self.settings.served_voices()
         self._models: dict[tuple[str, str], KModel] = {}
@@ -94,6 +99,7 @@ class InferenceRuntime:
         self.pipelines = {
             language: self._pipeline_factory(language) for language in LANGUAGE_CHOICES
         }
+        self._family_pipelines: dict[tuple[str, str], KPipeline] = {}
         self._add_product_pronunciations()
         if eager_voices:
             self.prepare_voices()
@@ -110,25 +116,74 @@ class InferenceRuntime:
             "config_repo_id",
             asset["repo_id"] if "config_file" in asset else self.repo_id,
         )
+        download_options = (
+            {"revision": asset["revision"]} if "revision" in asset else {}
+        )
         config_path = hf_hub_download(
-            repo_id=config_repo_id, filename=asset.get("config_file", "config.json")
+            repo_id=config_repo_id,
+            filename=asset.get("config_file", "config.json"),
+            **download_options,
         )
         model_path = hf_hub_download(
-            repo_id=asset["repo_id"], filename=asset["model_file"]
+            repo_id=asset["repo_id"],
+            filename=asset["model_file"],
+            **download_options,
         )
-        return KModel(
-            repo_id=asset["repo_id"], config=config_path, model=model_path
-        ).to(device).eval()
+        return (
+            KModel(repo_id=asset["repo_id"], config=config_path, model=model_path)
+            .to(device)
+            .eval()
+        )
 
     def _create_pipeline(self, language: str) -> KPipeline:
         return KPipeline(lang_code=language, repo_id=self.repo_id, model=False)
 
+    @staticmethod
+    def _create_family_pipeline(model_family: str, language: str) -> KPipeline:
+        repo_id = MODEL_FAMILY_CHOICES[model_family]["repo_id"]
+        if language == "z":
+            english_pipeline = KPipeline(lang_code="a", repo_id=repo_id, model=False)
+
+            def phonemize_english(text: str) -> str:
+                return " ".join(result.phonemes for result in english_pipeline(text))
+
+            return KPipeline(
+                lang_code=language,
+                repo_id=repo_id,
+                model=False,
+                en_callable=phonemize_english,
+            )
+        return KPipeline(lang_code=language, repo_id=repo_id, model=False)
+
+    @staticmethod
+    def _add_product_pronunciation(pipeline: KPipeline, language: str) -> None:
+        pronunciation = {"a": "kˈOkəɹO", "b": "kˈQkəɹQ"}.get(language)
+        lexicon = getattr(getattr(pipeline, "g2p", None), "lexicon", None)
+        if pronunciation is not None and lexicon is not None:
+            lexicon.golds["kokoro"] = pronunciation
+
     def _add_product_pronunciations(self) -> None:
-        for language, pronunciation in (("a", "kˈOkəɹO"), ("b", "kˈQkəɹQ")):
-            pipeline = self.pipelines.get(language)
-            lexicon = getattr(getattr(pipeline, "g2p", None), "lexicon", None)
-            if lexicon is not None:
-                lexicon.golds["kokoro"] = pronunciation
+        for language, pipeline in self.pipelines.items():
+            self._add_product_pronunciation(pipeline, language)
+
+    def _pipeline_for(self, language: str, voice_id: str) -> KPipeline:
+        asset = CUSTOM_VOICE_ASSETS.get(voice_id)
+        if asset is None or "pipeline_repo_id" not in asset:
+            return self.pipelines[language]
+        key = (asset["model_family"], language)
+        with self._condition:
+            pipeline = self._family_pipelines.get(key)
+            if pipeline is None:
+                pipeline = self._family_pipeline_factory(*key)
+                self._add_product_pronunciation(pipeline, language)
+                self._family_pipelines[key] = pipeline
+            return pipeline
+
+    def _cached_pipeline_for(self, language: str, voice_id: str) -> KPipeline | None:
+        asset = CUSTOM_VOICE_ASSETS.get(voice_id)
+        if asset is None or "pipeline_repo_id" not in asset:
+            return self.pipelines[language]
+        return self._family_pipelines.get((asset["model_family"], language))
 
     def prepare_voices(self) -> None:
         """Prepare every advertised voice before the service reports ready."""
@@ -136,15 +191,20 @@ class InferenceRuntime:
             self._load_voice(voice_id)
 
     def _load_voice(self, voice_id: str):
-        pipeline = self.pipelines[voice_language(voice_id)]
+        pipeline = self._pipeline_for(voice_language(voice_id), voice_id)
         voices = getattr(pipeline, "voices", {})
         if voice_id in voices:
             return pipeline.voices[voice_id]
         asset = CUSTOM_VOICE_ASSETS.get(voice_id)
         if asset is None:
             return pipeline.load_voice(voice_id)
+        download_options = (
+            {"revision": asset["revision"]} if "revision" in asset else {}
+        )
         voice_path = hf_hub_download(
-            repo_id=asset["repo_id"], filename=asset["voice_file"]
+            repo_id=asset["repo_id"],
+            filename=asset["voice_file"],
+            **download_options,
         )
         pack = torch.load(voice_path, map_location="cpu", weights_only=True)
         if not hasattr(pipeline, "voices"):
@@ -179,8 +239,9 @@ class InferenceRuntime:
             self._served_voices = selected
         disabled = set(previous) - set(selected)
         for voice_id in disabled:
-            pipeline = self.pipelines[voice_language(voice_id)]
-            pipeline.voices.pop(voice_id, None)
+            pipeline = self._cached_pipeline_for(voice_language(voice_id), voice_id)
+            if pipeline is not None:
+                pipeline.voices.pop(voice_id, None)
         if disabled:
             self.purge()
         return list(selected)
@@ -319,7 +380,9 @@ class InferenceRuntime:
                         if character not in model.vocab
                     )
                     if unsupported:
-                        rendered = ", ".join(repr(character) for character in unsupported[:12])
+                        rendered = ", ".join(
+                            repr(character) for character in unsupported[:12]
+                        )
                         raise SSMLValidationError(
                             f"Phoneme override contains characters outside this model's vocabulary: {rendered}."
                         )
@@ -371,9 +434,7 @@ class InferenceRuntime:
         input_type: str = "text",
         plan: list[SSMLSynthesisUnit] | None = None,
     ) -> SynthesisResult | None:
-        chunks = list(
-            self.iter_synthesis(text, voice, speed, device, input_type, plan)
-        )
+        chunks = list(self.iter_synthesis(text, voice, speed, device, input_type, plan))
         if not chunks:
             return None
         return SynthesisResult(
@@ -399,10 +460,8 @@ class InferenceRuntime:
     def prepare_synthesis(
         self, text: str, voice: str, input_type: str = "text"
     ) -> list[SSMLSynthesisUnit]:
-        def phonemize(
-            value: str, language: str, segment_voice: str
-        ) -> Iterator[str]:
-            pipeline = self.pipelines[language]
+        def phonemize(value: str, language: str, segment_voice: str) -> Iterator[str]:
+            pipeline = self._pipeline_for(language, segment_voice)
             for _, phonemes, _ in pipeline(
                 value,
                 segment_voice,

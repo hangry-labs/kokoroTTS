@@ -16,7 +16,6 @@ from pathlib import Path
 
 from kokorotts import KokoroTTSClient, KokoroTTSClientError
 
-
 BASE_URL = os.getenv("KOKOROTTS_TEST_BASE_URL", "http://localhost:7860")
 
 LONG_ENGLISH_TEXT = (
@@ -54,7 +53,9 @@ class HttpClientServerSmokeTest(unittest.TestCase):
         try:
             cls.client.ping()
         except Exception as exc:  # pragma: no cover - only used for local smoke gating
-            raise unittest.SkipTest(f"KokoroTTS server is not available at {BASE_URL}: {exc}") from exc
+            raise unittest.SkipTest(
+                f"KokoroTTS server is not available at {BASE_URL}: {exc}"
+            ) from exc
 
     def test_tts_ping_returns_service_health(self) -> None:
         ping = self.client.ping()
@@ -63,7 +64,7 @@ class HttpClientServerSmokeTest(unittest.TestCase):
     def test_tts_status_returns_runtime_metadata(self) -> None:
         status = self.client.status()
         self.assertEqual(status["type"], "KokoroTTS")
-        self.assertGreaterEqual(status["voices"], 70)
+        self.assertGreaterEqual(status["voices"], 173)
 
     def test_tts_defaults_returns_default_request_values(self) -> None:
         defaults = self.client.defaults()
@@ -102,17 +103,27 @@ class HttpClientServerSmokeTest(unittest.TestCase):
         self.assertEqual(len(speakers["speakers"]), 14)
         self.assertIn("diem_trinh", speakers["speakers"])
 
+    def test_tts_speakers_lists_standard_and_v11_chinese_voices(self) -> None:
+        speakers = self.client.speakers("z")
+        self.assertGreaterEqual(len(speakers["speakers"]), 108)
+        self.assertIn("zf_xiaobei", speakers["speakers"])
+        self.assertIn("zf_001", speakers["speakers"])
+        self.assertIn("zm_100", speakers["speakers"])
+
     def test_tts_voices_lists_all_voice_metadata(self) -> None:
         voices = self.client.voices()
-        self.assertGreaterEqual(len(voices["voices"]), 70)
+        self.assertGreaterEqual(len(voices["voices"]), 173)
         self.assertTrue(any(voice["id"] == "af_heart" for voice in voices["voices"]))
         self.assertTrue(any(voice["id"] == "dm_martin" for voice in voices["voices"]))
         self.assertTrue(any(voice["id"] == "diem_trinh" for voice in voices["voices"]))
+        self.assertTrue(any(voice["id"] == "zf_001" for voice in voices["voices"]))
+        self.assertTrue(any(voice["id"] == "af_maple" for voice in voices["voices"]))
 
     def test_system_settings_get_lists_deployment_models(self) -> None:
         settings = self.client.deployment_settings()
-        self.assertGreaterEqual(len(settings["supported_voices"]), 70)
-        self.assertGreaterEqual(len(settings["supported_model_families"]), 4)
+        self.assertGreaterEqual(len(settings["supported_voices"]), 173)
+        self.assertGreaterEqual(len(settings["supported_model_families"]), 5)
+        self.assertIn("kokoro-v1.1-zh", settings["served_model_families"])
 
     def test_system_settings_voices_put_preserves_served_voices(self) -> None:
         served = self.client.deployment_settings()["served_voices"]
@@ -148,6 +159,13 @@ class HttpClientServerSmokeTest(unittest.TestCase):
 
     def test_tts_tokenize_preserves_long_chinese_text(self) -> None:
         tokens = self.client.tokenize(LONG_CHINESE_TEXT, voice="zf_xiaobei")
+
+        self.assertGreater(len(tokens["segments"]), 1)
+        self.assertGreater(tokens["metrics"]["phoneme_characters"], 510)
+        self.assertTrue(all(len(segment) <= 510 for segment in tokens["segments"]))
+
+    def test_tts_tokenize_preserves_long_v11_chinese_text(self) -> None:
+        tokens = self.client.tokenize(LONG_CHINESE_TEXT, voice="zf_005")
 
         self.assertGreater(len(tokens["segments"]), 1)
         self.assertGreater(tokens["metrics"]["phoneme_characters"], 510)
@@ -201,6 +219,22 @@ class HttpClientServerSmokeTest(unittest.TestCase):
         self.assertGreater(len(audio.content), 10_000)
         self.assertEqual(audio.headers["x-kokorotts-language"], "v")
 
+    def test_tts_generate_v11_chinese_mixed_text_with_audio_controls(self) -> None:
+        audio = self.client.generate(
+            "你好！Welcome to Hangry Labs Kokoro text to speech.",
+            voice="zf_002",
+            output_format="mp3",
+            speed=0.95,
+            pitch_semitones=1.25,
+            tempo=1.05,
+            volume=0.9,
+        )
+
+        self.assertEqual(audio.media_type, "audio/mpeg")
+        self.assertGreater(len(audio.content), 10_000)
+        self.assertEqual(audio.headers["x-kokorotts-voice"], "zf_002")
+        self.assertEqual(audio.headers["x-kokorotts-language"], "z")
+
     def test_tts_generate_experimental_ssml_mp3(self) -> None:
         audio = self.client.generate(
             "<speak>Hello.<break time='500ms'/>Welcome to Kokoro TTS.</speak>",
@@ -227,10 +261,29 @@ class HttpClientServerSmokeTest(unittest.TestCase):
 
         self.assertGreater(len(audio.content), 10_000)
         self.assertEqual(audio.headers["x-kokorotts-dialogue"], "true")
-        self.assertEqual(
-            audio.headers["x-kokorotts-voices"], "af_heart,am_michael"
-        )
+        self.assertEqual(audio.headers["x-kokorotts-voices"], "af_heart,am_michael")
         self.assertEqual(audio.headers["x-kokorotts-languages"], "a")
+
+    def test_tts_generate_ssml_dialogue_crosses_v11_and_standard_models(self) -> None:
+        audio = self.client.generate(
+            """<speak>
+              <voice name="zf_004">你好！</voice>
+              <break time="100ms"/>
+              <voice name="af_maple">Hello from the v1.1 family.</voice>
+              <break time="100ms"/>
+              <voice name="zf_xiaoxiao">标准中文声音也加入对话。</voice>
+            </speak>""",
+            voice="zf_004",
+            output_format="mp3",
+            input_type="ssml",
+        )
+
+        self.assertGreater(len(audio.content), 10_000)
+        self.assertEqual(
+            audio.headers["x-kokorotts-voices"],
+            "zf_004,af_maple,zf_xiaoxiao",
+        )
+        self.assertEqual(audio.headers["x-kokorotts-languages"], "z,a")
 
     def test_tts_generate_ssml_dialogue_applies_local_prosody(self) -> None:
         audio = self.client.generate(
@@ -249,11 +302,11 @@ class HttpClientServerSmokeTest(unittest.TestCase):
     def test_tts_generate_ssml_dialogue_honors_boundary_pause_duration(self) -> None:
         def duration(break_markup: str) -> float:
             audio = self.client.generate(
-                f'''<speak>
+                f"""<speak>
                   <voice name="af_heart">Hello!</voice>
                   {break_markup}
                   <voice name="am_michael">Hi there!</voice>
-                </speak>''',
+                </speak>""",
                 voice="af_heart",
                 output_format="wav",
                 input_type="ssml",
@@ -358,6 +411,17 @@ class HttpClientServerSmokeTest(unittest.TestCase):
         self.assertEqual(audio.media_type, "audio/mpeg")
         self.assertGreater(len(audio.content), 10_000)
         self.assertEqual(audio.headers["x-kokorotts-stream-format"], "mp3")
+
+    def test_tts_stream_mp3_v11_chinese_text(self) -> None:
+        audio = self.client.stream(
+            "这是一个流式中文语音测试。第二句话确认完整输出。",
+            voice="zm_011",
+            stream_format="mp3",
+        )
+
+        self.assertEqual(audio.media_type, "audio/mpeg")
+        self.assertGreater(len(audio.content), 10_000)
+        self.assertEqual(audio.headers["x-kokorotts-voice"], "zm_011")
 
     def test_tts_stream_mp3_long_english_text(self) -> None:
         with self.client.iter_stream(

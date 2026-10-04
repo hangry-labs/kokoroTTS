@@ -11,6 +11,9 @@ from threading import RLock
 from typing import Any
 
 from .catalog import (
+    CHINESE_V11_MODEL_FAMILY,
+    STANDARD_MODEL_FAMILY,
+    VIETNAMESE_MODEL_FAMILY,
     model_families_for_voices,
     model_family_ids,
     voice_ids,
@@ -22,6 +25,17 @@ logger = logging.getLogger(__name__)
 DEFAULT_SETTINGS_PATH = "/app/persistent/app/settings.json"
 SERVED_VOICES_KEY = "served_voices"
 SERVED_MODEL_FAMILIES_KEY = "served_model_families"
+SETTINGS_SCHEMA_VERSION_KEY = "schema_version"
+SETTINGS_SCHEMA_VERSION = 2
+
+# v0.3/v1.0-snapshot installations persisted this exact list when every
+# available pack was enabled. Preserve that intent when adding the v1.1 family.
+PRE_CHINESE_ALL_MODEL_FAMILIES = (
+    STANDARD_MODEL_FAMILY,
+    "kikiri-german-martin",
+    "kikiri-german-victoria",
+    VIETNAMESE_MODEL_FAMILY,
+)
 
 
 class RuntimeSettingsStore:
@@ -38,10 +52,14 @@ class RuntimeSettingsStore:
         try:
             payload = json.loads(self.path.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError) as exc:
-            logger.warning("Ignoring unreadable runtime settings %s: %s", self.path, exc)
+            logger.warning(
+                "Ignoring unreadable runtime settings %s: %s", self.path, exc
+            )
             return {}
         if not isinstance(payload, dict):
-            logger.warning("Ignoring runtime settings %s: expected a JSON object", self.path)
+            logger.warning(
+                "Ignoring runtime settings %s: expected a JSON object", self.path
+            )
             return {}
         return payload
 
@@ -52,15 +70,32 @@ class RuntimeSettingsStore:
     def served_model_families(self) -> list[str]:
         snapshot = self.snapshot()
         configured = snapshot.get(SERVED_MODEL_FAMILIES_KEY)
+        schema_version = snapshot.get(SETTINGS_SCHEMA_VERSION_KEY, 1)
+        if not isinstance(schema_version, int):
+            schema_version = 1
+        if schema_version < SETTINGS_SCHEMA_VERSION and configured == list(
+            PRE_CHINESE_ALL_MODEL_FAMILIES
+        ):
+            configured = [*PRE_CHINESE_ALL_MODEL_FAMILIES, CHINESE_V11_MODEL_FAMILY]
+            self._update(SERVED_MODEL_FAMILIES_KEY, configured)
+            logger.info(
+                "Enabled newly available model family %s for an existing "
+                "all-models deployment",
+                CHINESE_V11_MODEL_FAMILY,
+            )
         if configured is None and isinstance(snapshot.get(SERVED_VOICES_KEY), list):
             configured = model_families_for_voices(snapshot[SERVED_VOICES_KEY])
         if configured is None:
             family_env = os.getenv("KOKOROTTS_SERVED_MODEL_FAMILIES", "").strip()
             env_value = os.getenv("KOKOROTTS_SERVED_VOICES", "").strip()
             if family_env:
-                configured = [item.strip() for item in family_env.split(",") if item.strip()]
+                configured = [
+                    item.strip() for item in family_env.split(",") if item.strip()
+                ]
             elif env_value:
-                env_voices = [item.strip() for item in env_value.split(",") if item.strip()]
+                env_voices = [
+                    item.strip() for item in env_value.split(",") if item.strip()
+                ]
                 unknown = sorted(set(env_voices) - set(voice_ids()))
                 if unknown:
                     raise ValueError(
@@ -112,6 +147,7 @@ class RuntimeSettingsStore:
             payload = self._read_unlocked()
             for obsolete_key in remove:
                 payload.pop(obsolete_key, None)
+            payload[SETTINGS_SCHEMA_VERSION_KEY] = SETTINGS_SCHEMA_VERSION
             payload[key] = value
             self.path.parent.mkdir(parents=True, exist_ok=True)
             descriptor, temporary_name = tempfile.mkstemp(
@@ -119,7 +155,9 @@ class RuntimeSettingsStore:
             )
             temporary_path = Path(temporary_name)
             try:
-                with os.fdopen(descriptor, "w", encoding="utf-8", newline="\n") as handle:
+                with os.fdopen(
+                    descriptor, "w", encoding="utf-8", newline="\n"
+                ) as handle:
                     json.dump(payload, handle, indent=2, sort_keys=True)
                     handle.write("\n")
                     handle.flush()

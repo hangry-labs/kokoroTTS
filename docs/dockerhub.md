@@ -16,7 +16,7 @@ Voice examples are available here:
 
 https://hangry-labs.github.io/kokoroTTS/examples/
 
-The examples page includes MP3 previews for all 70 voices across American English, British English, Japanese, Mandarin Chinese, Spanish, French, Hindi, Italian, Brazilian Portuguese, German, and Vietnamese. Selecting a language filters the examples and switches the page text to that language.
+The examples page includes MP3 previews for all 173 voices across American English, British English, Japanese, Mandarin Chinese, Spanish, French, Hindi, Italian, Brazilian Portuguese, German, and Vietnamese. Selecting a language filters the examples and switches the page text to that language.
 
 ## Project Links
 
@@ -103,7 +103,7 @@ The container includes the web UI and the HTTP API on the same port.
 - MP3 output from the UI by default
 - OpenAI-compatible MP3 defaults plus backward-compatible WAV defaults on the native API
 - WAV, MP3, FLAC, OGG Vorbis, Opus, AAC, and raw PCM output support
-- Full 70-voice catalog exposed in the UI and API, including dedicated German and Vietnamese models
+- Full 173-voice catalog exposed in the UI and API, including dedicated German, Vietnamese, and enhanced Chinese models
 - Persistent System controls for choosing independently loaded model packs and their served voices
 - GPU support when Docker/NVIDIA support is available
 - Offline-friendly usage with the standard full image once it is available locally
@@ -196,11 +196,11 @@ docker run -p 7860:7860 --gpus "device=1" -e CUDA_VISIBLE_DEVICES=1 hangrylabs/k
 docker run -p 7860:7860 --gpus all -v kokorotts_hf_cache:/app/.cache/huggingface hangrylabs/kokorotts:v0.3_tiny
 ```
 
-The standard `vX.Y` image is the recommended image for most users. It includes the standard Kokoro model, dedicated German and Vietnamese models, voice packs, and required language assets for offline-friendly use after the image is pulled.
+The standard `vX.Y` image is the recommended image for most users. It includes the standard Kokoro model, dedicated German and Vietnamese models, the enhanced Kokoro v1.1 Chinese model, all voice packs, and required language assets for offline-friendly use after the image is pulled.
 
 Tiny images use the `vX.Y_tiny` tag pattern. They keep runtime and language dependencies, but skip baked Hugging Face model and voice files. Current images use the optional `/app/persistent` volume so downloaded assets and settings survive container replacement. The stable `v0.3_tiny` command above retains its original `/app/.cache/huggingface` layout.
 
-All four model packs are served by default. The System controls can disable the shared standard Kokoro checkpoint, German Martin, German Victoria, or Kokoro Vietnamese. The 54 standard voices remain together, and the 14 Vietnamese voices remain together, because each group shares one model and has the same VRAM cost. Models load into CPU/GPU memory on first use, and disabling a pack releases cached models after active generations finish. With the tiny image, a disabled custom checkpoint is not downloaded unless its pack is later enabled and called.
+All five model packs are served by default. The System controls can disable the shared standard Kokoro checkpoint, German Martin, German Victoria, Kokoro Vietnamese, or Kokoro v1.1 Chinese. The 54 standard voices, 14 Vietnamese voices, and 103 v1.1 Chinese/English voices remain together within their respective packs because each group shares one model and has the same VRAM cost. Models load into CPU/GPU memory on first use, and disabling a pack releases cached models after active generations finish. With the tiny image, a disabled custom checkpoint is not downloaded unless its pack is later enabled and called.
 
 ## Links
 
@@ -226,5 +226,9 @@ Vietnamese synthesis uses the Apache-2.0 ContextBoxAI Kokoro Vietnamese model an
 
 - https://huggingface.co/contextboxai/Kokoro-Vietnamese
 - https://github.com/iamdinhthuan/Kokoro-Vietnamese
+
+Enhanced Mandarin and mixed Chinese-English synthesis uses the Apache-2.0 Kokoro v1.1 Chinese model and voices:
+
+- https://huggingface.co/hexgrad/Kokoro-82M-v1.1-zh
 
 License and attribution are preserved in the repository's `LICENSE` and `THIRD_PARTY_NOTICES.md` files. Original Kokoro copyright remains with the upstream authors; Hangry Labs maintains the Docker packaging, web UI/API integration, examples page, documentation, release tooling, and other modifications in this fork.

@@ -2,7 +2,7 @@
 
 Standalone browser UI + HTTP API application for Kokoro TTS.
 
-The app exposes 70 voices across American English, British English, Japanese, Mandarin, Spanish, French, Hindi, Italian, Brazilian Portuguese, German, and Vietnamese. Dedicated German and Vietnamese model families are selected automatically by voice.
+The app exposes 173 voices across American English, British English, Japanese, Mandarin, Spanish, French, Hindi, Italian, Brazilian Portuguese, German, and Vietnamese. Dedicated German, Vietnamese, and Kokoro v1.1 Chinese model families are selected automatically by voice.
 
 ## Run without Docker
 
@@ -67,7 +67,7 @@ Optional runtime env vars:
 - Default repo is `hexgrad/Kokoro-82M`.
 - For this repo, `kokorotts/model.py` resolves weights to `kokoro-v1_0.pth` (Kokoro v1.0).
 - Default baked Docker build runs `kokorotts/prefetch_assets.py` to cache model/config + UI voice packs into the image.
-- The baked image includes only deployable PyTorch assets for the dedicated German and Vietnamese families; the Vietnamese ONNX export and training checkpoints are not downloaded.
+- The baked image includes only deployable PyTorch assets for the dedicated German, Vietnamese, and Kokoro v1.1 Chinese families; unused ONNX exports and training checkpoints are not downloaded.
 - Default baked runtime sets `HF_HUB_OFFLINE=1` and `TRANSFORMERS_OFFLINE=1`, so serving works without internet.
 - Tiny Docker build target keeps runtime/language dependencies but does not bake Hugging Face model/voice assets. Start it with `task imagerun-tiny` or `task localrun-tiny` while online to populate the persistent cache volume.
 

@@ -1,15 +1,16 @@
 from __future__ import annotations
 
-import time
 import tempfile
+import time
 import unittest
 import weakref
-from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
 from unittest.mock import patch
 
 import numpy as np
 
+from kokorotts.catalog import CHINESE_V11_MODEL_FAMILY
 from kokorotts.runtime import InferenceRuntime
 from kokorotts.settings import RuntimeSettingsStore
 
@@ -90,7 +91,9 @@ class InferenceRuntimeTest(unittest.TestCase):
 
     def test_non_cuda_runtime_error_is_not_hidden(self) -> None:
         runtime = self.runtime(
-            lambda _model_family, device: FakeModel(device, RuntimeError("invalid tensor shape"))
+            lambda _model_family, device: FakeModel(
+                device, RuntimeError("invalid tensor shape")
+            )
         )
 
         with self.assertRaisesRegex(RuntimeError, "invalid tensor shape"):
@@ -156,6 +159,29 @@ class InferenceRuntimeTest(unittest.TestCase):
             [(unit.language, unit.voice) for unit in units],
             [("z", "zf_xiaoxiao"), ("a", "zf_xiaoxiao")],
         )
+
+    def test_v11_chinese_voice_uses_family_specific_pipeline(self) -> None:
+        family_pipeline_calls = []
+
+        def family_pipeline_factory(model_family, language):
+            family_pipeline_calls.append((model_family, language))
+            return FakePipeline(language)
+
+        runtime = InferenceRuntime(
+            model_factory=lambda _family, device: FakeModel(device),
+            pipeline_factory=lambda language: FakePipeline(language),
+            family_pipeline_factory=family_pipeline_factory,
+            eager_voices=False,
+        )
+
+        standard = runtime.prepare_synthesis("你好。", "zf_xiaoxiao")
+        v11 = runtime.prepare_synthesis("你好。", "zf_001")
+        repeated = runtime.prepare_synthesis("欢迎。", "zf_001")
+
+        self.assertEqual(standard[0].phonemes, "zabc")
+        self.assertEqual(v11[0].phonemes, "zabc")
+        self.assertEqual(repeated[0].phonemes, "zabc")
+        self.assertEqual(family_pipeline_calls, [(CHINESE_V11_MODEL_FAMILY, "z")])
 
     def test_ssml_prosody_speed_is_applied_per_speech_unit(self) -> None:
         model = FakeModel("cpu")
@@ -259,9 +285,7 @@ class InferenceRuntimeTest(unittest.TestCase):
                 eager_voices=False,
             )
 
-            selected = runtime.set_served_model_families(
-                ["kikiri-german-martin"]
-            )
+            selected = runtime.set_served_model_families(["kikiri-german-martin"])
 
             self.assertEqual(selected, ["kikiri-german-martin"])
             self.assertEqual(runtime.served_voices, ["dm_martin"])

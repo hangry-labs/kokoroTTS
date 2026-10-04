@@ -7,6 +7,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from kokorotts.catalog import (
+    CHINESE_V11_MODEL_FAMILY,
     STANDARD_MODEL_FAMILY,
     model_family_ids,
     voice_ids,
@@ -21,7 +22,9 @@ class RuntimeSettingsStoreTest(unittest.TestCase):
             store = RuntimeSettingsStore(Path(directory) / "settings.json")
             self.assertEqual(store.served_voices(), voice_ids())
 
-    def test_voice_compatibility_setting_expands_and_persists_model_families(self) -> None:
+    def test_voice_compatibility_setting_expands_and_persists_model_families(
+        self,
+    ) -> None:
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "settings.json"
             store = RuntimeSettingsStore(path)
@@ -49,7 +52,9 @@ class RuntimeSettingsStoreTest(unittest.TestCase):
     def test_environment_default_is_used_until_a_setting_is_saved(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             store = RuntimeSettingsStore(Path(directory) / "settings.json")
-            with patch.dict("os.environ", {"KOKOROTTS_SERVED_VOICES": "dm_martin,af_heart"}):
+            with patch.dict(
+                "os.environ", {"KOKOROTTS_SERVED_VOICES": "dm_martin,af_heart"}
+            ):
                 self.assertEqual(
                     store.served_model_families(),
                     [STANDARD_MODEL_FAMILY, "kikiri-german-martin"],
@@ -57,7 +62,9 @@ class RuntimeSettingsStoreTest(unittest.TestCase):
                 store.set_served_voices(["df_victoria"])
                 self.assertEqual(store.served_voices(), ["df_victoria"])
 
-    def test_invalid_environment_voice_fails_instead_of_serving_everything(self) -> None:
+    def test_invalid_environment_voice_fails_instead_of_serving_everything(
+        self,
+    ) -> None:
         with tempfile.TemporaryDirectory() as directory:
             store = RuntimeSettingsStore(Path(directory) / "settings.json")
             with patch.dict("os.environ", {"KOKOROTTS_SERVED_VOICES": "typo"}):
@@ -75,6 +82,54 @@ class RuntimeSettingsStoreTest(unittest.TestCase):
                 store.set_served_model_families([])
             with self.assertRaisesRegex(ValueError, "Unsupported model families"):
                 store.set_served_model_families(["unknown"])
+
+    def test_previous_all_models_setting_enables_new_chinese_family(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "settings.json"
+            path.write_text(
+                json.dumps(
+                    {
+                        "served_model_families": [
+                            STANDARD_MODEL_FAMILY,
+                            "kikiri-german-martin",
+                            "kikiri-german-victoria",
+                            "contextboxai-kokoro-vietnamese",
+                        ]
+                    }
+                )
+            )
+
+            self.assertEqual(
+                RuntimeSettingsStore(path).served_model_families(), model_family_ids()
+            )
+            self.assertEqual(
+                json.loads(path.read_text())["served_model_families"],
+                model_family_ids(),
+            )
+
+    def test_custom_model_selection_does_not_enable_new_chinese_family(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "settings.json"
+            selected = [STANDARD_MODEL_FAMILY, "kikiri-german-martin"]
+            path.write_text(json.dumps({"served_model_families": selected}))
+
+            self.assertEqual(
+                RuntimeSettingsStore(path).served_model_families(), selected
+            )
+            self.assertEqual(
+                json.loads(path.read_text())["served_model_families"],
+                selected,
+            )
+
+    def test_new_explicit_previous_four_selection_remains_disabled(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "settings.json"
+            selected = model_family_ids()[:-1]
+            store = RuntimeSettingsStore(path)
+
+            self.assertEqual(store.set_served_model_families(selected), selected)
+            self.assertEqual(store.served_model_families(), selected)
+            self.assertEqual(json.loads(path.read_text())["schema_version"], 2)
 
     def test_legacy_partial_voice_setting_expands_to_the_model_family(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -97,6 +152,7 @@ class RuntimeSettingsStoreTest(unittest.TestCase):
                 "kikiri-german-martin",
                 "kikiri-german-victoria",
                 "contextboxai-kokoro-vietnamese",
+                CHINESE_V11_MODEL_FAMILY,
             ],
         )
 

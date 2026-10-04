@@ -488,5 +488,726 @@ window.VOICE_EXAMPLES = [
     "language": "Vietnamese",
     "file": "kokorotts-duc_duy.mp3",
     "text": "Xin chào từ Kokoro text to speech. Đây là bộ Docker chuyển văn bản thành giọng nói, dễ chạy cho cả chuyên gia và người không rành kỹ thuật. Hãy cài Docker, chạy một lệnh rồi mở trình duyệt để dùng giao diện tích hợp, hoặc gọi cùng một API từ ứng dụng của bạn. Hệ thống tạo âm thanh MP3 nhỏ gọn và hoạt động ngay sau khi khởi động."
+  },
+  {
+    "name": "v1.1 Female 001",
+    "voice": "zf_001",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zf_001.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Female 002",
+    "voice": "zf_002",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zf_002.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Female 003",
+    "voice": "zf_003",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zf_003.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Female 004",
+    "voice": "zf_004",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zf_004.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Female 005",
+    "voice": "zf_005",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zf_005.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Female 006",
+    "voice": "zf_006",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zf_006.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Female 007",
+    "voice": "zf_007",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zf_007.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Female 008",
+    "voice": "zf_008",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zf_008.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Female 017",
+    "voice": "zf_017",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zf_017.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Female 018",
+    "voice": "zf_018",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zf_018.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Female 019",
+    "voice": "zf_019",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zf_019.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Female 021",
+    "voice": "zf_021",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zf_021.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Female 022",
+    "voice": "zf_022",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zf_022.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Female 023",
+    "voice": "zf_023",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zf_023.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Female 024",
+    "voice": "zf_024",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zf_024.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Female 026",
+    "voice": "zf_026",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zf_026.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Female 027",
+    "voice": "zf_027",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zf_027.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Female 028",
+    "voice": "zf_028",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zf_028.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Female 032",
+    "voice": "zf_032",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zf_032.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Female 036",
+    "voice": "zf_036",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zf_036.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Female 038",
+    "voice": "zf_038",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zf_038.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Female 039",
+    "voice": "zf_039",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zf_039.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Female 040",
+    "voice": "zf_040",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zf_040.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Female 042",
+    "voice": "zf_042",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zf_042.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Female 043",
+    "voice": "zf_043",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zf_043.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Female 044",
+    "voice": "zf_044",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zf_044.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Female 046",
+    "voice": "zf_046",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zf_046.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Female 047",
+    "voice": "zf_047",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zf_047.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Female 048",
+    "voice": "zf_048",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zf_048.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Female 049",
+    "voice": "zf_049",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zf_049.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Female 051",
+    "voice": "zf_051",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zf_051.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Female 059",
+    "voice": "zf_059",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zf_059.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Female 060",
+    "voice": "zf_060",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zf_060.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Female 067",
+    "voice": "zf_067",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zf_067.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Female 070",
+    "voice": "zf_070",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zf_070.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Female 071",
+    "voice": "zf_071",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zf_071.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Female 072",
+    "voice": "zf_072",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zf_072.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Female 073",
+    "voice": "zf_073",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zf_073.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Female 074",
+    "voice": "zf_074",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zf_074.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Female 075",
+    "voice": "zf_075",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zf_075.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Female 076",
+    "voice": "zf_076",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zf_076.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Female 077",
+    "voice": "zf_077",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zf_077.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Female 078",
+    "voice": "zf_078",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zf_078.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Female 079",
+    "voice": "zf_079",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zf_079.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Female 083",
+    "voice": "zf_083",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zf_083.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Female 084",
+    "voice": "zf_084",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zf_084.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Female 085",
+    "voice": "zf_085",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zf_085.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Female 086",
+    "voice": "zf_086",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zf_086.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Female 087",
+    "voice": "zf_087",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zf_087.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Female 088",
+    "voice": "zf_088",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zf_088.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Female 090",
+    "voice": "zf_090",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zf_090.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Female 092",
+    "voice": "zf_092",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zf_092.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Female 093",
+    "voice": "zf_093",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zf_093.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Female 094",
+    "voice": "zf_094",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zf_094.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Female 099",
+    "voice": "zf_099",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zf_099.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Male 009",
+    "voice": "zm_009",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zm_009.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Male 010",
+    "voice": "zm_010",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zm_010.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Male 011",
+    "voice": "zm_011",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zm_011.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Male 012",
+    "voice": "zm_012",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zm_012.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Male 013",
+    "voice": "zm_013",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zm_013.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Male 014",
+    "voice": "zm_014",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zm_014.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Male 015",
+    "voice": "zm_015",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zm_015.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Male 016",
+    "voice": "zm_016",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zm_016.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Male 020",
+    "voice": "zm_020",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zm_020.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Male 025",
+    "voice": "zm_025",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zm_025.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Male 029",
+    "voice": "zm_029",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zm_029.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Male 030",
+    "voice": "zm_030",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zm_030.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Male 031",
+    "voice": "zm_031",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zm_031.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Male 033",
+    "voice": "zm_033",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zm_033.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Male 034",
+    "voice": "zm_034",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zm_034.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Male 035",
+    "voice": "zm_035",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zm_035.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Male 037",
+    "voice": "zm_037",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zm_037.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Male 041",
+    "voice": "zm_041",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zm_041.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Male 045",
+    "voice": "zm_045",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zm_045.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Male 050",
+    "voice": "zm_050",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zm_050.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Male 052",
+    "voice": "zm_052",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zm_052.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Male 053",
+    "voice": "zm_053",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zm_053.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Male 054",
+    "voice": "zm_054",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zm_054.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Male 055",
+    "voice": "zm_055",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zm_055.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Male 056",
+    "voice": "zm_056",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zm_056.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Male 057",
+    "voice": "zm_057",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zm_057.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Male 058",
+    "voice": "zm_058",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zm_058.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Male 061",
+    "voice": "zm_061",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zm_061.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Male 062",
+    "voice": "zm_062",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zm_062.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Male 063",
+    "voice": "zm_063",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zm_063.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Male 064",
+    "voice": "zm_064",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zm_064.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Male 065",
+    "voice": "zm_065",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zm_065.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Male 066",
+    "voice": "zm_066",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zm_066.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Male 068",
+    "voice": "zm_068",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zm_068.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Male 069",
+    "voice": "zm_069",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zm_069.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Male 080",
+    "voice": "zm_080",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zm_080.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Male 081",
+    "voice": "zm_081",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zm_081.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Male 082",
+    "voice": "zm_082",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zm_082.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Male 089",
+    "voice": "zm_089",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zm_089.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Male 091",
+    "voice": "zm_091",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zm_091.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Male 095",
+    "voice": "zm_095",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zm_095.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Male 096",
+    "voice": "zm_096",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zm_096.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Male 097",
+    "voice": "zm_097",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zm_097.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Male 098",
+    "voice": "zm_098",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zm_098.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "v1.1 Male 100",
+    "voice": "zm_100",
+    "language": "Mandarin Chinese",
+    "file": "kokorotts-zm_100.mp3",
+    "text": "欢迎使用 Hangry Labs Kokoro 文本转语音。这是易于运行的 Docker 语音服务，适合专业人员，也适合不太懂技术的用户。安装 Docker，运行一个命令，然后打开浏览器使用内置界面，或者从自己的应用程序调用同一个 API。系统可以生成紧凑的 MP3 音频，并且开箱即用。"
+  },
+  {
+    "name": "Maple (v1.1-zh)",
+    "voice": "af_maple",
+    "language": "American English",
+    "file": "kokorotts-af_maple.mp3",
+    "text": "Hello from Hangry Labs Kokoro text to speech. Install Docker, run one command, and open the built-in browser interface or call the same API from your application. The system creates compact MP3 audio, works out of the box, and keeps model families independently selectable."
+  },
+  {
+    "name": "Sol (v1.1-zh)",
+    "voice": "af_sol",
+    "language": "American English",
+    "file": "kokorotts-af_sol.mp3",
+    "text": "Hello from Hangry Labs Kokoro text to speech. Install Docker, run one command, and open the built-in browser interface or call the same API from your application. The system creates compact MP3 audio, works out of the box, and keeps model families independently selectable."
+  },
+  {
+    "name": "Vale (v1.1-zh)",
+    "voice": "bf_vale",
+    "language": "British English",
+    "file": "kokorotts-bf_vale.mp3",
+    "text": "Hello from Hangry Labs Kokoro text to speech. Install Docker, run one command, and open the built-in browser interface or call the same API from your application. The system creates compact MP3 audio, works out of the box, and keeps model families independently selectable."
   }
 ];

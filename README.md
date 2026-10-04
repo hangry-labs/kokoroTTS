@@ -15,7 +15,7 @@ You get:
 - OpenAI-compatible and KokoroTTS-native HTTP APIs for applications and tools
 - Experimental multi-character and multilingual dialogue scripting through SSML
 - No manual Python, model, or audio dependency setup
-- 70 voices across 11 supported languages, including dedicated German and Vietnamese checkpoints
+- 173 voices across 11 supported languages, including dedicated German, Vietnamese, and enhanced Chinese checkpoints
 - WAV, MP3, FLAC, OGG Vorbis, Opus, AAC, and raw PCM output
 - Offline-friendly usage: download an image once, keep it, and run it later without relying on live model downloads
 
@@ -46,7 +46,7 @@ Hangry Labs home: [nuggies.website](https://nuggies.website/).
 
 ## Listen and Have a Look
 
-Hear all 70 voices in their supported languages on the interactive examples page. Choose a language, compare speakers, and listen directly in the browser:
+Hear all 173 voices in their supported languages on the interactive examples page. Choose a language, compare speakers, and listen directly in the browser:
 
 **[Open the KokoroTTS examples page](https://hangry-labs.github.io/kokoroTTS/examples/)**
 
@@ -290,6 +290,8 @@ German synthesis uses the Apache-2.0 Kokoro-compatible [Kikiri German Martin](ht
 
 Vietnamese synthesis uses the Apache-2.0 [ContextBoxAI Kokoro Vietnamese](https://huggingface.co/contextboxai/Kokoro-Vietnamese) checkpoint and fourteen voice packs from [Kokoro-Vietnamese](https://github.com/iamdinhthuan/Kokoro-Vietnamese). All Vietnamese voices share one fine-tuned checkpoint and use `vig2p` for Vietnamese text normalization and phonemization.
 
+Enhanced Mandarin and mixed Chinese-English synthesis uses the Apache-2.0 [Kokoro-82M-v1.1-zh](https://huggingface.co/hexgrad/Kokoro-82M-v1.1-zh) checkpoint with 100 numbered Chinese voices plus the English Maple, Sol, and Vale voices. It is an additional selectable model family and does not replace the standard Kokoro v1.0 voices.
+
 License and attribution are preserved in [`LICENSE`](LICENSE) and
 [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
 
@@ -306,7 +308,7 @@ If you encounter bugs, have feature requests, or need help using Hangry Labs Kok
 
 All published tags are mirrored on [Docker Hub](https://hub.docker.com/r/hangrylabs/kokorotts/tags) and [GitHub Container Registry](https://github.com/Hangry-Labs/kokoroTTS/pkgs/container/kokorotts). Replace `hangrylabs/kokorotts` in any command below with `ghcr.io/hangry-labs/kokorotts` to use GHCR.
 
-- Full images contain the standard Kokoro model, both dedicated German checkpoints, the dedicated Vietnamese checkpoint, all 70 voice packs, configuration, and required language data. They are ready for offline use after the image has been pulled.
+- Full images contain the standard Kokoro model, both dedicated German checkpoints, the dedicated Vietnamese checkpoint, the enhanced Chinese v1.1 checkpoint, all 173 voice packs, configuration, and required language data. They are ready for offline use after the image has been pulled.
 - Tiny images contain the complete runtime but download Hugging Face model and voice assets on first use. Mount the optional `/app/persistent` data volume to preserve downloads and settings across containers.
 - Versioned tags such as `v0.3` and `v0.3_tiny` are fixed releases suitable for repeatable deployments.
 - Moving tags `latest` and `latest_tiny` follow the current `v1.0` snapshot built from `main`.
@@ -344,7 +346,7 @@ task client-test
 
 `task imagerun` and `task localrun` mount the named `kokorotts_data` volume at `/app/persistent`. It stores downloaded Hugging Face assets under `models/huggingface` and operator settings under `app`, so both survive container and image replacement. Baked run tasks seed missing model files from the full image before startup, preserving offline behavior even if the volume was first created by a tiny run. Direct Docker runs may omit the volume and use the same paths inside the disposable container. Use `task nuke` when you need a true from-scratch data test.
 
-The deployment controls in the System tab operate on four independently loaded model packs: the shared standard Kokoro checkpoint, German Martin, German Victoria, and Kokoro Vietnamese. All packs remain enabled by default for backward compatibility. The 54 standard voices move together, and the 14 Vietnamese voices move together, because each group shares one model and therefore has the same VRAM cost. Model weights load only when one of their voices is first used; disabling a pack releases cached models after active generations finish. In the tiny image, a disabled custom model is not downloaded unless its pack is later enabled and called.
+The deployment controls in the System tab operate on five independently loaded model packs: the shared standard Kokoro checkpoint, German Martin, German Victoria, Kokoro Vietnamese, and Kokoro v1.1 Chinese. All packs are enabled by default on fresh installations. Existing installations that had all four former packs enabled automatically gain the new Chinese pack, while customized selections remain unchanged. The 54 standard voices, 14 Vietnamese voices, and 103 v1.1 Chinese/English voices move as their respective groups because each group shares one model and therefore has the same VRAM cost. Model weights load only when one of their voices is first used; disabling a pack releases cached models after active generations finish. In the tiny image, a disabled custom model is not downloaded unless its pack is later enabled and called.
 
 Release from a clean tree:
 
@@ -470,6 +472,7 @@ The data volume is recommended but optional. Without it, the same files are stor
 - Recorded the official quiet-GPU RTX 5070 Ti VRAM baseline across all 70 voices and 11 languages with no failures: 317.6 MiB allocated for the initial standard model, 1725.1 MiB peak process allocation, and 2052.0 MiB peak process reservation after lazy model-family loading.
 - Added German synthesis with dedicated Misaki normalization/G2P, Martin and Victoria voice packs, and their matching Kokoro-compatible checkpoints. The full image bakes only deployable inference assets; each model family remains lazy in CPU/GPU memory.
 - Added Vietnamese synthesis using the ContextBoxAI Kokoro Vietnamese checkpoint, its custom vocabulary, all fourteen upstream voice packs, and pinned `vig2p`/`sea-g2p` phonemization. The shared Vietnamese weights appear as one independently selectable model pack and the unused ONNX export is not baked into the image.
+- Added the Kokoro v1.1 Chinese family as a fifth independently selectable model pack with its repository-specific frontend, checkpoint, 100 numbered Chinese voices, and English Maple, Sol, and Vale voices. Full images bake the pinned family for offline use, tiny images persist it after first download, existing all-enabled settings migrate forward, and all 103 voices have public MP3 previews.
 - Added a third-party notice covering the upstream Kokoro implementation, language processing dependencies, model and voice assets, bundled browser libraries, and Docker runtime components.
 - Replaced the Japanese Cutlet/Fugashi frontend with pyopenjtalk for pitch-aware Japanese phonemization, removing the much larger UniDic runtime while preserving offline Japanese synthesis.
 - Replaced the separate full/tiny `mode=max` GitHub Actions caches with a selective, integrity-tested compiled `pyopenjtalk` wheel keyed by platform, Python ABI, package version, and Dockerfile recipe. Complete Docker build graphs, CUDA dependencies, and model layers are not imported or exported through the Actions cache.

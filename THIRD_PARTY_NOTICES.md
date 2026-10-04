@@ -78,6 +78,7 @@ either distribution mode.
 | Kikiri German Martin model and voice | [kikiri-tts/kikiri-german-martin](https://huggingface.co/kikiri-tts/kikiri-german-martin) | Apache License 2.0 |
 | Kikiri German Victoria model and voice | [kikiri-tts/kikiri-german-victoria](https://huggingface.co/kikiri-tts/kikiri-german-victoria) | Apache License 2.0 |
 | Kokoro Vietnamese model, configuration, and voices | [contextboxai/Kokoro-Vietnamese](https://huggingface.co/contextboxai/Kokoro-Vietnamese) | Apache License 2.0 |
+| Kokoro v1.1 Chinese model, configuration, and 103 voices | [hexgrad/Kokoro-82M-v1.1-zh](https://huggingface.co/hexgrad/Kokoro-82M-v1.1-zh) | Apache License 2.0 |
 
 ## Browser Libraries
 
