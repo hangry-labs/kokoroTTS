@@ -9,6 +9,21 @@ from typing import Dict, Optional, Union
 import json
 import torch
 
+
+def _scale_speech_token_durations(
+    duration: torch.Tensor, speed: float
+) -> torch.Tensor:
+    """Scale speech-token durations without stretching BOS/EOS boundaries."""
+    return torch.cat(
+        (
+            duration[..., :1],
+            duration[..., 1:-1] / speed,
+            duration[..., -1:],
+        ),
+        dim=-1,
+    )
+
+
 class KModel(torch.nn.Module):
     '''
     KModel is a torch.nn.Module with 2 main responsibilities:
@@ -103,7 +118,8 @@ class KModel(torch.nn.Module):
         d = self.predictor.text_encoder(d_en, s, input_lengths, text_mask)
         x, _ = self.predictor.lstm(d)
         duration = self.predictor.duration_proj(x)
-        duration = torch.sigmoid(duration).sum(axis=-1) / speed
+        duration = torch.sigmoid(duration).sum(axis=-1)
+        duration = _scale_speech_token_durations(duration, speed)
         pred_dur = torch.round(duration).clamp(min=1).long().squeeze()
         indices = torch.repeat_interleave(torch.arange(input_ids.shape[1], device=self.device), pred_dur)
         pred_aln_trg = torch.zeros((input_ids.shape[1], indices.shape[0]), device=self.device)

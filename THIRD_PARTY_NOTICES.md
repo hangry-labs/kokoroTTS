@@ -61,7 +61,10 @@ authored the Apache-2.0 Kokoro-Vietnamese project, and that project explicitly
 depends on `vig2p`. At the time this notice was reviewed, however, the
 standalone PyPI package metadata and wheel did not declare or include a
 license. KokoroTTS does not infer or assign a license to that separately
-distributed package. Explicit upstream confirmation remains pending.
+distributed package. On 2026-10-04, the KokoroTTS maintainers requested
+explicit license metadata, a bundled license file, and a source-project link in
+[Kokoro-Vietnamese issue #5](https://github.com/iamdinhthuan/Kokoro-Vietnamese/issues/5).
+Upstream confirmation remains pending.
 
 ## Model and Voice Assets
 
