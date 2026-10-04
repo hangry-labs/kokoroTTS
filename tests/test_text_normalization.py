@@ -3,7 +3,13 @@ from __future__ import annotations
 import unittest
 
 from kokorotts.pipeline import KPipeline
-from kokorotts.text_normalization import expand_english_large_units
+from kokorotts.text_normalization import (
+    expand_english_eras,
+    expand_english_large_units,
+    expand_english_measurements,
+    expand_english_roman_numerals,
+    normalize_english_text,
+)
 
 
 class RecordingG2P:
@@ -51,6 +57,76 @@ class EnglishLargeUnitNormalizationTest(unittest.TestCase):
 
         self.assertEqual(pipeline.g2p.inputs, ["Le fichier contient 20K lignes."])
         self.assertEqual(results[0].phonemes, "Le fichier contient 20K lignes.")
+
+
+class EnglishIssue108NormalizationTest(unittest.TestCase):
+    def test_expands_issue_measurements_with_correct_pluralization(self) -> None:
+        self.assertEqual(
+            expand_english_measurements("1m, 10 m, 32ft, 40cm, 1 in, 1.5km"),
+            "1 meter, 10 meters, 32 feet, 40 centimeters, 1 inch, 1.5 kilometers",
+        )
+
+    def test_measurements_preserve_identifiers_and_unrelated_units(self) -> None:
+        text = "64MB, timer10m, 5ms, 10 M, 10m_value, 10m², CSS32ftRule, and room 2B"
+        self.assertEqual(expand_english_measurements(text), text)
+
+    def test_expands_year_adjacent_eras_only(self) -> None:
+        self.assertEqual(
+            expand_english_eras("1479 BC, 300 BCE, AD 1066, and 2026 CE"),
+            "1479 before Christ, 300 before common era, anno Domini 1066, and 2026 common era",
+        )
+        self.assertEqual(
+            expand_english_eras("BC Ferries and an AD campaign"),
+            "BC Ferries and an AD campaign",
+        )
+
+    def test_expands_contextual_roman_numerals(self) -> None:
+        self.assertEqual(
+            expand_english_roman_numerals(
+                "World War II, Chapter XI, Type II, Model IV, Thutmose II, Henry VIII, and Pope John Paul II"
+            ),
+            "World War 2, Chapter 11, Type 2, Model 4, Thutmose 2nd, Henry 8th, and Pope John Paul 2nd",
+        )
+
+    def test_preserves_invalid_or_context_free_capitals(self) -> None:
+        text = "API IVR uses MIX tools; I agree with XML, and Chapter IIX is invalid."
+        self.assertEqual(expand_english_roman_numerals(text), text)
+
+    def test_normalizes_complete_issue_example(self) -> None:
+        text = (
+            "Thutmose II was an ancestor whose reign lasted from 1493 to 1479 BC. "
+            "The passage had a 10m tunnel, a 32ft chamber, and a 40cm gap."
+        )
+        self.assertEqual(
+            normalize_english_text(text),
+            "Thutmose 2nd was an ancestor whose reign lasted from 1493 to 1479 before Christ. "
+            "The passage had a 10 meters tunnel, a 32 feet chamber, and a 40 centimeters gap.",
+        )
+
+    def test_english_pipeline_applies_complete_normalization_before_g2p(self) -> None:
+        pipeline = KPipeline.__new__(KPipeline)
+        pipeline.lang_code = "a"
+        pipeline.model = None
+        pipeline.g2p = RecordingG2P()
+
+        self.assertEqual(
+            list(pipeline("Thutmose II crossed 10m in 1479 BC.", model=False)), []
+        )
+        self.assertEqual(
+            pipeline.g2p.inputs,
+            ["Thutmose 2nd crossed 10 meters in 1479 before Christ."],
+        )
+
+    def test_non_english_pipeline_preserves_issue_108_forms(self) -> None:
+        pipeline = KPipeline.__new__(KPipeline)
+        pipeline.lang_code = "f"
+        pipeline.model = None
+        pipeline.g2p = RecordingG2P()
+
+        results = list(pipeline("Thutmose II, 10m, 1479 BC", model=False))
+
+        self.assertEqual(pipeline.g2p.inputs, ["Thutmose II, 10m, 1479 BC"])
+        self.assertEqual(results[0].phonemes, "Thutmose II, 10m, 1479 BC")
 
 
 if __name__ == "__main__":
