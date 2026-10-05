@@ -190,6 +190,11 @@ tasks:
       - 'cmd /c "set KOKOROTTS_TEST_BASE_URL=http://localhost:{{.PORT}}&& python tests/run_client_tests.py"'
       - 'cmd /c "set KOKOROTTS_TEST_BASE_URL=http://localhost:{{.PORT}}&& set KOKOROTTS_TEST_API_KEY={{.KOKOROTTS_API_KEY}}&& uv run --no-project --with openai==3.24.0 python tests/run_openai_client_tests.py"'
 
+  release-image-test:
+    desc: Qualify every language and model family through a running packaged image
+    cmds:
+      - 'python tests/run_release_image_tests.py --base-url http://localhost:{{.PORT}}'
+
   mcp-test:
     desc: Run deterministic MCP artifact, schema, transport, and package-control tests
     cmds:

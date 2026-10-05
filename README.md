@@ -501,6 +501,8 @@ task unit-test
 task ui-test
 task client-test
 task openai-client-test
+task mcp-test
+task release-image-test
 ```
 
 The default image is the full baked image and keeps model, voice, and required language assets inside the container for offline use. The tiny image keeps required runtime/language dependencies but skips baked Hugging Face model/voice assets; run it online once to download the voices you use. Both images work without a mounted volume.
@@ -666,11 +668,19 @@ The data volume is recommended but optional. Without it, the same files are stor
 - Added GitHub Container Registry as an official mirror. One workflow publishes identical full and tiny tags to Docker Hub and GHCR: `main` owns the moving `latest`/`latest_tiny` tags, while a release tag owns immutable `vX.Y`/`vX.Y_tiny` images.
 - Added persisted deployment model-pack settings to the System tab and HTTP API. Operators can enable independently loaded checkpoints while voices that share the same weights remain together, making each choice meaningful for downloads and VRAM without changing the backward-compatible all-models default.
 - Added opt-in Streamable HTTP MCP support for AI agents with package-level VRAM controls, voice discovery, actionable tool errors, and expiring URL-only audio results. Generation arguments are all explicit, MCP returns no audio bytes/base64, and a repeatable smaller-model evaluator verifies tool selection and recovery behavior.
+- Added a repeatable packaged-image qualification test covering all 11 languages and all five independently loaded model families through the public HTTP API, including CUDA placement, fallback detection, build identity, and generated MP3 validation.
 - Added a unified optional `/app/persistent` Docker data location for downloaded model assets and operator settings. A named volume preserves both across image upgrades, while unmounted containers continue to work with local ephemeral storage.
 
-#### Planned Work
+#### Release Qualification
 
-1. Complete release qualification for the v1.0 image, documentation, localization, and public examples.
+Release qualification completed on 2026-10-05 against freshly built full and tiny images from the final v1.0 snapshot working tree:
+
+- The full image started without a volume and with Docker networking disabled, exposed all 173 voices, and synthesized all 11 languages through all five model families on CUDA without fallback.
+- A fresh tiny volume completed first-use downloads and the same complete inference matrix, then passed it again after a network-disabled restart using only its persisted assets.
+- The installed image passed all 144 unit/UI/runtime tests, 43 native server-backed client tests, four official OpenAI SDK tests, compliance verification, and `pip check`.
+- Enhanced Chinese, long-text chunking, streaming, audio controls, cross-family SSML, and multi-voice dialogue passed their live CUDA checks.
+- MCP passed its linked-audio and package-eviction lifecycle plus all seven smaller-model tool-use scenarios.
+- Desktop and mobile browser checks passed for the localized application, model-pack controls, live GPU charts, persisted UI state, the 173-voice gallery, and all five SSML examples without horizontal overflow, broken assets, or current-page console errors.
 
 ### v0.3
 
