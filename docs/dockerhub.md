@@ -5,12 +5,12 @@
 </p>
 
 <p>
-  <strong>English</strong> Â·
-  <a href="https://github.com/Hangry-Labs/kokoroTTS/blob/main/README.nb.md">Norsk bokmÃ¥l</a> Â·
-  <a href="https://github.com/Hangry-Labs/kokoroTTS/blob/main/README.pl.md">Polski</a> Â·
-  <a href="https://github.com/Hangry-Labs/kokoroTTS/blob/main/README.ja.md">æ—¥æœ¬èªž</a> Â·
-  <a href="https://github.com/Hangry-Labs/kokoroTTS/blob/main/README.zh.md">ç®€ä½“ä¸­æ–‡</a> Â·
-  <a href="https://github.com/Hangry-Labs/kokoroTTS/blob/main/README.es.md">EspaÃ±ol</a>
+  <strong>English</strong> ·
+  <a href="https://github.com/Hangry-Labs/kokoroTTS/blob/main/README.nb.md">Norsk bokmål</a> ·
+  <a href="https://github.com/Hangry-Labs/kokoroTTS/blob/main/README.pl.md">Polski</a> ·
+  <a href="https://github.com/Hangry-Labs/kokoroTTS/blob/main/README.ja.md">日本語</a> ·
+  <a href="https://github.com/Hangry-Labs/kokoroTTS/blob/main/README.zh.md">简体中文</a> ·
+  <a href="https://github.com/Hangry-Labs/kokoroTTS/blob/main/README.es.md">Español</a>
 </p>
 
 # Hangry Labs KokoroTTS
@@ -169,7 +169,7 @@ Use another voice:
 ```bash
 curl -X POST "http://localhost:7860/tts/generate" \
   -H "Content-Type: application/json" \
-  -d '{"text":"ÃƒÂ£Ã¢â‚¬Å¡Ã‚Â³ÃƒÂ£Ã¢â‚¬Å¡Ã‚Â³ÃƒÂ£Ã†â€™Ã‚Â­ ÃƒÂ£Ã†â€™Ã¢â‚¬Â ÃƒÂ£Ã¢â‚¬Å¡Ã‚Â­ÃƒÂ£Ã¢â‚¬Å¡Ã‚Â¹ÃƒÂ£Ã†â€™Ã‹â€ ÃƒÂ¨Ã‚ÂªÃ‚Â­ÃƒÂ£Ã‚ÂÃ‚Â¿ÃƒÂ¤Ã‚Â¸Ã…Â ÃƒÂ£Ã‚ÂÃ¢â‚¬â„¢ÃƒÂ£Ã‚ÂÃ‚Â¸ÃƒÂ£Ã¢â‚¬Å¡Ã‹â€ ÃƒÂ£Ã‚ÂÃ¢â‚¬Â ÃƒÂ£Ã‚ÂÃ¢â‚¬Å“ÃƒÂ£Ã‚ÂÃ‚ÂÃƒÂ£Ã¢â€šÂ¬Ã¢â‚¬Å¡","voice":"jf_alpha","output_format":"mp3"}' \
+  -d '{"text":"ココロ テキスト読み上げへようこそ。","voice":"jf_alpha","output_format":"mp3"}' \
   -o kokoro-ja.mp3
 ```
 

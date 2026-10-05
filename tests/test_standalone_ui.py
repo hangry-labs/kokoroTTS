@@ -328,6 +328,28 @@ class StandaloneUiTests(unittest.TestCase):
         release_script = (root / "scripts" / "release.ps1").read_text(encoding="utf-8")
         self.assertIn("(?:@sha256:[0-9a-f]{64})?", release_script)
 
+    def test_public_documentation_has_no_mojibake(self) -> None:
+        root = Path(__file__).parents[1]
+        readme = (root / "README.md").read_text(encoding="utf-8")
+        dockerhub = (root / "docs" / "dockerhub.md").read_text(encoding="utf-8")
+
+        expected_labels = ("Norsk bokmål", "日本語", "简体中文", "Español")
+        for document in (readme, dockerhub):
+            for label in expected_labels:
+                self.assertIn(label, document)
+            for marker in (
+                "Â·",
+                "bokmÃ¥l",
+                "EspaÃ±ol",
+                "æ—¥æœ¬èªž",
+                "ç®€ä½“ä¸­æ–‡",
+                "ÃƒÂ",
+                "\ufffd",
+            ):
+                self.assertNotIn(marker, document)
+
+        self.assertIn("ココロ テキスト読み上げへようこそ。", dockerhub)
+
     @patch("kokorotts.standalone_ui.gpu.subprocess.run")
     def test_gpu_monitor_parses_nvidia_smi(self, run) -> None:
         run.return_value.returncode = 0

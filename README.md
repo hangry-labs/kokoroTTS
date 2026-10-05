@@ -5,12 +5,12 @@
 </p>
 
 <p align="center">
-  <strong>English</strong> Â·
-  <a href="README.nb.md">Norsk bokmÃ¥l</a> Â·
-  <a href="README.pl.md">Polski</a> Â·
-  <a href="README.ja.md">æ—¥æœ¬èªž</a> Â·
-  <a href="README.zh.md">ç®€ä½“ä¸­æ–‡</a> Â·
-  <a href="README.es.md">EspaÃ±ol</a>
+  <strong>English</strong> ·
+  <a href="README.nb.md">Norsk bokmål</a> ·
+  <a href="README.pl.md">Polski</a> ·
+  <a href="README.ja.md">日本語</a> ·
+  <a href="README.zh.md">简体中文</a> ·
+  <a href="README.es.md">Español</a>
 </p>
 
 # Hangry Labs KokoroTTS
