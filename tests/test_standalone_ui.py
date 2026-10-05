@@ -79,8 +79,9 @@ class StandaloneUiTests(unittest.TestCase):
         self.assertEqual(index.status_code, 200)
         self.assertIn("KokoroTTS", index.text)
         self.assertIn("https://hangry-labs.github.io/kokoroTTS/examples/?lang=en", index.text)
-        self.assertIn('href="https://hangrylabs.app/software"', index.text)
-        self.assertNotIn("nuggies.website", index.text)
+        self.assertIn('href="https://hangrylabs.app/"', index.text)
+        stale_home = "https://hangrylabs.app/" + "software"
+        self.assertNotIn(f'href="{stale_home}"', index.text)
         self.assertIn('data-tab="generate"', index.text)
         self.assertIn('data-tab="stream"', index.text)
         self.assertNotIn('data-tab="settings"', index.text)
@@ -248,10 +249,11 @@ class StandaloneUiTests(unittest.TestCase):
         page = (root / "examples" / "index.html").read_text(encoding="utf-8")
         player = (root / "examples" / "player.js").read_text(encoding="utf-8")
 
-        self.assertIn('href="https://hangrylabs.app/software"', page)
+        self.assertIn('href="https://hangrylabs.app/"', page)
+        stale_home = "https://hangrylabs.app/" + "software"
+        self.assertNotIn(f'href="{stale_home}"', page)
         self.assertIn('../assets/hangrylabs_mascot.webp', page)
         self.assertIn('../assets/kokoro_logo.webp', page)
-        self.assertNotIn("nuggies.website", page)
         self.assertIn('new URLSearchParams(window.location.search).get("lang")', player)
         self.assertIn('requestedVoiceLanguage = PAGE_LANGUAGES[requestedPageLanguage]', player)
         self.assertIn('title: "Hangry Labs KokoroTTS stemmeeksempler"', player)

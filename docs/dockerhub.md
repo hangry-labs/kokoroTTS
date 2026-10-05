@@ -32,7 +32,7 @@ The examples page includes MP3 previews for all 173 voices across American Engli
 - Voice examples: https://hangry-labs.github.io/kokoroTTS/examples/
 - GitHub repository: https://github.com/Hangry-Labs/kokoroTTS
 - Issues and support: https://github.com/Hangry-Labs/kokoroTTS/issues
-- Hangry Labs: https://hangrylabs.app/software/kokorotts
+- Hangry Labs: https://hangrylabs.app/
 
 ## Quick Start
 
@@ -217,7 +217,7 @@ All five model packs are served by default. The System controls can disable the 
 
 - Voice examples: https://hangry-labs.github.io/kokoroTTS/examples/
 - GitHub: https://github.com/Hangry-Labs/kokoroTTS
-- Hangry Labs: https://hangrylabs.app/software/kokorotts
+- Hangry Labs: https://hangrylabs.app/
 - Issues: https://github.com/Hangry-Labs/kokoroTTS/issues
 
 Docker Hub comments are not monitored regularly. GitHub Issues are the best place to report bugs.
