@@ -1,4 +1,7 @@
 import { AudioEditor } from './audio-editor.js'
+import { browserLanguage, initializeI18n, languageLabel, t } from './i18n.js'
+
+await initializeI18n()
 
 const $ = (selector, root = document) => root.querySelector(selector)
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)]
@@ -29,18 +32,18 @@ const GPU_POLL_INTERVAL_MS = 1000
 const UI_SESSION_KEY = 'kokorotts-ui-state-v1'
 const GPU_SESSION_KEY = 'kokorotts-gpu-history-v1'
 const GPU_METRICS = [
-  { key: 'utilization', label: 'GPU', color: '#ff7a1a' },
-  { key: 'memory_utilization', label: 'Memory activity', color: '#c586c0' },
-  { key: 'memory_used', label: 'VRAM', color: '#72a7ff' },
-  { key: 'temperature', label: 'Temperature', color: '#ef6b73' },
-  { key: 'power', label: 'Power', color: '#f2c94c' },
-  { key: 'fan_speed', label: 'Fan', color: '#55c58a' },
-  { key: 'graphics_clock', label: 'Graphics clock', color: '#9cdcfe' },
-  { key: 'memory_clock', label: 'Memory clock', color: '#ce9178' },
+  { key: 'utilization', label: t('gpu.metric.gpu'), color: '#ff7a1a' },
+  { key: 'memory_utilization', label: t('gpu.metric.memoryActivity'), color: '#c586c0' },
+  { key: 'memory_used', label: t('gpu.metric.vram'), color: '#72a7ff' },
+  { key: 'temperature', label: t('gpu.metric.temperature'), color: '#ef6b73' },
+  { key: 'power', label: t('gpu.metric.power'), color: '#f2c94c' },
+  { key: 'fan_speed', label: t('gpu.metric.fan'), color: '#55c58a' },
+  { key: 'graphics_clock', label: t('gpu.metric.graphicsClock'), color: '#9cdcfe' },
+  { key: 'memory_clock', label: t('gpu.metric.memoryClock'), color: '#ce9178' },
 ]
 
-const generateOutput = new AudioEditor($('#generate-output'), { label: 'Generated audio' })
-const streamOutput = new AudioEditor($('#stream-output'), { label: 'Streamed audio' })
+const generateOutput = new AudioEditor($('#generate-output'), { label: t('editor.generatedAudio') })
+const streamOutput = new AudioEditor($('#stream-output'), { label: t('editor.streamedAudio') })
 
 function setStatus(message, tone = 'neutral') {
   const status = $('#global-status')
@@ -136,7 +139,7 @@ function setHeroCollapsed(collapsed, persist = true, animate = true) {
   const startHeight = hero.getBoundingClientRect().height
 
   state.headerCollapsed = collapsed
-  const action = collapsed ? 'Expand header' : 'Collapse header'
+  const action = collapsed ? t('hero.expand') : t('hero.collapse')
   document.documentElement.dataset.headerCollapsed = String(collapsed)
   hero.dataset.collapsed = String(collapsed)
   toggle.setAttribute('aria-expanded', String(!collapsed))
@@ -248,7 +251,7 @@ function resetVoiceControls() {
   setVoiceControlValue('volume', controls.volume)
   $('#normalize').checked = controls.normalize
   updateNormalizationState()
-  setStatus('Voice controls reset', 'success')
+  setStatus(t('status.controlsReset'), 'success')
 }
 
 $('#reset-voice-controls').addEventListener('click', resetVoiceControls)
@@ -294,20 +297,20 @@ function setInputType(inputType) {
   const button = $('#ssml-mode-button')
   button.classList.toggle('active', active)
   button.setAttribute('aria-pressed', String(active))
-  button.title = active ? 'Disable experimental SSML input' : 'Enable experimental SSML input'
+  button.title = active ? t('ssml.disable') : t('ssml.enable')
   $('#composer').dataset.inputType = inputType
-  $('#input-mode-label').textContent = active ? 'SSML' : 'Text'
+  $('#input-mode-label').textContent = active ? 'SSML' : t('composer.text')
   input.spellcheck = !active
-  input.setAttribute('aria-label', active ? 'Experimental SSML to synthesize' : 'Text to synthesize')
+  input.setAttribute('aria-label', active ? t('composer.ssmlAria') : t('composer.textAria'))
   updateTextMetrics()
-  setStatus(active ? 'Experimental SSML input enabled' : 'Plain text input enabled', active ? 'warning' : 'success')
+  setStatus(active ? t('status.ssmlEnabled') : t('status.textEnabled'), active ? 'warning' : 'success')
 }
 
 function updateTextMetrics() {
   const text = $('#text-input').value
   const words = text.trim() ? text.trim().split(/\s+/u).length : 0
-  const label = state.inputType === 'ssml' ? 'SSML characters' : 'characters'
-  $('#text-metrics').textContent = `${text.length} ${label} / ${words} words`
+  const key = state.inputType === 'ssml' ? 'composer.metricsSsml' : 'composer.metricsText'
+  $('#text-metrics').textContent = t(key, { characters: text.length, words })
 }
 
 $('#text-input').addEventListener('input', () => {
@@ -363,7 +366,7 @@ function refreshVoiceOptions(preferredVoice) {
 function updateModelSettingsSummary() {
   const checkboxes = $$('#model-settings-groups input[type="checkbox"]')
   const selected = checkboxes.filter((checkbox) => checkbox.checked).length
-  $('#model-settings-summary').textContent = `${selected} of ${checkboxes.length} model packs selected`
+  $('#model-settings-summary').textContent = t('models.selected', { selected, total: checkboxes.length })
 }
 
 function renderDeploymentSettings(payload) {
@@ -385,9 +388,12 @@ function renderDeploymentSettings(payload) {
     copy.className = 'model-setting-copy'
     const name = document.createElement('strong')
     name.textContent = modelPack.name
-    const languages = (modelPack.languages || []).map((language) => language.name).join(', ')
+    const languages = (modelPack.languages || []).map((language) => languageLabel(language.name)).join(', ')
     const metadata = document.createElement('span')
-    metadata.textContent = `${modelPack.voice_count} ${modelPack.voice_count === 1 ? 'voice' : 'voices'} - ${languages}`
+    metadata.textContent = t(
+      modelPack.voice_count === 1 ? 'models.metadataOne' : 'models.metadataMany',
+      { count: modelPack.voice_count, languages },
+    )
     const id = document.createElement('code')
     id.textContent = modelPack.id
     copy.append(name, metadata, id)
@@ -395,7 +401,7 @@ function renderDeploymentSettings(payload) {
     const details = document.createElement('details')
     details.className = 'model-voices'
     const summary = document.createElement('summary')
-    summary.textContent = 'Included voices'
+    summary.textContent = t('models.includedVoices')
     const voices = document.createElement('div')
     voices.textContent = (modelPack.voices || []).join(', ')
     details.append(summary, voices)
@@ -443,12 +449,12 @@ $('#save-model-settings').addEventListener('click', async () => {
     state.voices = inventory.voices
     setSelectOptions(
       $('#language'),
-      Object.entries(languages.languages).map(([value, label]) => ({ value, label })),
+      Object.entries(languages.languages).map(([value, label]) => ({ value, label: languageLabel(label) })),
       languages.languages[previousLanguage] ? previousLanguage : state.voices[0]?.language,
     )
     refreshVoiceOptions(state.voices.some((voice) => voice.id === previousVoice) ? previousVoice : defaults.voice)
-    setStatus('Deployment model packs saved', 'success')
-    showToast('Model packs saved', 'success')
+    setStatus(t('status.modelPacksSaved'), 'success')
+    showToast(t('status.modelPacksSaved'), 'success')
   } catch (error) {
     showToast(errorMessage(error))
   } finally {
@@ -466,7 +472,7 @@ $('#language').addEventListener('change', async () => {
   refreshVoiceOptions()
   try {
     await loadSample(false)
-    setStatus('Language ready', 'success')
+    setStatus(t('status.languageReady'), 'success')
   } catch (error) {
     showToast(errorMessage(error))
   }
@@ -475,7 +481,7 @@ $('#language').addEventListener('change', async () => {
 $('#sample-button').addEventListener('click', async () => {
   try {
     await loadSample(true)
-    setStatus('Sample ready', 'success')
+    setStatus(t('status.sampleReady'), 'success')
   } catch (error) {
     showToast(errorMessage(error))
   }
@@ -509,13 +515,13 @@ $('#generate-button').addEventListener('click', async () => {
   const button = $('#generate-button')
   const payload = requestPayload()
   if (!payload.text.trim()) {
-    showToast('Enter text before generating audio.')
+    showToast(t('errors.enterTextGenerate'))
     return
   }
   button.disabled = true
   $('#output-format').disabled = true
   generateOutput.clear()
-  setStatus('Generating audio')
+  setStatus(t('status.generating'))
   const started = performance.now()
   try {
     const response = await fetch('/tts/generate', {
@@ -528,9 +534,9 @@ $('#generate-button').addEventListener('click', async () => {
     const extension = payload.output_format
     await generateOutput.load(blob, responseFilename(response, `kokorotts_${payload.voice}.${extension}`))
     await generateOutput.play().catch(() => {})
-    setStatus(`Generated in ${((performance.now() - started) / 1000).toFixed(2)}s`, 'success')
+    setStatus(t('status.generated', { seconds: ((performance.now() - started) / 1000).toFixed(2) }), 'success')
   } catch (error) {
-    setStatus('Generation failed', 'error')
+    setStatus(t('status.generationFailed'), 'error')
     showToast(errorMessage(error))
   } finally {
     button.disabled = false
@@ -541,7 +547,7 @@ $('#generate-button').addEventListener('click', async () => {
 $('#output-format').addEventListener('change', () => {
   if (!generateOutput.currentFile()) return
   generateOutput.clear()
-  setStatus('Output format changed; generate audio again')
+  setStatus(t('status.formatChanged'))
 })
 
 $('#tokenize-button').addEventListener('click', async () => {
@@ -598,7 +604,7 @@ class IncrementalAudioPlayback {
       }
       const failed = () => {
         this.sourceBuffer.removeEventListener('updateend', done)
-        reject(new Error('Browser could not buffer streamed MP3 audio.'))
+        reject(new Error(t('errors.streamBuffer')))
       }
       this.sourceBuffer.addEventListener('updateend', done, { once: true })
       this.sourceBuffer.addEventListener('error', failed, { once: true })
@@ -646,7 +652,7 @@ async function loadStreamResult(chunks, voice, autoplay) {
 $('#stream-start').addEventListener('click', async () => {
   const payload = { ...requestPayload('mp3'), stream_format: 'mp3' }
   if (!payload.text.trim()) {
-    showToast('Enter text before streaming audio.')
+    showToast(t('errors.enterTextStream'))
     return
   }
   const controller = new AbortController()
@@ -654,7 +660,7 @@ $('#stream-start').addEventListener('click', async () => {
   state.streamAbort = controller
   streamOutput.clear()
   setStreaming(true)
-  setStatus('Starting stream')
+  setStatus(t('status.startingStream'))
   const started = performance.now()
   let playback = null
   try {
@@ -667,7 +673,7 @@ $('#stream-start').addEventListener('click', async () => {
       signal: controller.signal,
     })
     if (!response.ok) throw new Error(await responseError(response))
-    if (!response.body) throw new Error('Streaming response body is unavailable in this browser.')
+    if (!response.body) throw new Error(t('errors.streamBody'))
     const reader = response.body.getReader()
     let totalBytes = 0
     while (true) {
@@ -676,7 +682,7 @@ $('#stream-start').addEventListener('click', async () => {
       chunks.push(value)
       totalBytes += value.byteLength
       if (playback) playback.append(value).catch((error) => showToast(errorMessage(error)))
-      setStatus(`Streaming ${(totalBytes / 1024).toFixed(0)} KiB`)
+      setStatus(t('status.streaming', { kib: (totalBytes / 1024).toFixed(0) }))
     }
     let resumeAt = 0
     if (playback) {
@@ -688,13 +694,13 @@ $('#stream-start').addEventListener('click', async () => {
     }
     await loadStreamResult(chunks, payload.voice, !resumeAt)
     if (resumeAt) await streamOutput.playFrom(resumeAt).catch(() => {})
-    setStatus(`Stream complete in ${((performance.now() - started) / 1000).toFixed(2)}s`, 'success')
+    setStatus(t('status.streamComplete', { seconds: ((performance.now() - started) / 1000).toFixed(2) }), 'success')
   } catch (error) {
     if (error.name === 'AbortError') {
       await loadStreamResult(chunks, payload.voice, false)
-      setStatus('Stream stopped', 'success')
+      setStatus(t('status.streamStopped'), 'success')
     } else {
-      setStatus('Stream failed', 'error')
+      setStatus(t('status.streamFailed'), 'error')
       showToast(errorMessage(error))
     }
   } finally {
@@ -706,16 +712,16 @@ $('#stream-start').addEventListener('click', async () => {
 })
 
 $('#stream-stop').addEventListener('click', () => {
-  setStatus('Stopping stream')
+  setStatus(t('status.stoppingStream'))
   state.streamAbort?.abort()
   state.streamPlayback?.stop()
 })
 
 async function refreshApiStatus() {
-  $('#api-output').textContent = 'Loading...'
+  $('#api-output').textContent = t('common.loading')
   const groups = {
-    'OpenAI-compatible API': ['/health/ready', '/v1/models'],
-    'KokoroTTS native API': ['/tts/ping', '/tts/defaults', '/tts/formats', '/tts/stream-formats', '/tts/languages'],
+    [t('api.openai')]: ['/health/ready', '/v1/models'],
+    [t('api.native')]: ['/tts/ping', '/tts/defaults', '/tts/formats', '/tts/stream-formats', '/tts/languages'],
   }
   const output = {}
   for (const [group, paths] of Object.entries(groups)) {
@@ -843,10 +849,10 @@ function attachGpuChartHover(plot, samples, metric, now) {
     }, null)
     const tolerance = Math.max(1500, state.gpuWindowMs * 10 / Math.max(1, bounds.width))
     const hasSample = nearest && Math.abs(nearest.timestamp - targetTime) <= tolerance
-    const shownTime = new Date(hasSample ? nearest.timestamp : targetTime).toLocaleTimeString()
+    const shownTime = new Date(hasSample ? nearest.timestamp : targetTime).toLocaleTimeString(browserLanguage())
     tooltip.textContent = hasSample
       ? `${formatGpuMetric(metric, nearest[metric.key])} / ${shownTime}`
-      : `No sample / ${shownTime}`
+      : `${t('gpu.noSample')} / ${shownTime}`
     const percent = ratio * 100
     line.style.left = `${percent}%`
     tooltip.style.left = `${percent}%`
@@ -882,7 +888,11 @@ function createGpuMetricChart(metric, gpu, history, now) {
   svg.setAttribute('preserveAspectRatio', 'none')
   svg.setAttribute(
     'aria-label',
-    `${metric.label} history, average ${formatGpuMetric(metric, average)}, peak ${formatGpuMetric(metric, peak)}`,
+    t('gpu.historyAria', {
+      metric: metric.label,
+      average: formatGpuMetric(metric, average),
+      peak: formatGpuMetric(metric, peak),
+    }),
   )
   svg.setAttribute('role', 'img')
   addGpuChartGrid(svg, 300, 70)
@@ -914,8 +924,11 @@ function createGpuMetricChart(metric, gpu, history, now) {
   attachGpuChartHover(plot, samples, metric, now)
   const chartAxis = element('div', 'gpu-chart-axis')
   chartAxis.append(
-    element('span', '', state.gpuWindowMs === 60 * 1000 ? '1 min' : '10 min'),
-    element('span', '', `Avg ${formatGpuMetric(metric, average)} / Peak ${formatGpuMetric(metric, peak)}`),
+    element('span', '', state.gpuWindowMs === 60 * 1000 ? t('gpu.oneMinute') : t('gpu.tenMinutes')),
+    element('span', '', t('gpu.averagePeak', {
+      average: formatGpuMetric(metric, average),
+      peak: formatGpuMetric(metric, peak),
+    })),
   )
   chart.append(chartScale, plot, chartAxis)
   return chart
@@ -927,8 +940,8 @@ function renderGpuMonitor(gpus) {
   const heading = element('div', 'gpu-monitor-heading')
   const windowControl = element('div', 'gpu-window-control')
   windowControl.setAttribute('role', 'group')
-  windowControl.setAttribute('aria-label', 'GPU history window')
-  const historyWindows = [[60 * 1000, '1 min'], [10 * 60 * 1000, '10 min']]
+  windowControl.setAttribute('aria-label', t('gpu.historyWindow'))
+  const historyWindows = [[60 * 1000, t('gpu.oneMinute')], [10 * 60 * 1000, t('gpu.tenMinutes')]]
   historyWindows.forEach(([windowMs, label]) => {
     const button = element('button', windowMs === state.gpuWindowMs ? 'active' : '', label)
     button.type = 'button'
@@ -940,11 +953,11 @@ function renderGpuMonitor(gpus) {
     })
     windowControl.append(button)
   })
-  heading.append(element('div', 'gpu-monitor-title', 'GPU Monitor'), windowControl)
+  heading.append(element('div', 'gpu-monitor-title', t('gpu.monitor')), windowControl)
   monitor.append(heading)
 
   if (!gpus.length) {
-    monitor.append(element('div', 'gpu-monitor-muted', 'nvidia-smi unavailable'))
+    monitor.append(element('div', 'gpu-monitor-muted', t('gpu.unavailable')))
     output.replaceChildren(monitor)
     return
   }
@@ -963,12 +976,12 @@ function renderGpuMonitor(gpus) {
       if (chart) metrics.append(chart)
     })
     const details = element('div', 'gpu-live-details')
-    if (gpu.performance_state) details.append(element('span', '', `State ${gpu.performance_state}`))
+    if (gpu.performance_state) details.append(element('span', '', t('gpu.state', { state: gpu.performance_state })))
     if (Number.isFinite(gpu.pcie_generation) && Number.isFinite(gpu.pcie_width)) {
-      details.append(element('span', '', `PCIe Gen ${gpu.pcie_generation} x${gpu.pcie_width}`))
+      details.append(element('span', '', t('gpu.pcie', { generation: gpu.pcie_generation, width: gpu.pcie_width })))
     }
     if (Number.isFinite(gpu.power_limit)) {
-      details.append(element('span', '', `Power limit ${Math.round(gpu.power_limit)} W`))
+      details.append(element('span', '', t('gpu.powerLimit', { power: Math.round(gpu.power_limit) })))
     }
     card.append(cardHead, metrics, details)
     grid.append(card)
@@ -1052,7 +1065,7 @@ function createJsonNode(value, key, depth, expandDepth) {
   opening.textContent = array ? '[' : '{'
   const count = document.createElement('span')
   count.className = 'json-count'
-  count.textContent = `${entries.length} ${entries.length === 1 ? 'item' : 'items'}`
+  count.textContent = t(entries.length === 1 ? 'json.oneItem' : 'json.items', { count: entries.length })
   const closing = document.createElement('span')
   closing.className = 'json-bracket json-collapsed-close'
   closing.textContent = array ? ']' : '}'
@@ -1080,11 +1093,11 @@ function updateRuntime(status) {
   const badge = $('#runtime-badge')
   state.status = status
   badge.dataset.state = 'ready'
-  badge.querySelector('strong').textContent = 'Inference ready'
+  badge.querySelector('strong').textContent = t('runtime.ready')
   $('#runtime-model').textContent = `${status.repo_id} / ${status.runtime}`
   badge.title = `${status.repo_id} / ${status.runtime}`
   const devices = status.hardware || [
-    { value: 'auto', label: 'Auto' },
+    { value: 'auto', label: t('common.auto') },
     { value: 'cpu', label: 'CPU' },
   ]
   const selectedDevice = $('#device').value || state.defaults?.device || 'auto'
@@ -1104,7 +1117,7 @@ async function loadWorkspace() {
 
   setSelectOptions(
     $('#language'),
-    Object.entries(languages.languages).map(([value, label]) => ({ value, label })),
+    Object.entries(languages.languages).map(([value, label]) => ({ value, label: languageLabel(label) })),
     state.voices.find((voice) => voice.id === defaults.voice)?.language || 'a',
   )
   refreshVoiceOptions(defaults.voice)
@@ -1130,7 +1143,7 @@ async function loadWorkspace() {
   $('#reset-voice-controls').disabled = false
   updateTextMetrics()
   updateRuntime(status)
-  setStatus('Ready', 'success')
+  setStatus(t('status.ready'), 'success')
 }
 
 async function pollReadiness() {
@@ -1139,9 +1152,9 @@ async function pollReadiness() {
   } catch {
     const badge = $('#runtime-badge')
     badge.dataset.state = 'starting'
-    badge.querySelector('strong').textContent = 'Inference starting'
-    $('#runtime-model').textContent = 'Waiting for inference service'
-    badge.title = 'Waiting for inference service'
+    badge.querySelector('strong').textContent = t('runtime.starting')
+    $('#runtime-model').textContent = t('runtime.waiting')
+    badge.title = t('runtime.waiting')
   }
   setTimeout(pollReadiness, 15000)
 }
@@ -1165,7 +1178,7 @@ setHeroCollapsed(state.headerCollapsed, false, false)
 loadWorkspace()
   .then(() => activateTab(state.activeTab))
   .catch((error) => {
-    setStatus('Connection failed', 'error')
+    setStatus(t('status.connectionFailed'), 'error')
     showToast(errorMessage(error))
   })
 pollReadiness()

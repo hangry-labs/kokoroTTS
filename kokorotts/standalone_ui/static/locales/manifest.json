@@ -1,0 +1,11 @@
+{
+  "defaultLocale": "en",
+  "locales": [
+    { "code": "en", "name": "English", "browserLanguage": "en-US", "direction": "ltr" },
+    { "code": "pl", "name": "Polski", "browserLanguage": "pl-PL", "direction": "ltr" },
+    { "code": "ja", "name": "日本語", "browserLanguage": "ja-JP", "direction": "ltr" },
+    { "code": "zh", "name": "中文", "browserLanguage": "zh-CN", "direction": "ltr" },
+    { "code": "es", "name": "Español", "browserLanguage": "es-ES", "direction": "ltr" },
+    { "code": "de", "name": "Deutsch", "browserLanguage": "de-DE", "direction": "ltr" }
+  ]
+}

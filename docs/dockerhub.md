@@ -4,6 +4,15 @@
   </a>
 </p>
 
+<p>
+  <strong>English</strong> ·
+  <a href="https://github.com/Hangry-Labs/kokoroTTS/blob/main/README.nb.md">Norsk bokmål</a> ·
+  <a href="https://github.com/Hangry-Labs/kokoroTTS/blob/main/README.pl.md">Polski</a> ·
+  <a href="https://github.com/Hangry-Labs/kokoroTTS/blob/main/README.ja.md">日本語</a> ·
+  <a href="https://github.com/Hangry-Labs/kokoroTTS/blob/main/README.zh.md">简体中文</a> ·
+  <a href="https://github.com/Hangry-Labs/kokoroTTS/blob/main/README.es.md">Español</a>
+</p>
+
 # Hangry Labs KokoroTTS
 
 Easy-to-run Kokoro text-to-speech Docker images with a browser UI and HTTP API included.
@@ -23,7 +32,7 @@ The examples page includes MP3 previews for all 173 voices across American Engli
 - Voice examples: https://hangry-labs.github.io/kokoroTTS/examples/
 - GitHub repository: https://github.com/Hangry-Labs/kokoroTTS
 - Issues and support: https://github.com/Hangry-Labs/kokoroTTS/issues
-- Hangry Labs: https://nuggies.website/
+- Hangry Labs: https://hangrylabs.app/software/kokorotts
 
 ## Quick Start
 
@@ -206,7 +215,7 @@ All five model packs are served by default. The System controls can disable the 
 
 - Voice examples: https://hangry-labs.github.io/kokoroTTS/examples/
 - GitHub: https://github.com/Hangry-Labs/kokoroTTS
-- Hangry Labs: https://nuggies.website/
+- Hangry Labs: https://hangrylabs.app/software/kokorotts
 - Issues: https://github.com/Hangry-Labs/kokoroTTS/issues
 
 Docker Hub comments are not monitored regularly. GitHub Issues are the best place to report bugs.

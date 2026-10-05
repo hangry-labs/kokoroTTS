@@ -1,7 +1,16 @@
 <p align="center">
-  <a href="https://nuggies.website/">
+  <a href="https://github.com/Hangry-Labs/kokoroTTS">
     <img src="assets/kokoro_logo_horizontal.webp" alt="Hangry Labs KokoroTTS logo" width="900">
   </a>
+</p>
+
+<p align="center">
+  <strong>English</strong> ·
+  <a href="README.nb.md">Norsk bokmål</a> ·
+  <a href="README.pl.md">Polski</a> ·
+  <a href="README.ja.md">日本語</a> ·
+  <a href="README.zh.md">简体中文</a> ·
+  <a href="README.es.md">Español</a>
 </p>
 
 # Hangry Labs KokoroTTS
@@ -23,7 +32,7 @@ Official container images are published to both [Docker Hub](https://hub.docker.
 
 Examples and voice previews: [hangry-labs.github.io/kokoroTTS/examples](https://hangry-labs.github.io/kokoroTTS/examples/). Dialogue and mixed-language SSML examples: [SSML examples](https://hangry-labs.github.io/kokoroTTS/examples/ssml.html).
 
-Hangry Labs home: [nuggies.website](https://nuggies.website/).
+Hangry Labs home: [hangrylabs.app](https://hangrylabs.app/).
 
 ## Contents
 
@@ -437,6 +446,8 @@ The data volume is recommended but optional. Without it, the same files are stor
 
 #### Included Changes
 
+- Added complete English, Polish, Japanese, Simplified Chinese, Spanish, and German localization to the browser workspace, including dynamic generation, streaming, model settings, audio-editor, and GPU-monitor states. Locale routes and the selected language persist across reloads.
+- Added concise Norwegian, Polish, Japanese, Simplified Chinese, and Spanish README entry points that lead to the corresponding Hangry Labs product guides, and connected the public examples page to locale-aware application links.
 - Replaced Gradio with a responsive standalone audio workspace based on the tested Hangry Labs Qwen3-ASR-STT interface.
 - Replaced the animated product text and oversized Hangry Labs banner with a viewport-bounded KokoroTTS brand hero, added a compact-mode Hangry Labs badge and mascot browser icon, and introduced an animated persistent compact header that restores before first paint.
 - Restored loaded-model details in the inference status, linked the displayed UI version to GitHub Releases, consolidated UI, examples, and GitHub Pages artwork under `assets/`, and refreshed the documentation screenshot as an optimized WebP.
@@ -483,7 +494,7 @@ The data volume is recommended but optional. Without it, the same files are stor
 
 #### Planned Work
 
-1. Complete the remaining applicable upstream community improvements selected for the v1.0 release, validating each change independently against the Docker UI/API product.
+1. Complete release qualification for the v1.0 image, documentation, localization, and public examples.
 
 ### v0.3
 

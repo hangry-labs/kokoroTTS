@@ -1,6 +1,7 @@
 import WaveSurfer from './vendor/wavesurfer/wavesurfer.esm.js'
 import Regions from './vendor/wavesurfer/plugins/regions.esm.js'
 import { fileFromBlob, formatTime, trimAudio } from './audio-utils.js'
+import { t } from './i18n.js'
 
 const SPEEDS = [0.5, 0.75, 1, 1.25, 1.5, 2]
 
@@ -9,7 +10,7 @@ function iconButton(icon, title, action) {
 }
 
 export class AudioEditor {
-  constructor(container, { label = 'Audio', onChange = () => {} } = {}) {
+  constructor(container, { label = t('editor.audio'), onChange = () => {} } = {}) {
     this.container = container
     this.label = label
     this.onChange = onChange
@@ -26,39 +27,39 @@ export class AudioEditor {
     this.container.classList.add('audio-editor')
     this.container.innerHTML = `
       <div class="audio-editor-head">
-        <div class="audio-label"><i class="icon-file-audio"></i><span>${this.label}</span><small data-role="filename">No audio selected</small></div>
+        <div class="audio-label"><i class="icon-file-audio"></i><span>${this.label}</span><small data-role="filename">${t('editor.noAudio')}</small></div>
         <div class="audio-head-actions">
-          ${iconButton('download', 'Download audio', 'download')}
-          ${iconButton('share-2', 'Share audio', 'share')}
-          ${iconButton('x', 'Remove audio', 'remove')}
+          ${iconButton('download', t('editor.download'), 'download')}
+          ${iconButton('share-2', t('editor.share'), 'share')}
+          ${iconButton('x', t('editor.remove'), 'remove')}
         </div>
       </div>
       <div class="wave-stage">
-        <div class="wave-empty output-empty" data-role="empty"><i class="icon-audio-lines"></i><strong>Audio output</strong><span>Ready for synthesis</span></div>
+        <div class="wave-empty output-empty" data-role="empty"><i class="icon-audio-lines"></i><strong>${t('editor.audioOutput')}</strong><span>${t('editor.ready')}</span></div>
         <div class="waveform" data-role="waveform"></div>
       </div>
       <div class="trim-strip" data-role="trim-strip" hidden>
         <span data-role="trim-range">0:00 - 0:00</span>
         <div>
-          <button class="text-button" type="button" data-action="cancel-trim">Cancel</button>
-          <button class="text-button primary-small" type="button" data-action="apply-trim"><i class="icon-check"></i> Apply selection</button>
+          <button class="text-button" type="button" data-action="cancel-trim">${t('editor.cancel')}</button>
+          <button class="text-button primary-small" type="button" data-action="apply-trim"><i class="icon-check"></i> ${t('editor.applySelection')}</button>
         </div>
       </div>
       <div class="audio-controls">
         <div class="audio-controls-side">
-          ${iconButton('volume-2', 'Mute or unmute', 'mute')}
-          <input class="volume-slider" data-role="volume" type="range" min="0" max="1" step="0.05" value="1" aria-label="Volume">
-          <button class="speed-button" type="button" data-action="speed" title="Playback speed">1x</button>
+          ${iconButton('volume-2', t('editor.mute'), 'mute')}
+          <input class="volume-slider" data-role="volume" type="range" min="0" max="1" step="0.05" value="1" aria-label="${t('editor.volume')}">
+          <button class="speed-button" type="button" data-action="speed" title="${t('editor.playbackSpeed')}">1x</button>
         </div>
         <div class="transport">
-          ${iconButton('rewind', 'Seek backward 5 seconds', 'back')}
-          <button class="play-button" type="button" data-action="play" title="Play" aria-label="Play"><i class="icon-play"></i></button>
-          ${iconButton('fast-forward', 'Seek forward 5 seconds', 'forward')}
+          ${iconButton('rewind', t('editor.seekBackward'), 'back')}
+          <button class="play-button" type="button" data-action="play" title="${t('editor.play')}" aria-label="${t('editor.play')}"><i class="icon-play"></i></button>
+          ${iconButton('fast-forward', t('editor.seekForward'), 'forward')}
         </div>
         <div class="audio-controls-side end">
           <span class="time-readout"><span data-role="current">0:00</span><span>/</span><span data-role="duration">0:00</span></span>
-          ${iconButton('rotate-ccw', 'Return to start', 'restart')}
-          ${iconButton('scissors', 'Select and trim audio', 'trim')}
+          ${iconButton('rotate-ccw', t('editor.restart'), 'restart')}
+          ${iconButton('scissors', t('editor.trim'), 'trim')}
         </div>
       </div>
     `
@@ -118,7 +119,7 @@ export class AudioEditor {
   setPlayIcon(playing) {
     const button = this.container.querySelector('[data-action="play"]')
     button.innerHTML = `<i class="icon-${playing ? 'pause' : 'play'}"></i>`
-    button.title = playing ? 'Pause' : 'Play'
+    button.title = playing ? t('editor.pause') : t('editor.play')
     button.setAttribute('aria-label', button.title)
   }
 
@@ -155,7 +156,7 @@ export class AudioEditor {
     if (this.objectUrl) URL.revokeObjectURL(this.objectUrl)
     this.objectUrl = null
     this.file = null
-    this.filenameElement.textContent = 'No audio selected'
+    this.filenameElement.textContent = t('editor.noAudio')
     this.currentElement.textContent = '0:00'
     this.durationElement.textContent = '0:00'
     this.emptyElement.hidden = false
