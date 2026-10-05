@@ -5,12 +5,12 @@
 </p>
 
 <p>
-  <strong>English</strong> ·
-  <a href="https://github.com/Hangry-Labs/kokoroTTS/blob/main/README.nb.md">Norsk bokmål</a> ·
-  <a href="https://github.com/Hangry-Labs/kokoroTTS/blob/main/README.pl.md">Polski</a> ·
-  <a href="https://github.com/Hangry-Labs/kokoroTTS/blob/main/README.ja.md">日本語</a> ·
-  <a href="https://github.com/Hangry-Labs/kokoroTTS/blob/main/README.zh.md">简体中文</a> ·
-  <a href="https://github.com/Hangry-Labs/kokoroTTS/blob/main/README.es.md">Español</a>
+  <strong>English</strong> Â·
+  <a href="https://github.com/Hangry-Labs/kokoroTTS/blob/main/README.nb.md">Norsk bokmÃ¥l</a> Â·
+  <a href="https://github.com/Hangry-Labs/kokoroTTS/blob/main/README.pl.md">Polski</a> Â·
+  <a href="https://github.com/Hangry-Labs/kokoroTTS/blob/main/README.ja.md">æ—¥æœ¬èªž</a> Â·
+  <a href="https://github.com/Hangry-Labs/kokoroTTS/blob/main/README.zh.md">ç®€ä½“ä¸­æ–‡</a> Â·
+  <a href="https://github.com/Hangry-Labs/kokoroTTS/blob/main/README.es.md">EspaÃ±ol</a>
 </p>
 
 # Hangry Labs KokoroTTS
@@ -43,28 +43,28 @@ Released images are pinned by both tag and registry digest so Docker verifies th
 Run with NVIDIA GPU support:
 
 ```bash
-docker run -p 7860:7860 --gpus all hangrylabs/kokorotts:v0.3@sha256:2a9223d55273757e04b1c29c80b4d1f4a69539a8f52070813d8d05a399e99a6f
+docker run -p 7860:7860 --gpus all hangrylabs/kokorotts:v1.0
 ```
 
 Run on CPU:
 
 ```bash
-docker run -p 7860:7860 hangrylabs/kokorotts:v0.3@sha256:2a9223d55273757e04b1c29c80b4d1f4a69539a8f52070813d8d05a399e99a6f
+docker run -p 7860:7860 hangrylabs/kokorotts:v1.0
 ```
 
 Run on a specific GPU:
 
 ```bash
-docker run -p 7860:7860 --gpus "device=1" -e CUDA_VISIBLE_DEVICES=1 hangrylabs/kokorotts:v0.3@sha256:2a9223d55273757e04b1c29c80b4d1f4a69539a8f52070813d8d05a399e99a6f
+docker run -p 7860:7860 --gpus "device=1" -e CUDA_VISIBLE_DEVICES=1 hangrylabs/kokorotts:v1.0
 ```
 
 Run the tiny image without baked model assets:
 
 ```bash
-docker run -p 7860:7860 --gpus all -v kokorotts_hf_cache:/app/.cache/huggingface hangrylabs/kokorotts:v0.3_tiny@sha256:0caaaeda5d56c89218ad28d9210b8e9a067b96ebaaf3c40d83ecb520d687006b
+docker run -p 7860:7860 --gpus all -v kokorotts_hf_cache:/app/.cache/huggingface hangrylabs/kokorotts:v1.0_tiny
 ```
 
-The tiny image is smaller, but it downloads model and voice files after startup and stores them in the Docker volume. If you just want KokoroTTS to work quickly, use one of the standard `v0.3` commands above.
+The tiny image is smaller, but it downloads model and voice files after startup and stores them in the Docker volume. If you just want KokoroTTS to work quickly, use one of the standard `v1.0` commands above.
 
 ### Latest image:
 
@@ -169,7 +169,7 @@ Use another voice:
 ```bash
 curl -X POST "http://localhost:7860/tts/generate" \
   -H "Content-Type: application/json" \
-  -d '{"text":"Ã£â€šÂ³Ã£â€šÂ³Ã£Æ’Â­ Ã£Æ’â€ Ã£â€šÂ­Ã£â€šÂ¹Ã£Æ’Ë†Ã¨ÂªÂ­Ã£ÂÂ¿Ã¤Â¸Å Ã£Ââ€™Ã£ÂÂ¸Ã£â€šË†Ã£Ââ€ Ã£Ââ€œÃ£ÂÂÃ£â‚¬â€š","voice":"jf_alpha","output_format":"mp3"}' \
+  -d '{"text":"ÃƒÂ£Ã¢â‚¬Å¡Ã‚Â³ÃƒÂ£Ã¢â‚¬Å¡Ã‚Â³ÃƒÂ£Ã†â€™Ã‚Â­ ÃƒÂ£Ã†â€™Ã¢â‚¬Â ÃƒÂ£Ã¢â‚¬Å¡Ã‚Â­ÃƒÂ£Ã¢â‚¬Å¡Ã‚Â¹ÃƒÂ£Ã†â€™Ã‹â€ ÃƒÂ¨Ã‚ÂªÃ‚Â­ÃƒÂ£Ã‚ÂÃ‚Â¿ÃƒÂ¤Ã‚Â¸Ã…Â ÃƒÂ£Ã‚ÂÃ¢â‚¬â„¢ÃƒÂ£Ã‚ÂÃ‚Â¸ÃƒÂ£Ã¢â‚¬Å¡Ã‹â€ ÃƒÂ£Ã‚ÂÃ¢â‚¬Â ÃƒÂ£Ã‚ÂÃ¢â‚¬Å“ÃƒÂ£Ã‚ÂÃ‚ÂÃƒÂ£Ã¢â€šÂ¬Ã¢â‚¬Å¡","voice":"jf_alpha","output_format":"mp3"}' \
   -o kokoro-ja.mp3
 ```
 
@@ -212,16 +212,16 @@ Replace the example address with the KokoroTTS host. Connect the agent to `http:
 
 ## Image Tags
 
-- Current release tag: `v0.3`
+- Current release tag: `v1.0`
 - Future release tags use the same pattern: `vX.Y`
 - Tiny tags use the pattern `vX.Y_tiny`
 
 Example release tags:
 
 ```bash
-docker run -p 7860:7860 --gpus all hangrylabs/kokorotts:v0.3@sha256:2a9223d55273757e04b1c29c80b4d1f4a69539a8f52070813d8d05a399e99a6f
-docker run -p 7860:7860 --gpus "device=1" -e CUDA_VISIBLE_DEVICES=1 hangrylabs/kokorotts:v0.3@sha256:2a9223d55273757e04b1c29c80b4d1f4a69539a8f52070813d8d05a399e99a6f
-docker run -p 7860:7860 --gpus all -v kokorotts_hf_cache:/app/.cache/huggingface hangrylabs/kokorotts:v0.3_tiny@sha256:0caaaeda5d56c89218ad28d9210b8e9a067b96ebaaf3c40d83ecb520d687006b
+docker run -p 7860:7860 --gpus all hangrylabs/kokorotts:v1.0
+docker run -p 7860:7860 --gpus "device=1" -e CUDA_VISIBLE_DEVICES=1 hangrylabs/kokorotts:v1.0
+docker run -p 7860:7860 --gpus all -v kokorotts_hf_cache:/app/.cache/huggingface hangrylabs/kokorotts:v1.0_tiny
 ```
 
 The standard `vX.Y` image is the recommended image for most users. It includes the standard Kokoro model, dedicated German and Vietnamese models, the enhanced Kokoro v1.1 Chinese model, all voice packs, and required language assets for offline-friendly use after the image is pulled.

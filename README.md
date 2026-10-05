@@ -5,12 +5,12 @@
 </p>
 
 <p align="center">
-  <strong>English</strong> ·
-  <a href="README.nb.md">Norsk bokmål</a> ·
-  <a href="README.pl.md">Polski</a> ·
-  <a href="README.ja.md">日本語</a> ·
-  <a href="README.zh.md">简体中文</a> ·
-  <a href="README.es.md">Español</a>
+  <strong>English</strong> Â·
+  <a href="README.nb.md">Norsk bokmÃ¥l</a> Â·
+  <a href="README.pl.md">Polski</a> Â·
+  <a href="README.ja.md">æ—¥æœ¬èªž</a> Â·
+  <a href="README.zh.md">ç®€ä½“ä¸­æ–‡</a> Â·
+  <a href="README.es.md">EspaÃ±ol</a>
 </p>
 
 # Hangry Labs KokoroTTS
@@ -75,19 +75,19 @@ The included interface provides generation and streaming workflows, precise voic
 Use the versioned `v0.3` image for a repeatable installation. Released images are pinned by both tag and registry digest so Docker verifies the exact published image:
 
 ```bash
-docker run -p 7860:7860 --gpus all hangrylabs/kokorotts:v0.3@sha256:2a9223d55273757e04b1c29c80b4d1f4a69539a8f52070813d8d05a399e99a6f
+docker run -p 7860:7860 --gpus all hangrylabs/kokorotts:v1.0
 ```
 
 Run on CPU:
 
 ```bash
-docker run -p 7860:7860 hangrylabs/kokorotts:v0.3@sha256:2a9223d55273757e04b1c29c80b4d1f4a69539a8f52070813d8d05a399e99a6f
+docker run -p 7860:7860 hangrylabs/kokorotts:v1.0
 ```
 
 Run on a specific GPU (example: GPU index `1`):
 
 ```bash
-docker run -p 7860:7860 --gpus "device=1" -e CUDA_VISIBLE_DEVICES=1 hangrylabs/kokorotts:v0.3@sha256:2a9223d55273757e04b1c29c80b4d1f4a69539a8f52070813d8d05a399e99a6f
+docker run -p 7860:7860 --gpus "device=1" -e CUDA_VISIBLE_DEVICES=1 hangrylabs/kokorotts:v1.0
 ```
 
 ### Current Snapshot
@@ -583,7 +583,7 @@ Before the development line was promoted to `v1.0-snapshot`, its official VRAM b
 
 ## Version History
 
-### v1.0 Snapshot
+### v1.0
 
 #### Docker
 
