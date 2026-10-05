@@ -47,6 +47,11 @@ tasks:
     cmds:
       - powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-image.ps1 -Target tiny -Image "{{.TINY_IMAGE}}"
 
+  compliance-test:
+    desc: Verify licenses, corresponding source, and build records in a Docker image
+    cmds:
+      - docker run --rm --entrypoint python {{.TINY_IMAGE}} /app/third_party/build/verify_compliance_bundle.py /app/third_party
+
   data-init:
     desc: Seed the persistent model and settings volume from the baked image
     cmds:

@@ -61,6 +61,15 @@ RUN python /tmp/install_open_jtalk_dictionary.py \
         --sha256 "${OPEN_JTALK_DICT_SHA256}" \
     && rm /tmp/install_open_jtalk_dictionary.py
 
+COPY third_party/README.md /app/third_party/README.md
+COPY Dockerfile requirements.in requirements.txt pyproject.toml /app/third_party/build/
+COPY scripts/install_compliance_sources.py scripts/install_open_jtalk_dictionary.py scripts/verify_compliance_bundle.py /app/third_party/build/
+
+RUN python /app/third_party/build/install_compliance_sources.py \
+        --output /app/third_party \
+    && python /app/third_party/build/verify_compliance_bundle.py \
+        /app/third_party
+
 FROM base AS app-builder
 
 COPY pyproject.toml README.md LICENSE THIRD_PARTY_NOTICES.md VERSION /app/
@@ -114,16 +123,19 @@ EXPOSE 7860
 
 CMD ["python", "-u", "-m", "kokorotts.server"]
 
-FROM runtime-base AS tiny
+FROM runtime-base AS runtime-app
+
+COPY --from=app-builder /usr/local /usr/local
+COPY --from=app-builder /app /app
+
+RUN python /app/third_party/build/verify_compliance_bundle.py \
+        /app/third_party
+
+FROM runtime-app AS tiny
 
 ENV HF_HUB_OFFLINE=0 \
     TRANSFORMERS_OFFLINE=0
 
-COPY --from=app-builder /usr/local /usr/local
-COPY --from=app-builder /app /app
+FROM runtime-app AS baked
 
-FROM runtime-base AS baked
-
-COPY --from=app-builder /usr/local /usr/local
-COPY --from=app-builder /app /app
 COPY --from=asset-builder /app/persistent /app/persistent

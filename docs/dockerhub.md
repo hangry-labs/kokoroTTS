@@ -242,4 +242,13 @@ Enhanced Mandarin and mixed Chinese-English synthesis uses the Apache-2.0 Kokoro
 
 - https://huggingface.co/hexgrad/Kokoro-82M-v1.1-zh
 
-License and attribution are preserved in the repository's `LICENSE` and `THIRD_PARTY_NOTICES.md` files. Original Kokoro copyright remains with the upstream authors; Hangry Labs maintains the Docker packaging, web UI/API integration, examples page, documentation, release tooling, and other modifications in this fork.
+KokoroTTS-owned and adapted upstream source remains Apache-2.0. The server
+image is a mixed-license distribution containing GPL, LGPL, and other
+third-party components. Commercial use is permitted, while redistribution
+must follow the applicable notices, license, and corresponding-source terms.
+Every full and tiny image includes a checksum-verified compliance bundle at
+`/app/third_party`; details are maintained in the repository's `LICENSE` and
+`THIRD_PARTY_NOTICES.md` files. Original Kokoro copyright remains with the
+upstream authors; Hangry Labs maintains the Docker packaging, web UI/API
+integration, examples page, documentation, release tooling, and other
+modifications in this fork.

@@ -446,6 +446,11 @@ The data volume is recommended but optional. Without it, the same files are stor
 
 #### Included Changes
 
+- Added a self-contained Docker compliance bundle with complete copyleft
+  notices, checksum-verified corresponding source for the bundled eSpeak NG,
+  phonemizer, loader, and number-normalization components, exact Debian source
+  provenance, retained build inputs, and an offline `task compliance-test`
+  verifier shared by full and tiny images.
 - Added immutable UTC image-build timestamps and Git revisions to snapshot runtime badges and native status metadata, making moving `latest` reports identifiable from a screenshot while stable releases keep their concise version label.
 - Added complete English, Polish, Japanese, Simplified Chinese, Spanish, and German localization to the browser workspace, including dynamic generation, streaming, model settings, audio-editor, and GPU-monitor states. Locale routes and the selected language persist across reloads.
 - Added concise Norwegian, Polish, Japanese, Simplified Chinese, and Spanish README entry points that lead to the corresponding Hangry Labs product guides, and connected the public examples page to locale-aware application links.
@@ -600,9 +605,21 @@ docker run -p 7860:7860 --gpus "device=1" -e CUDA_VISIBLE_DEVICES=1 kokorotts:v0
 
 ## License
 
-This fork is licensed under the [Apache License 2.0](LICENSE).
+KokoroTTS-owned source and the upstream Kokoro code adapted by this fork are
+licensed under the [Apache License 2.0](LICENSE). The dependency-free default
+`kokorotts` HTTP client contains no inference-runtime dependencies.
 
 Original work by [hexgrad](https://github.com/hexgrad) in [Kokoro](https://github.com/hexgrad/kokoro).
 
-Third-party components, model assets, and their respective licenses are listed
-in [Third-Party Notices](THIRD_PARTY_NOTICES.md).
+The optional server runtime and published Docker images are mixed-license
+distributions. They include GPL-3.0-or-later `phonemizer-fork` and eSpeak NG,
+LGPL-2.1 `num2words`, and other components under their own terms. Commercial
+use is permitted by these licenses, but redistribution must satisfy their
+notice, license, and corresponding-source requirements. See
+[Third-Party Notices](THIRD_PARTY_NOTICES.md) for the component-level record.
+
+Every full and tiny image carries the applicable notices, exact corresponding
+source for the bundled copyleft Python/eSpeak components, Debian source
+provenance, and reproducible build inputs under `/app/third_party`. Run
+`task compliance-test` to verify that bundle locally. This documentation
+records technical provenance and is not legal advice.

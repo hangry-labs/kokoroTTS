@@ -26,6 +26,61 @@ components below is available in [`LICENSE`](LICENSE).
 - License: Apache License 2.0
 - Use here: grapheme-to-phoneme processing and language support.
 
+### phonemizer-fork
+
+- Project: [bootphon/phonemizer](https://github.com/bootphon/phonemizer)
+- Package: [phonemizer-fork on PyPI](https://pypi.org/project/phonemizer-fork/)
+- Version currently used: 3.3.2
+- License: GNU General Public License v3 or later
+- Use here: Python interface to eSpeak NG, reached through Misaki for the
+  English out-of-dictionary fallback and for the eSpeak-backed German,
+  Spanish, French, Hindi, Italian, and Portuguese frontends.
+
+The installed wheel includes the GNU GPL v3 license text in its distribution
+metadata.
+
+These phonemization components are server-runtime dependencies. They are
+installed by the Docker images and the `kokorotts[server]` extra; the default
+dependency-free `kokorotts` HTTP client installation does not install them.
+
+### espeakng-loader and bundled eSpeak NG
+
+- Project: [thewh1teagle/espeakng-loader](https://github.com/thewh1teagle/espeakng-loader)
+- Version currently used: 0.2.4
+- Loader source license: MIT
+- Bundled component: eSpeak NG 1.52.0 shared library and data
+- Bundled component license: GNU General Public License v3 or later, with
+  additional notices for Unicode data
+- Use here: supplies the eSpeak NG library and data selected by Misaki's
+  phonemizer integration.
+
+The pinned Misaki runtime explicitly configures `phonemizer-fork` to use the
+library and data paths returned by `espeakng-loader`. This bundled copy is
+therefore an active runtime dependency, not an unused installation. Matching
+eSpeak NG source and license material are available from the upstream
+[eSpeak NG 1.52.0 source tree](https://github.com/espeak-ng/espeak-ng/tree/1.52.0),
+including [`COPYING`](https://github.com/espeak-ng/espeak-ng/blob/1.52.0/COPYING)
+and [`COPYING.UCD`](https://github.com/espeak-ng/espeak-ng/blob/1.52.0/COPYING.UCD).
+
+At the time this notice was reviewed, the `espeakng-loader` 0.2.4 wheel did
+not declare a license in its package metadata or include the relevant license
+files. Upstream correction is being tracked in
+[espeakng-loader pull request #9](https://github.com/thewh1teagle/espeakng-loader/pull/9).
+This notice records the licenses and exact corresponding source independently
+of that packaging omission.
+
+### num2words
+
+- Project: [savoirfairelinux/num2words](https://github.com/savoirfairelinux/num2words)
+- Version currently used: 0.5.14
+- License: GNU Lesser General Public License 2.1
+- Use here: number-to-word conversion used transitively by language
+  normalization.
+
+The installed wheel includes its LGPL 2.1 text. The Docker compliance bundle
+also contains the exact source distribution and a separate copy of that
+license.
+
 ### defusedxml
 
 - Project: [tiran/defusedxml](https://github.com/tiran/defusedxml)
@@ -103,9 +158,10 @@ either distribution mode.
 The published Docker images also contain operating-system packages and
 language data installed during the build:
 
-- **eSpeak NG:** primarily GNU General Public License v3 or later, with
-  additional notices for specific files. The Debian package preserves its
-  detailed copyright and license record at
+- **System eSpeak NG:** a separate Debian installation in addition to the
+  library bundled by `espeakng-loader`; primarily GNU General Public License
+  v3 or later, with additional notices for specific files. The Debian package
+  preserves its detailed copyright and license record at
   `/usr/share/doc/espeak-ng/copyright` and the GPL text under
   `/usr/share/common-licenses/GPL-3`.
 - **FFmpeg:** the default Debian binaries are distributed under GNU General
@@ -122,3 +178,35 @@ language data installed during the build:
 Python packages installed into the image retain the metadata and license files
 supplied by their distributions. Transitive packages remain governed by their
 respective upstream terms.
+
+## Docker License and Source Bundle
+
+Both full and tiny images include `/app/third_party` with:
+
+- complete GPL, LGPL, MIT, Unicode-data, and Debian copyright notices for the
+  components identified above;
+- checksum-verified corresponding-source archives for `phonemizer-fork`
+  3.3.2, `num2words` 0.5.14, `espeakng-loader` 0.2.4, and the exact eSpeak NG
+  1.52.0 revision used to build the loader's bundled library;
+- loader build scripts, KokoroTTS Docker/dependency build inputs, and a
+  generated manifest recording the installed Debian binary/source versions;
+  and
+- `SHA256SUMS` plus an offline verifier.
+
+`PYTHON_PACKAGES.md` records every installed Python distribution, version,
+declared license, and upstream URL. It intentionally reports incomplete
+metadata as `UNKNOWN` instead of guessing. NVIDIA CUDA runtime wheels used by
+PyTorch retain the proprietary license files supplied in their package
+metadata; use and redistribution of those components remain subject to their
+respective NVIDIA terms.
+
+The generated manifest provides exact Debian source locations for the
+unmodified system eSpeak NG and FFmpeg packages. Run
+`/app/third_party/build/verify_compliance_bundle.py` inside an image, or
+`task compliance-test` after a local tiny-image build, to verify the bundle.
+
+KokoroTTS-owned source remains under Apache License 2.0. The server runtime and
+Docker images are mixed-license distributions and must also be used and
+redistributed under the applicable third-party terms described here. The
+default dependency-free `kokorotts` HTTP client does not install these server
+runtime dependencies.
