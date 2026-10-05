@@ -72,27 +72,33 @@ The included interface provides generation and streaming workflows, precise voic
 
 ### Stable Release
 
-Use the versioned `v0.3` image for a repeatable installation. Released images are pinned by both tag and registry digest so Docker verifies the exact published image:
+Use the versioned `v1.0` image for a repeatable installation. Released images are pinned by both tag and registry digest so Docker verifies the exact published image:
 
 ```bash
-docker run -p 7860:7860 --gpus all hangrylabs/kokorotts:v1.0
+docker run -p 7860:7860 --gpus all -v kokorotts_data:/app/persistent hangrylabs/kokorotts:v1.0@sha256:5afef5b9f3d779e56248992274d46a66c0715110eb09e47e1332c39951361f24
 ```
 
 Run on CPU:
 
 ```bash
-docker run -p 7860:7860 hangrylabs/kokorotts:v1.0
+docker run -p 7860:7860 -v kokorotts_data:/app/persistent hangrylabs/kokorotts:v1.0@sha256:5afef5b9f3d779e56248992274d46a66c0715110eb09e47e1332c39951361f24
 ```
 
 Run on a specific GPU (example: GPU index `1`):
 
 ```bash
-docker run -p 7860:7860 --gpus "device=1" -e CUDA_VISIBLE_DEVICES=1 hangrylabs/kokorotts:v1.0
+docker run -p 7860:7860 --gpus "device=1" -e CUDA_VISIBLE_DEVICES=1 -v kokorotts_data:/app/persistent hangrylabs/kokorotts:v1.0@sha256:5afef5b9f3d779e56248992274d46a66c0715110eb09e47e1332c39951361f24
+```
+
+Run the tiny image without baked model assets:
+
+```bash
+docker run -p 7860:7860 --gpus all -v kokorotts_data:/app/persistent hangrylabs/kokorotts:v1.0_tiny@sha256:c8c044a2968cbd6cc49c811176fb856c000af324f8b01a027db91e38f1a863fa
 ```
 
 ### Current Snapshot
 
-Use `latest` to try the current `v1.0` snapshot from the main development line. This moving tag can change between releases. Choose one command below.
+Use `latest` to try the current `v1.1-snapshot` development line. This moving tag can change between releases. Choose one command below.
 
 Run the full image with NVIDIA GPU support and persistent models and settings:
 
@@ -268,7 +274,7 @@ Native and system endpoints:
 Install the stable HTTP client directly from the Git tag without the local inference dependencies:
 
 ```bash
-pip install --no-deps "kokorotts @ git+https://github.com/Hangry-Labs/kokoroTTS.git@v0.3"
+pip install --no-deps "kokorotts @ git+https://github.com/Hangry-Labs/kokoroTTS.git@v1.0"
 ```
 
 Then point it at a running KokoroTTS server:
@@ -474,8 +480,8 @@ All published tags are mirrored on [Docker Hub](https://hub.docker.com/r/hangryl
 
 - Full images contain the standard Kokoro model, both dedicated German checkpoints, the dedicated Vietnamese checkpoint, the enhanced Chinese v1.1 checkpoint, all 173 voice packs, configuration, and required language data. They are ready for offline use after the image has been pulled.
 - Tiny images contain the complete runtime but download Hugging Face model and voice assets on first use. Mount the optional `/app/persistent` data volume to preserve downloads and settings across containers.
-- Versioned tags such as `v0.3` and `v0.3_tiny` are fixed releases suitable for repeatable deployments.
-- Moving tags `latest` and `latest_tiny` follow the current `v1.0` snapshot built from `main`.
+- Versioned tags such as `v1.0` and `v1.0_tiny` are fixed releases suitable for repeatable deployments.
+- Moving tags `latest` and `latest_tiny` follow the current `v1.1-snapshot` development line built from `main`.
 
 Exact commands for every release and the current snapshot are kept in [Version History](#version-history).
 
@@ -562,7 +568,7 @@ task benchmark-tts BENCHMARK_COMMENT="describe this configuration"
 
 Before measurement, the benchmark generates one voice per language so every language path and its required weights are warm. It then exercises full WAV generation through the public HTTP API and reports overall, per-language, and per-voice latency, audio duration, realtime factor, and realtime speed. See [`benchmarks/tts`](benchmarks/tts/) for the methodology, current results, and comparison guidance.
 
-The current `v1.0-snapshot` RTX 5070 Ti result covers all 70 voices and 11 languages with five measured generations per voice. All 350 requests passed with a 1.369-second mean, 2.308-second P95, and 15.60x realtime speed. This run shared the GPU with a resident idle Qwen container, so it is a conservative development validation rather than a quiet-GPU record.
+The `v1.0` release-candidate RTX 5070 Ti result covers all 70 voices and 11 languages with five measured generations per voice. All 350 requests passed with a 1.369-second mean, 2.308-second P95, and 15.60x realtime speed. This run shared the GPU with a resident idle Qwen container, so it is a conservative development validation rather than a quiet-GPU record.
 
 ### VRAM Usage
 
@@ -583,7 +589,7 @@ Before the development line was promoted to `v1.0-snapshot`, its official VRAM b
 
 ## Version History
 
-### v1.0
+### v1.1-snapshot
 
 #### Docker
 
@@ -614,6 +620,46 @@ docker run -p 7860:7860 --gpus all -v kokorotts_data:/app/persistent hangrylabs/
 ```
 
 The data volume is recommended but optional. Without it, the same files are stored in the container and disappear when that container is removed.
+
+#### Included Changes
+
+- Opened the `v1.1-snapshot` development line after the qualified v1.0 release.
+
+### v1.0
+
+#### Docker
+
+Choose one v1.0 command below. These commands pin both the human-readable release tag and the immutable top-level Docker Hub OCI index digest. The same digests are published on GHCR.
+
+Full image with NVIDIA GPU support:
+
+```bash
+docker run -p 7860:7860 --gpus all -v kokorotts_data:/app/persistent hangrylabs/kokorotts:v1.0@sha256:5afef5b9f3d779e56248992274d46a66c0715110eb09e47e1332c39951361f24
+```
+
+Full image on CPU:
+
+```bash
+docker run -p 7860:7860 -v kokorotts_data:/app/persistent hangrylabs/kokorotts:v1.0@sha256:5afef5b9f3d779e56248992274d46a66c0715110eb09e47e1332c39951361f24
+```
+
+Full image on GPU index `1`:
+
+```bash
+docker run -p 7860:7860 --gpus "device=1" -e CUDA_VISIBLE_DEVICES=1 -v kokorotts_data:/app/persistent hangrylabs/kokorotts:v1.0@sha256:5afef5b9f3d779e56248992274d46a66c0715110eb09e47e1332c39951361f24
+```
+
+Tiny image with NVIDIA GPU support:
+
+```bash
+docker run -p 7860:7860 --gpus all -v kokorotts_data:/app/persistent hangrylabs/kokorotts:v1.0_tiny@sha256:c8c044a2968cbd6cc49c811176fb856c000af324f8b01a027db91e38f1a863fa
+```
+
+The data volume is recommended but optional. Without it, the same files are stored in the container and disappear when that container is removed.
+
+<details>
+
+<summary><strong>Show v1.0 release notes and qualification</strong></summary>
 
 #### Included Changes
 
@@ -681,6 +727,8 @@ Release qualification completed on 2026-10-05 against freshly built full and tin
 - Enhanced Chinese, long-text chunking, streaming, audio controls, cross-family SSML, and multi-voice dialogue passed their live CUDA checks.
 - MCP passed its linked-audio and package-eviction lifecycle plus all seven smaller-model tool-use scenarios.
 - Desktop and mobile browser checks passed for the localized application, model-pack controls, live GPU charts, persisted UI state, the 173-voice gallery, and all five SSML examples without horizontal overflow, broken assets, or current-page console errors.
+
+</details>
 
 ### v0.3
 

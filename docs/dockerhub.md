@@ -43,30 +43,30 @@ Released images are pinned by both tag and registry digest so Docker verifies th
 Run with NVIDIA GPU support:
 
 ```bash
-docker run -p 7860:7860 --gpus all hangrylabs/kokorotts:v1.0
+docker run -p 7860:7860 --gpus all -v kokorotts_data:/app/persistent hangrylabs/kokorotts:v1.0@sha256:5afef5b9f3d779e56248992274d46a66c0715110eb09e47e1332c39951361f24
 ```
 
 Run on CPU:
 
 ```bash
-docker run -p 7860:7860 hangrylabs/kokorotts:v1.0
+docker run -p 7860:7860 -v kokorotts_data:/app/persistent hangrylabs/kokorotts:v1.0@sha256:5afef5b9f3d779e56248992274d46a66c0715110eb09e47e1332c39951361f24
 ```
 
 Run on a specific GPU:
 
 ```bash
-docker run -p 7860:7860 --gpus "device=1" -e CUDA_VISIBLE_DEVICES=1 hangrylabs/kokorotts:v1.0
+docker run -p 7860:7860 --gpus "device=1" -e CUDA_VISIBLE_DEVICES=1 -v kokorotts_data:/app/persistent hangrylabs/kokorotts:v1.0@sha256:5afef5b9f3d779e56248992274d46a66c0715110eb09e47e1332c39951361f24
 ```
 
 Run the tiny image without baked model assets:
 
 ```bash
-docker run -p 7860:7860 --gpus all -v kokorotts_hf_cache:/app/.cache/huggingface hangrylabs/kokorotts:v1.0_tiny
+docker run -p 7860:7860 --gpus all -v kokorotts_data:/app/persistent hangrylabs/kokorotts:v1.0_tiny@sha256:c8c044a2968cbd6cc49c811176fb856c000af324f8b01a027db91e38f1a863fa
 ```
 
 The tiny image is smaller, but it downloads model and voice files after startup and stores them in the Docker volume. If you just want KokoroTTS to work quickly, use one of the standard `v1.0` commands above.
 
-### Latest image:
+### Latest image (`v1.1-snapshot`):
 
 Choose one complete command below.
 
@@ -219,14 +219,14 @@ Replace the example address with the KokoroTTS host. Connect the agent to `http:
 Example release tags:
 
 ```bash
-docker run -p 7860:7860 --gpus all hangrylabs/kokorotts:v1.0
-docker run -p 7860:7860 --gpus "device=1" -e CUDA_VISIBLE_DEVICES=1 hangrylabs/kokorotts:v1.0
-docker run -p 7860:7860 --gpus all -v kokorotts_hf_cache:/app/.cache/huggingface hangrylabs/kokorotts:v1.0_tiny
+docker run -p 7860:7860 --gpus all -v kokorotts_data:/app/persistent hangrylabs/kokorotts:v1.0@sha256:5afef5b9f3d779e56248992274d46a66c0715110eb09e47e1332c39951361f24
+docker run -p 7860:7860 --gpus "device=1" -e CUDA_VISIBLE_DEVICES=1 -v kokorotts_data:/app/persistent hangrylabs/kokorotts:v1.0@sha256:5afef5b9f3d779e56248992274d46a66c0715110eb09e47e1332c39951361f24
+docker run -p 7860:7860 --gpus all -v kokorotts_data:/app/persistent hangrylabs/kokorotts:v1.0_tiny@sha256:c8c044a2968cbd6cc49c811176fb856c000af324f8b01a027db91e38f1a863fa
 ```
 
 The standard `vX.Y` image is the recommended image for most users. It includes the standard Kokoro model, dedicated German and Vietnamese models, the enhanced Kokoro v1.1 Chinese model, all voice packs, and required language assets for offline-friendly use after the image is pulled.
 
-Tiny images use the `vX.Y_tiny` tag pattern. They keep runtime and language dependencies, but skip baked Hugging Face model and voice files. Current images use the optional `/app/persistent` volume so downloaded assets and settings survive container replacement. The stable `v0.3_tiny` command above retains its original `/app/.cache/huggingface` layout.
+Tiny images use the `vX.Y_tiny` tag pattern. They keep runtime and language dependencies, but skip baked Hugging Face model and voice files. Current images use the optional `/app/persistent` volume so downloaded assets and settings survive container replacement.
 
 All five model packs are served by default. The System controls can disable the shared standard Kokoro checkpoint, German Martin, German Victoria, Kokoro Vietnamese, or Kokoro v1.1 Chinese. The 54 standard voices, 14 Vietnamese voices, and 103 v1.1 Chinese/English voices remain together within their respective packs because each group shares one model and has the same VRAM cost. Models load into CPU/GPU memory on first use, and disabling a pack releases cached models after active generations finish. With the tiny image, a disabled custom checkpoint is not downloaded unless its pack is later enabled and called.
 
