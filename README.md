@@ -75,22 +75,22 @@ The included interface provides generation and streaming workflows, precise voic
 
 ### Stable Release
 
-Use the versioned `v0.3` image for a repeatable installation:
+Use the versioned `v0.3` image for a repeatable installation. Released images are pinned by both tag and registry digest so Docker verifies the exact published image:
 
 ```bash
-docker run -p 7860:7860 --gpus all hangrylabs/kokorotts:v0.3
+docker run -p 7860:7860 --gpus all hangrylabs/kokorotts:v0.3@sha256:2a9223d55273757e04b1c29c80b4d1f4a69539a8f52070813d8d05a399e99a6f
 ```
 
 Run on CPU:
 
 ```bash
-docker run -p 7860:7860 hangrylabs/kokorotts:v0.3
+docker run -p 7860:7860 hangrylabs/kokorotts:v0.3@sha256:2a9223d55273757e04b1c29c80b4d1f4a69539a8f52070813d8d05a399e99a6f
 ```
 
 Run on a specific GPU (example: GPU index `1`):
 
 ```bash
-docker run -p 7860:7860 --gpus "device=1" -e CUDA_VISIBLE_DEVICES=1 hangrylabs/kokorotts:v0.3
+docker run -p 7860:7860 --gpus "device=1" -e CUDA_VISIBLE_DEVICES=1 hangrylabs/kokorotts:v0.3@sha256:2a9223d55273757e04b1c29c80b4d1f4a69539a8f52070813d8d05a399e99a6f
 ```
 
 ### Current Snapshot
@@ -500,30 +500,30 @@ The data volume is recommended but optional. Without it, the same files are stor
 
 #### Docker
 
-Choose one v0.3 command below. Use the full image for baked, offline-friendly model assets, or the tiny image with its legacy persistent cache mount.
+Choose one v0.3 command below. Use the full image for baked, offline-friendly model assets, or the tiny image with its legacy persistent cache mount. These commands pin the immutable Docker Hub registry digest as well as the human-readable tag.
 
 Full image with NVIDIA GPU support:
 
 ```bash
-docker run -p 7860:7860 --gpus all hangrylabs/kokorotts:v0.3
+docker run -p 7860:7860 --gpus all hangrylabs/kokorotts:v0.3@sha256:2a9223d55273757e04b1c29c80b4d1f4a69539a8f52070813d8d05a399e99a6f
 ```
 
 Full image on CPU:
 
 ```bash
-docker run -p 7860:7860 hangrylabs/kokorotts:v0.3
+docker run -p 7860:7860 hangrylabs/kokorotts:v0.3@sha256:2a9223d55273757e04b1c29c80b4d1f4a69539a8f52070813d8d05a399e99a6f
 ```
 
 Full image on GPU index `1`:
 
 ```bash
-docker run -p 7860:7860 --gpus "device=1" -e CUDA_VISIBLE_DEVICES=1 hangrylabs/kokorotts:v0.3
+docker run -p 7860:7860 --gpus "device=1" -e CUDA_VISIBLE_DEVICES=1 hangrylabs/kokorotts:v0.3@sha256:2a9223d55273757e04b1c29c80b4d1f4a69539a8f52070813d8d05a399e99a6f
 ```
 
 Tiny image with NVIDIA GPU support:
 
 ```bash
-docker run -p 7860:7860 --gpus all -v kokorotts_hf_cache:/app/.cache/huggingface hangrylabs/kokorotts:v0.3_tiny
+docker run -p 7860:7860 --gpus all -v kokorotts_hf_cache:/app/.cache/huggingface hangrylabs/kokorotts:v0.3_tiny@sha256:0caaaeda5d56c89218ad28d9210b8e9a067b96ebaaf3c40d83ecb520d687006b
 ```
 
 #### Changes
@@ -547,9 +547,9 @@ docker run -p 7860:7860 --gpus all -v kokorotts_hf_cache:/app/.cache/huggingface
 #### Docker
 
 ```bash
-docker run -p 7860:7860 --gpus all hangrylabs/kokorotts:v0.2
-docker run -p 7860:7860 hangrylabs/kokorotts:v0.2
-docker run -p 7860:7860 --gpus "device=1" -e CUDA_VISIBLE_DEVICES=1 hangrylabs/kokorotts:v0.2
+docker run -p 7860:7860 --gpus all hangrylabs/kokorotts:v0.2@sha256:35c3fa113aaf8cf278b682b6505dabb662f2afdf516d3fe21d443ade57930122
+docker run -p 7860:7860 hangrylabs/kokorotts:v0.2@sha256:35c3fa113aaf8cf278b682b6505dabb662f2afdf516d3fe21d443ade57930122
+docker run -p 7860:7860 --gpus "device=1" -e CUDA_VISIBLE_DEVICES=1 hangrylabs/kokorotts:v0.2@sha256:35c3fa113aaf8cf278b682b6505dabb662f2afdf516d3fe21d443ade57930122
 ```
 
 #### Changes

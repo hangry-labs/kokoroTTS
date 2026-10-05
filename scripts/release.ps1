@@ -55,7 +55,7 @@ function Update-DockerImageTags {
 
     $updated = [regex]::Replace(
         $Text,
-        'hangrylabs/kokorotts:v\d+\.\d+(?:\.\d+)?(_tiny)?',
+        'hangrylabs/kokorotts:v\d+\.\d+(?:\.\d+)?(_tiny)?(?:@sha256:[0-9a-f]{64})?',
         { param($match) "hangrylabs/kokorotts:$ReleaseTag$($match.Groups[1].Value)" }
     )
     $updated = [regex]::Replace(

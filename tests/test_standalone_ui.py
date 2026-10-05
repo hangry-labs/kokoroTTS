@@ -256,6 +256,34 @@ class StandaloneUiTests(unittest.TestCase):
         self.assertIn('requestedVoiceLanguage = PAGE_LANGUAGES[requestedPageLanguage]', player)
         self.assertIn('title: "Hangry Labs KokoroTTS stemmeeksempler"', player)
         self.assertIn('title: "Przykłady głosów Hangry Labs KokoroTTS"', player)
+        logo_rule = re.search(r"\.hero-logo \{(?P<body>.*?)\n      \}", page, re.DOTALL)
+        self.assertIsNotNone(logo_rule)
+        self.assertIn("height: auto", logo_rule.group("body"))
+        self.assertIn("drop-shadow", logo_rule.group("body"))
+        self.assertNotIn("aspect-ratio", logo_rule.group("body"))
+        self.assertNotIn("border:", logo_rule.group("body"))
+
+    def test_published_release_commands_are_digest_pinned(self) -> None:
+        root = Path(__file__).parents[1]
+        documents = (root / "README.md", root / "docs" / "dockerhub.md")
+
+        for document in documents:
+            contents = document.read_text(encoding="utf-8")
+            references = [
+                line.rsplit(maxsplit=1)[-1]
+                for line in contents.splitlines()
+                if line.startswith("docker run")
+                and re.search(r"hangrylabs/kokorotts:v\d+\.\d+", line)
+            ]
+            published = [reference for reference in references if not reference.endswith("-local")]
+            self.assertTrue(published, document.name)
+            self.assertTrue(
+                all(re.search(r"@sha256:[0-9a-f]{64}$", reference) for reference in published),
+                f"Unpinned published reference in {document}: {published}",
+            )
+
+        release_script = (root / "scripts" / "release.ps1").read_text(encoding="utf-8")
+        self.assertIn("(?:@sha256:[0-9a-f]{64})?", release_script)
 
     @patch("kokorotts.standalone_ui.gpu.subprocess.run")
     def test_gpu_monitor_parses_nvidia_smi(self, run) -> None:
