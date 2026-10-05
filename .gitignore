@@ -173,6 +173,7 @@ todo/
 /AGENTS.md
 /UPSTREAM_ISSUES.md
 /UPSTREAM_PULL_REQUESTS.md
+testbench/results/*.json
 
 # Immutable build inputs restored by CI caches
 /.build-cache/unidic/*.zip

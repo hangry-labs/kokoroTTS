@@ -24,6 +24,7 @@ Esta versión de Hangry Labs está diseñada para una inferencia local sencilla.
 - Interfaz web local para generar, transmitir, reproducir y descargar audio
 - Endpoint `/v1/audio/speech` compatible con OpenAI
 - API nativa de KokoroTTS con controles de voz, SSML, inspección de tokens y gestión de modelos
+- Integración MCP opcional para agentes de IA con enlaces de audio temporales y gestión de paquetes de modelos
 - 173 voces en 11 idiomas, con modelos dedicados de alemán, vietnamita y chino mejorado
 - Salida WAV, MP3, FLAC, OGG Vorbis, Opus, AAC y PCM sin procesar
 - Selección persistente de modelos, caché de modelos y supervisión de la GPU

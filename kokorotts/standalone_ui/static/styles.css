@@ -281,6 +281,9 @@ pre { margin: 10px 0 0; white-space: pre-wrap; overflow-wrap: anywhere; }
 .view-heading h2 { margin: 0; font-size: 1.15rem; }
 .view-heading p { margin: 5px 0 0; color: var(--muted); font-size: 0.78rem; }
 .deployment-settings { padding: 16px; border: 1px solid var(--line); border-radius: 5px; background: #121315; }
+.mcp-settings > p { margin: 8px 0 0; color: var(--muted); font-size: 0.72rem; line-height: 1.5; }
+.mcp-settings .mcp-toggle { margin-top: 12px; }
+.mcp-settings .mcp-location { overflow-wrap: anywhere; color: #9fa1a8; font-family: Consolas, "Cascadia Code", monospace; font-size: 0.66rem; }
 .settings-toolbar, .settings-save-row { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
 .settings-toolbar p { max-width: 760px; margin: 7px 0 0; color: var(--muted); font-size: 0.75rem; line-height: 1.5; }
 .settings-actions { display: flex; gap: 8px; flex: 0 0 auto; }
@@ -389,8 +392,9 @@ pre { margin: 10px 0 0; white-space: pre-wrap; overflow-wrap: anywhere; }
   .system-info-stack { display: contents; }
   .system-info-stack > .deployment-settings { order: 1; }
   .gpu-system-panel { order: 2; }
-  .system-info-stack > section:nth-child(2) { order: 3; }
-  .system-info-stack > section:nth-child(3) { order: 4; }
+  .system-info-stack > .mcp-settings { order: 3; }
+  .system-info-stack > .runtime-system-panel { order: 4; }
+  .system-info-stack > .voices-system-panel { order: 5; }
   .settings-panel .settings-section { grid-column: 1 / -1; }
   .range-stack { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }

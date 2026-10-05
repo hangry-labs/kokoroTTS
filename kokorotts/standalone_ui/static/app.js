@@ -409,6 +409,13 @@ function renderDeploymentSettings(payload) {
     container.append(section)
   })
   updateModelSettingsSummary()
+  const mcp = payload.mcp || {}
+  $('#mcp-enabled').checked = Boolean(mcp.enabled)
+  $('#mcp-location').textContent = t('mcp.location', {
+    endpoint: mcp.endpoint || '/mcp',
+    baseUrl: mcp.base_url || window.location.origin,
+    directory: mcp.output_directory || t('mcp.noDirectory'),
+  })
 }
 
 async function loadDeploymentSettings() {
@@ -426,6 +433,26 @@ function setAllModelSettings(checked) {
 
 $('#models-select-all').addEventListener('click', () => setAllModelSettings(true))
 $('#models-select-none').addEventListener('click', () => setAllModelSettings(false))
+
+$('#mcp-enabled').addEventListener('change', async (event) => {
+  const checkbox = event.currentTarget
+  const requested = checkbox.checked
+  checkbox.disabled = true
+  try {
+    const settings = await fetchJson('/system/settings/mcp', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ enabled: requested }),
+    })
+    renderDeploymentSettings(settings)
+    showToast(t(requested ? 'mcp.savedEnabled' : 'mcp.savedDisabled'), 'success')
+  } catch (error) {
+    checkbox.checked = !requested
+    showToast(errorMessage(error))
+  } finally {
+    checkbox.disabled = false
+  }
+})
 
 $('#save-model-settings').addEventListener('click', async () => {
   const button = $('#save-model-settings')

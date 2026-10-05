@@ -238,6 +238,28 @@ class InferenceRuntimeTest(unittest.TestCase):
         collect.assert_called_once_with()
         empty_cache.assert_called_once_with()
 
+    def test_model_family_purge_preserves_other_loaded_checkpoints(self) -> None:
+        runtime = self.runtime(lambda _model_family, device: FakeModel(device))
+        with runtime.use_model("cuda:0", "kokoro-v1.0"):
+            pass
+        with runtime.use_model("cuda:0", "kikiri-german-martin"):
+            pass
+
+        with (
+            patch("kokorotts.runtime.gc.collect") as collect,
+            patch("kokorotts.runtime.torch.cuda.is_available", return_value=True),
+            patch("kokorotts.runtime.torch.cuda.empty_cache") as empty_cache,
+        ):
+            remaining = runtime.purge_model_families({"kikiri-german-martin"})
+
+        self.assertEqual(
+            remaining,
+            [{"model_family": "kokoro-v1.0", "device": "cuda:0"}],
+        )
+        self.assertEqual(runtime.loaded_models, remaining)
+        collect.assert_called_once_with()
+        empty_cache.assert_called_once_with()
+
     def test_different_voice_families_use_different_models_on_same_device(self) -> None:
         calls = []
 

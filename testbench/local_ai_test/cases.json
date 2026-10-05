@@ -1,0 +1,115 @@
+[
+  {
+    "id": "health",
+    "prompt": "Check the KokoroTTS deployment health. Tell me whether it is ready and summarize the enabled and loaded model packages.",
+    "expected_tools": ["get_health"],
+    "expected_outcomes": ["success"],
+    "final_contains_any": ["ready", "ok", "model", "pack"]
+  },
+  {
+    "id": "all_available_voices",
+    "prompt": "Show me all voices that are currently available from enabled KokoroTTS packages. Use the numbered group intended for all enabled voices.",
+    "expected_tools": ["get_available_voices"],
+    "exact_tool_sequence": true,
+    "expected_outcomes": ["success"],
+    "argument_rules": [
+      {"voice_group": {"equals": 0}}
+    ],
+    "final_contains_any": ["af_heart", "voice"]
+  },
+  {
+    "id": "standard_voice_group",
+    "prompt": "Show only the standard multilingual Kokoro v1.0 voice group. Use its single numbered group selector.",
+    "expected_tools": ["get_available_voices"],
+    "exact_tool_sequence": true,
+    "expected_outcomes": ["success"],
+    "argument_rules": [
+      {"voice_group": {"equals": 1}}
+    ],
+    "final_contains_any": ["af_heart", "standard", "voice"]
+  },
+  {
+    "id": "simple_generation",
+    "prompt": "Use the simple speech tool to say exactly 'Hello from the KokoroTTS MCP test.' in American English. Keep the link valid for 5 minutes and return the temporary link. Do not call voice discovery first.",
+    "allowed_tool_sequences": [
+      ["talk_simple"],
+      ["talk_simple", "get_health"]
+    ],
+    "allowed_outcome_sequences": [
+      ["success"],
+      ["success", "success"]
+    ],
+    "argument_rules": [
+      {
+        "text": {"equals": "Hello from the KokoroTTS MCP test."},
+        "voice_number": {"equals": 1},
+        "ttl_seconds": {"equals": 300}
+      }
+    ],
+    "required_argument_count": 3,
+    "final_contains_any": ["http://", "https://", "link", "download"]
+  },
+  {
+    "id": "advanced_generation",
+    "prompt": "Use advanced speech to generate plain text 'Package controls should be explicit.' with voice af_heart as WAV. Set speed 0.9, pitch positive 2 semitones, tempo 1.1, volume 0.8, normalization false, and TTL 120 seconds.",
+    "expected_tools": ["talk_advanced"],
+    "exact_tool_sequence": true,
+    "expected_outcomes": ["success"],
+    "argument_rules": [
+      {
+        "text": {"equals": "Package controls should be explicit."},
+        "input_type": {"equals": "text"},
+        "voice": {"equals": "af_heart"},
+        "output_format": {"equals": "wav"},
+        "ttl_seconds": {"equals": 120},
+        "speed": {"equals": 0.9},
+        "pitch_semitones": {"equals": 2},
+        "tempo": {"equals": 1.1},
+        "volume": {"equals": 0.8},
+        "normalize": {"equals": false}
+      }
+    ],
+    "required_argument_count": 10,
+    "final_contains_any": ["http://", "https://", "link", "download"]
+  },
+  {
+    "id": "unknown_voice_error",
+    "prompt": "Try the advanced speech tool with plain text 'This voice does not exist.', exact voice definitely_not_a_voice, MP3, neutral controls, normalization false, and TTL 120 seconds. If it fails, explain the exact numbered voice-discovery call I should make. Do not invent a link.",
+    "allowed_tool_sequences": [
+      ["talk_advanced"],
+      ["get_available_voices", "talk_advanced"]
+    ],
+    "allowed_outcome_sequences": [
+      ["error"],
+      ["success", "error"]
+    ],
+    "required_argument_count": 10,
+    "expected_error_contains": ["get_available_voices", "voice_group=0"],
+    "final_contains_any": ["voice", "get_available_voices", "voice_group"]
+  },
+  {
+    "id": "package_roundtrip",
+    "prompt": "First inspect health. Then disable only German Martin while keeping standard multilingual, German Victoria, Vietnamese, and Chinese v1.1 enabled. Finally enable all five packages again. Confirm the complete final status.",
+    "expected_tools": ["get_health", "manage_model_packs", "manage_model_packs"],
+    "exact_tool_sequence": true,
+    "expected_outcomes": ["success", "success", "success"],
+    "argument_rules": [
+      {},
+      {
+        "standard_multilingual_enabled": {"equals": true},
+        "german_martin_enabled": {"equals": false},
+        "german_victoria_enabled": {"equals": true},
+        "vietnamese_enabled": {"equals": true},
+        "chinese_v11_enabled": {"equals": true}
+      },
+      {
+        "standard_multilingual_enabled": {"equals": true},
+        "german_martin_enabled": {"equals": true},
+        "german_victoria_enabled": {"equals": true},
+        "vietnamese_enabled": {"equals": true},
+        "chinese_v11_enabled": {"equals": true}
+      }
+    ],
+    "final_contains_any": ["enabled", "Martin", "all five"]
+  }
+]

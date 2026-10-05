@@ -39,10 +39,7 @@ Hangry Labs home: [hangrylabs.app](https://hangrylabs.app/).
 - [Listen and Have a Look](#listen-and-have-a-look)
 - [Quick Start](#quick-start)
 - [API Usage](#api-usage)
-  - [OpenAI-Compatible API](#openai-compatible-api)
-  - [KokoroTTS Native API](#kokorotts-native-api)
-  - [Experimental SSML Input](#experimental-ssml-input)
-  - [Native Python Client](#native-python-client)
+- [MCP for AI Agents](#mcp-for-ai-agents)
 - [About This Fork](#about-this-fork)
 - [Support & Issues](#support--issues)
 - [Docker Images](#docker-images)
@@ -128,6 +125,10 @@ Then open: **[http://localhost:7860](http://localhost:7860)**
 ---
 
 ## API Usage
+
+<details>
+
+<summary><strong>Show OpenAI-compatible and native API documentation</strong></summary>
 
 Interactive OpenAPI documentation for both API families is available at **[http://localhost:7860/tts/docs](http://localhost:7860/tts/docs)**.
 
@@ -256,6 +257,7 @@ Native and system endpoints:
 - `GET /system/settings`
 - `PUT /system/settings/model-families`
 - `PUT /system/settings/voices` (compatibility endpoint; selected voices expand to complete model families)
+- `PUT /system/settings/mcp`
 - `POST /system/models/purge`
 - `POST /tts/metrics`
 - `POST /tts/tokenize`
@@ -286,6 +288,155 @@ audio = tts.generate(
 audio.save("hello.mp3")
 ```
 
+</details>
+
+---
+
+## MCP for AI Agents
+
+<details>
+
+<summary><strong>Show MCP setup, tools, and security guidance</strong></summary>
+
+KokoroTTS includes an opt-in Streamable HTTP MCP endpoint at `/mcp`. It lets an agent inspect deployment health, discover voices, generate speech, and control the five independently loaded model packages. Package controls operate on real checkpoint/VRAM units, not individual languages or voices.
+
+MCP generation never places audio bytes or base64 in the tool response. It returns an unguessable temporary HTTP download link and metadata. The caller must choose a link lifetime from 60 seconds through 24 hours; expired files are removed automatically. This makes the result suitable for downloading, attaching elsewhere, or passing by URL to a compatible speech-to-text service.
+
+Enable MCP in the **System** view for an existing deployment. For a fresh trusted-network Docker deployment, it can be enabled from startup:
+
+```bash
+docker run -p 7860:7860 --gpus all \
+  -e KOKOROTTS_ENABLE_MCP=1 \
+  -e KOKOROTTS_MCP_BASE_URL=http://192.168.0.10:7860 \
+  -v kokorotts_data:/app/persistent \
+  hangrylabs/kokorotts:latest
+```
+
+Replace `192.168.0.10` with the KokoroTTS host address that agents and downstream services can reach. Local-only agents may omit `KOKOROTTS_MCP_BASE_URL`; generated links then use `http://localhost:7860`. Configure an MCP client with `http://<kokoro-host>:7860/mcp`.
+
+MCP clients discover the tool schemas automatically. The JSON objects below are MCP tool arguments, not bodies to send directly to `/mcp` with `curl`. Normal speech generation is deliberately self-contained: an agent can call `talk_simple` immediately and use the returned URL without first transferring an identifier from another tool.
+
+### Recommended Agent Flow
+
+1. Call `talk_simple` directly for normal speech using its self-contained language/voice number. No health or discovery call is needed first.
+2. Download, attach, store, or pass the returned `download_url` to another service before `expires_at`.
+3. Call `get_health` separately when deployment, GPU, or package state matters.
+4. Call `get_available_voices` only when an exact speaker is needed for `talk_advanced`: use `0` for all enabled voices or `1-5` for a specific checkpoint group.
+5. Call `manage_model_packs` only when package state must change. Send the complete desired state using all five required Booleans.
+
+### Tool Requests
+
+`get_health` takes no arguments:
+
+```json
+{}
+```
+
+It returns product/build identity, readiness, runtime and GPU state, all five package Booleans, loaded checkpoint details, the numbered voice-group legend, MCP link limits, and the configured download base URL.
+
+`manage_model_packs` requires all five package Booleans in one request:
+
+```json
+{
+  "standard_multilingual_enabled": true,
+  "german_martin_enabled": false,
+  "german_victoria_enabled": true,
+  "vietnamese_enabled": true,
+  "chinese_v11_enabled": true
+}
+```
+
+The call above disables only German Martin. This is package-level control, not language-level or individual-voice control. The standard package shares one checkpoint across English, Japanese, Mandarin, Spanish, French, Hindi, Italian, and Brazilian Portuguese, while Chinese v1.1 also contains three English voices. German Martin and Victoria remain separate because each uses its own checkpoint. Disabling a package waits for active synthesis, unloads only that checkpoint, and preserves unrelated loaded models. At least one package must remain enabled. The response repeats all five resulting Boolean states plus loaded-device details, so the agent can confirm the complete status after every change.
+
+`get_available_voices` requires one group number rather than a language name:
+
+```json
+{
+  "voice_group": 1
+}
+```
+
+Voice groups are stable and intentionally match checkpoint/VRAM ownership:
+
+- `0`: every voice in currently enabled packages
+- `1`: standard multilingual, covering English, Japanese, Mandarin, Spanish, French, Hindi, Italian, and Brazilian Portuguese
+- `2`: German Martin
+- `3`: German Victoria
+- `4`: Vietnamese
+- `5`: Chinese v1.1 Mandarin voices plus Maple, Sol, and Vale English voices
+
+Groups `1-5` can be inspected even when their package is disabled; the response clearly reports that state. Use group `0` when the agent simply needs any voice it can use immediately.
+
+`talk_simple` is the preferred self-contained generation tool. It requires only plain text, one stable default-voice number, and the desired link lifetime. Output is always neutral MP3, and the model does not need to discover or copy an ID first:
+
+```json
+{
+  "text": "Hello from KokoroTTS.",
+  "voice_number": 1,
+  "ttl_seconds": 300
+}
+```
+
+The simple voice numbers are:
+
+- `1`: American English, Heart
+- `2`: British English, Emma
+- `3`: Japanese, Alpha
+- `4`: Mandarin Chinese, v1.1 Speaker 001
+- `5`: Spanish, Dora
+- `6`: French, Siwis
+- `7`: Hindi, Alpha
+- `8`: Italian, Sara
+- `9`: Brazilian Portuguese, Dora
+- `10`: German, Martin
+- `11`: Vietnamese, Diem Trinh
+
+`talk_advanced` requires all ten explicit arguments and is reserved for custom output or delivery:
+
+```json
+{
+  "text": "Hello from KokoroTTS.",
+  "input_type": "text",
+  "voice": "af_heart",
+  "output_format": "wav",
+  "ttl_seconds": 300,
+  "speed": 0.9,
+  "pitch_semitones": 2,
+  "tempo": 1.1,
+  "volume": 0.9,
+  "normalize": false
+}
+```
+
+No shown field is optional and `null` is not a valid substitute. `input_type` is `text` or `ssml`; `output_format` is `mp3`, `wav`, `flac`, `ogg`, `opus`, `aac`, or `pcm`; TTL is 60 through 86,400 seconds; speed and tempo are `0.5-2`; pitch is `-12` through `12` semitones; and volume is `0-2`. The selected voice must belong to an enabled package.
+
+The generation result contains metadata similar to this, never audio bytes or base64:
+
+```json
+{
+  "download_url": "http://kokoro-host:7860/tts/artifacts/<capability-token>",
+  "expires_at": "2026-10-05T20:15:00Z",
+  "ttl_seconds": 300,
+  "format": "mp3",
+  "mime_type": "audio/mpeg",
+  "size_bytes": 71084,
+  "duration_seconds": 3.1,
+  "sample_rate": 24000,
+  "voice": "af_heart",
+  "language": "a",
+  "voices": ["af_heart"],
+  "languages": ["a"],
+  "inference_devices": ["cuda:0"],
+  "fallback_reason": null
+}
+```
+
+Tool failures are returned to the calling model as MCP errors with a correction path. For example, an unknown voice instructs it to call `get_available_voices` with `voice_group=0`; a disabled voice supplies a complete ready-to-call `manage_model_packs` argument object with the required package enabled; and an invalid advanced control identifies the value that must be corrected.
+
+MCP currently has no authentication and is disabled by default. Expose it only on a trusted local/private network. `KOKOROTTS_API_KEY` protects `/v1/*`; it does not protect `/mcp` or capability links. DNS-rebinding protection remains enabled, and the host explicitly configured in `KOKOROTTS_MCP_BASE_URL` is automatically allowed.
+
+</details>
+
 ---
 
 ## About This Fork
@@ -315,6 +466,10 @@ If you encounter bugs, have feature requests, or need help using Hangry Labs Kok
 
 ## Docker Images
 
+<details>
+
+<summary><strong>Show image variants, tags, and registry guidance</strong></summary>
+
 All published tags are mirrored on [Docker Hub](https://hub.docker.com/r/hangrylabs/kokorotts/tags) and [GitHub Container Registry](https://github.com/Hangry-Labs/kokoroTTS/pkgs/container/kokorotts). Replace `hangrylabs/kokorotts` in any command below with `ghcr.io/hangry-labs/kokorotts` to use GHCR.
 
 - Full images contain the standard Kokoro model, both dedicated German checkpoints, the dedicated Vietnamese checkpoint, the enhanced Chinese v1.1 checkpoint, all 173 voice packs, configuration, and required language data. They are ready for offline use after the image has been pulled.
@@ -324,9 +479,15 @@ All published tags are mirrored on [Docker Hub](https://hub.docker.com/r/hangryl
 
 Exact commands for every release and the current snapshot are kept in [Version History](#version-history).
 
+</details>
+
 ---
 
 ## Local Development
+
+<details>
+
+<summary><strong>Show local development, testing, and release workflows</strong></summary>
 
 ```bash
 task image
@@ -373,9 +534,15 @@ task release SKIP_VALIDATION=1
 
 The release task creates the release commit, annotated `vX.Y` Git tag, and next-snapshot commit locally; it does not push them. Push the two refs printed by the task when the release is ready. Pushing `main` publishes the moving `latest` and `latest_tiny` images to Docker Hub and GHCR. Pushing the release tag publishes immutable `vX.Y` and `vX.Y_tiny` images from the tagged release commit. A GitHub Release page entry is separate from the Git tag and can be created from that existing tag without rebuilding the images.
 
+</details>
+
 ---
 
 ## Performance Benchmarks
+
+<details>
+
+<summary><strong>Show voice-generation and VRAM benchmark documentation</strong></summary>
 
 ### Voice Generation
 
@@ -407,6 +574,8 @@ task benchmark-vram VRAM_BENCHMARK_COMMENT="clean GPU baseline"
 The report separates process-specific allocated/reserved VRAM from whole-device usage, and records lifecycle, per-language, and per-voice peaks. Use `task benchmark-vram-smoke` for a one-voice implementation check that does not update history. See [`benchmarks/vram`](benchmarks/vram/) for the full methodology and reports.
 
 Before the development line was promoted to `v1.0-snapshot`, its official VRAM baseline was recorded under the `v0.4-snapshot` label on a quiet NVIDIA GeForce RTX 5070 Ti across all 70 voices and 11 languages, with no failed generation. The initial standard Kokoro model used 317.6 MiB allocated and 332.0 MiB reserved before inference; the German and Vietnamese checkpoints then loaded lazily as their voices were reached. The sequential single-request run peaked at 1725.1 MiB allocated and 2052.0 MiB reserved by the Kokoro process. Whole-device usage rose from the benchmark's 1293.6 MiB idle reference to 3413.6 MiB; this includes the Windows display stack and other non-Kokoro GPU allocations. Vietnamese was the heaviest model family, with `storyvert` setting the overall process peak. The complete lifecycle, language, and voice measurements are in [`VRAM_BENCHMARKS.md`](benchmarks/vram/VRAM_BENCHMARKS.md) and [`DETAILS.md`](benchmarks/vram/DETAILS.md).
+
+</details>
 
 ---
 
@@ -496,6 +665,7 @@ The data volume is recommended but optional. Without it, the same files are stor
 - Unified full and tiny publishing in one Buildx workflow so both variants reuse the same dependency graph without loading either image into the runner's Docker store. Baked model prefetch depends only on the pinned catalog/manifest files, and its assets occupy an independent final-image layer, so unrelated UI/API changes reuse both the download step and large model layer.
 - Added GitHub Container Registry as an official mirror. One workflow publishes identical full and tiny tags to Docker Hub and GHCR: `main` owns the moving `latest`/`latest_tiny` tags, while a release tag owns immutable `vX.Y`/`vX.Y_tiny` images.
 - Added persisted deployment model-pack settings to the System tab and HTTP API. Operators can enable independently loaded checkpoints while voices that share the same weights remain together, making each choice meaningful for downloads and VRAM without changing the backward-compatible all-models default.
+- Added opt-in Streamable HTTP MCP support for AI agents with package-level VRAM controls, voice discovery, actionable tool errors, and expiring URL-only audio results. Generation arguments are all explicit, MCP returns no audio bytes/base64, and a repeatable smaller-model evaluator verifies tool selection and recovery behavior.
 - Added a unified optional `/app/persistent` Docker data location for downloaded model assets and operator settings. A named volume preserves both across image upgrades, while unmounted containers continue to work with local ephemeral storage.
 
 #### Planned Work
@@ -532,7 +702,9 @@ Tiny image with NVIDIA GPU support:
 docker run -p 7860:7860 --gpus all -v kokorotts_hf_cache:/app/.cache/huggingface hangrylabs/kokorotts:v0.3_tiny@sha256:0caaaeda5d56c89218ad28d9210b8e9a067b96ebaaf3c40d83ecb520d687006b
 ```
 
-#### Changes
+<details>
+
+<summary><strong>Show v0.3 release notes</strong></summary>
 
 - Added a dependency-free Python HTTP client for using KokoroTTS endpoints from application code.
 - Made package imports lightweight so the HTTP client can be used without importing the local inference stack, with package metadata as a safe version fallback.
@@ -548,6 +720,8 @@ docker run -p 7860:7860 --gpus all -v kokorotts_hf_cache:/app/.cache/huggingface
 - Updated Docker publish workflows for separate full (`vX.Y`/`latest`) and tiny (`vX.Y_tiny`/`latest_tiny`) image tracks, explicit `hangrylabs/kokorotts` publishing, and manual release dispatch with a selected checkout ref.
 - Removed unnecessary caution callouts from public docs and the Stream tab for a cleaner product-facing experience.
 
+</details>
+
 ### v0.2
 
 #### Docker
@@ -558,7 +732,9 @@ docker run -p 7860:7860 hangrylabs/kokorotts:v0.2@sha256:35c3fa113aaf8cf278b682b
 docker run -p 7860:7860 --gpus "device=1" -e CUDA_VISIBLE_DEVICES=1 hangrylabs/kokorotts:v0.2@sha256:35c3fa113aaf8cf278b682b6505dabb662f2afdf516d3fe21d443ade57930122
 ```
 
-#### Changes
+<details>
+
+<summary><strong>Show v0.2 release notes</strong></summary>
 
 - Moved public project direction under Hangry Labs.
 - Added a root `VERSION` file for the app/runtime release label.
@@ -571,6 +747,8 @@ docker run -p 7860:7860 --gpus "device=1" -e CUDA_VISIBLE_DEVICES=1 hangrylabs/k
 - Removed old Gatsby/Frankenstein long-text demo buttons and unused bundled text files.
 - Added multilingual Docker prefetch support, including Japanese language data for offline synthesis.
 - Added `task imageapi-voice` and `task imageapi-format` for practical smoke tests.
+
+</details>
 
 ### v0.0.1
 
@@ -591,7 +769,9 @@ docker run -p 7860:7860 kokorotts:v0.0.1-local
 docker run -p 7860:7860 --gpus "device=1" -e CUDA_VISIBLE_DEVICES=1 kokorotts:v0.0.1-local
 ```
 
-#### Changes
+<details>
+
+<summary><strong>Show v0.0.1 release notes</strong></summary>
 
 - Initial release of the KokoroTTS Docker image.
 - Trimmed the image to keep it practical for deployment.
@@ -600,6 +780,8 @@ docker run -p 7860:7860 --gpus "device=1" -e CUDA_VISIBLE_DEVICES=1 kokorotts:v0
 - Introduced Dockerized WebUI + API setup for easy local or server deployment.
 - Added integration-friendly API support for compatibility with the MeloTTS image.
 - Enabled automated build and deployment workflow.
+
+</details>
 
 ---
 

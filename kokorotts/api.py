@@ -57,6 +57,7 @@ from .openai_compat import (
 from .runtime import InferenceRuntime, SynthesisChunk, SynthesisResult
 from .sample_texts import get_initial_text, get_intro_text, get_random_quote
 from .schemas import (
+    MCPSettingsUpdate,
     MetricsRequest,
     OpenAISpeechRequest,
     PurgeRequest,
@@ -84,6 +85,12 @@ BUILD_ID = os.getenv("BUILD_ID", "stable")
 BUILD_DATE = os.getenv("KOKOROTTS_BUILD_DATE", "unknown")
 VCS_REF = os.getenv("KOKOROTTS_VCS_REF", "unknown")
 DEFAULT_DEVICE = os.getenv("KOKOROTTS_DEVICE", "auto")
+MCP_DEFAULT_ENABLED = os.getenv("KOKOROTTS_ENABLE_MCP", "0").strip().lower() in {
+    "1",
+    "true",
+    "yes",
+    "on",
+}
 
 # Tiny images intentionally download all advertised voices before readiness so every
 # language behaves predictably for UI and API users.
@@ -735,6 +742,17 @@ def deployment_settings_payload() -> dict:
         "supported_model_families": model_family_inventory(),
         "settings_path": str(RUNTIME.settings.path),
         "model_loading": "lazy",
+        "mcp": {
+            "enabled": RUNTIME.settings.mcp_enabled(default=MCP_DEFAULT_ENABLED),
+            "endpoint": "/mcp",
+            "output_directory": str(
+                getattr(api.state, "mcp_output_directory", "") or ""
+            )
+            or None,
+            "base_url": str(getattr(api.state, "mcp_base_url", "") or "")
+            or os.getenv("KOKOROTTS_MCP_BASE_URL", "").strip()
+            or None,
+        },
     }
 
 
@@ -753,6 +771,18 @@ def update_served_voices(payload: ServedVoicesRequest) -> dict:
         RUNTIME.set_served_voices(payload.voices)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return deployment_settings_payload()
+
+
+@api.put("/system/settings/mcp", tags=["System"])
+def update_mcp_setting(payload: MCPSettingsUpdate) -> dict:
+    try:
+        RUNTIME.settings.set_mcp_enabled(payload.enabled)
+    except OSError as exc:
+        raise HTTPException(
+            status_code=500,
+            detail=f"MCP setting could not be saved: {exc}",
+        ) from exc
     return deployment_settings_payload()
 
 

@@ -89,6 +89,17 @@ license.
 - Use here: hardened parsing for explicitly selected experimental SSML input,
   including rejection of DTD and entity-based XML attacks.
 
+### Model Context Protocol Python SDK
+
+- Project: [modelcontextprotocol/python-sdk](https://github.com/modelcontextprotocol/python-sdk)
+- Version currently used: 2.3.0
+- Copyright: the Model Context Protocol authors and contributors
+- License: MIT
+- Use here: opt-in Streamable HTTP MCP server and protocol types for local AI
+  agent integration.
+
+The installed distribution includes its MIT license text in package metadata.
+
 ### Kokoro Vietnamese Integration
 
 - Project: [iamdinhthuan/Kokoro-Vietnamese](https://github.com/iamdinhthuan/Kokoro-Vietnamese)

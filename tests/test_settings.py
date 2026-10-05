@@ -17,6 +17,16 @@ from kokorotts.settings import DEFAULT_SETTINGS_PATH, RuntimeSettingsStore
 
 
 class RuntimeSettingsStoreTest(unittest.TestCase):
+    def test_mcp_setting_is_disabled_by_default_and_persisted(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "settings.json"
+            store = RuntimeSettingsStore(path)
+
+            self.assertFalse(store.mcp_enabled())
+            store.set_mcp_enabled(True)
+
+            self.assertTrue(RuntimeSettingsStore(path).mcp_enabled())
+
     def test_missing_settings_default_to_every_supported_voice(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             store = RuntimeSettingsStore(Path(directory) / "settings.json")

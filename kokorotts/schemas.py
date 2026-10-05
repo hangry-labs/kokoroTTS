@@ -114,3 +114,7 @@ class ServedModelFamiliesRequest(BaseModel):
         ...,
         description="Complete list of independently loaded model families this deployment should serve.",
     )
+
+
+class MCPSettingsUpdate(BaseModel):
+    enabled: bool = Field(..., description="Whether the opt-in MCP endpoint is available.")

@@ -197,6 +197,8 @@ class StandaloneUiTests(unittest.TestCase):
         self.assertIn("hero.animate(", script.text)
         self.assertIn("function renderJsonTree(", script.text)
         self.assertIn("/system/settings/model-families", script.text)
+        self.assertIn("/system/settings/mcp", script.text)
+        self.assertIn('id="mcp-enabled"', index.text)
         self.assertIn("function renderDeploymentSettings(", script.text)
         self.assertIn("gpuWindowMs: 60 * 1000", script.text)
         self.assertIn("GPU_HISTORY_RETENTION_MS = 10 * 60 * 1000", script.text)

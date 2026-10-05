@@ -154,8 +154,14 @@
                 <button class="primary-button" id="save-model-settings" type="button"><i class="icon-check"></i><span data-i18n="models.save">Save model packs</span></button>
               </div>
             </section>
-            <section><div class="section-title"><i class="icon-activity"></i><span data-i18n="system.runtime">Runtime</span></div><div class="data-output json-output" id="runtime-output"></div></section>
-            <section><div class="section-title"><i class="icon-boxes"></i><span data-i18n="nav.voices">Voices</span></div><div class="data-output json-output" id="voices-output"></div></section>
+            <section class="deployment-settings mcp-settings" aria-labelledby="mcp-settings-title">
+              <div class="section-title" id="mcp-settings-title"><i class="icon-radio"></i><span data-i18n="mcp.title">MCP connectivity</span></div>
+              <p data-i18n="mcp.description">Allow trusted AI agents to generate expiring audio links and manage model packs. This is not authentication; use it only on a trusted deployment.</p>
+              <label class="toggle-field mcp-toggle"><span data-i18n="mcp.enable">Enable MCP endpoint</span><input id="mcp-enabled" type="checkbox"><span class="toggle-track" aria-hidden="true"></span></label>
+              <p class="mcp-location" id="mcp-location" data-i18n="mcp.locationPending">Endpoint and temporary output directory are being detected.</p>
+            </section>
+            <section class="runtime-system-panel"><div class="section-title"><i class="icon-activity"></i><span data-i18n="system.runtime">Runtime</span></div><div class="data-output json-output" id="runtime-output"></div></section>
+            <section class="voices-system-panel"><div class="section-title"><i class="icon-boxes"></i><span data-i18n="nav.voices">Voices</span></div><div class="data-output json-output" id="voices-output"></div></section>
           </div>
           <section class="gpu-system-panel" id="gpu-output" aria-live="polite"></section>
         </div>

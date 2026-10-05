@@ -4,6 +4,7 @@ fastapi==0.136.3
 defusedxml==0.7.1
 huggingface-hub==0.36.2
 loguru==0.7.3
+mcp==2.3.0
 misaki[de,en,zh] @ https://github.com/hexgrad/misaki/archive/bbaf917e7bf7fbbe830f74f4acda6583ce1c0caf.tar.gz
 numpy==2.2.6
 pyopenjtalk==0.4.1

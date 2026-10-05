@@ -116,6 +116,7 @@ The container includes the web UI and the HTTP API on the same port.
 - WAV, MP3, FLAC, OGG Vorbis, Opus, AAC, and raw PCM output support
 - Full 173-voice catalog exposed in the UI and API, including dedicated German, Vietnamese, and enhanced Chinese models
 - Persistent System controls for choosing independently loaded model packs and their served voices
+- Optional Streamable HTTP MCP tools with expiring URL-only audio results for AI agents
 - GPU support when Docker/NVIDIA support is available
 - Offline-friendly usage with the standard full image once it is available locally
 
@@ -192,6 +193,22 @@ curl -X POST "http://localhost:7860/tts/generate" \
 The supported experimental subset includes multi-voice dialogue with `<voice>`, explicit language routing with `<lang>`, optional per-segment `<prosody speed="0.9" pitch="+2st" tempo="1.05" volume="0.9">`, bounded `<break>`, `<sub>`, `<say-as>`, and direct IPA `<phoneme>` elements. Every prosody attribute is optional and omitted values do not change the sound. `<lang>` keeps the current voice and may retain its accent; `<voice>` selects an enabled native voice for reliable multilingual dialogue. Hidden model padding is removed between SSML turns: adjacent turns use a 100 ms default handoff, while `<break>` sets the complete pause and accepts `0ms` for no gap. Open the SSML guide beside the UI mode button for exact rules and limits, or listen to five complete scripts on the public [SSML examples page](https://hangry-labs.github.io/kokoroTTS/examples/ssml.html).
 
 `GET /tts/ping` remains available for native API clients. Interactive API documentation is served at `http://localhost:7860/tts/docs`.
+
+## MCP for AI Agents
+
+The opt-in MCP endpoint at `/mcp` exposes five intentionally simple tools: `get_health`, `manage_model_packs`, `get_available_voices`, `talk_simple`, and `talk_advanced`. Package management uses five explicit Boolean fields and confirms the complete resulting state. Voice discovery uses one required group number: `0` for every currently enabled voice or `1-5` for a specific checkpoint family. `talk_simple` needs only text, a self-contained default voice number from `1-11`, and link TTL, so an agent can speak any supported language without a discovery call. `talk_advanced` accepts exact voice IDs and exposes format, SSML, speed, pitch, tempo, volume, and normalization. Generated audio is returned as an expiring HTTP link plus metadata, never as audio bytes or base64 in the MCP response. The complete request schemas, number mappings, and examples are in the repository README.
+
+For a trusted private network, enable it and publish a link address reachable by the caller:
+
+```bash
+docker run -p 7860:7860 --gpus all \
+  -e KOKOROTTS_ENABLE_MCP=1 \
+  -e KOKOROTTS_MCP_BASE_URL=http://192.168.0.10:7860 \
+  -v kokorotts_data:/app/persistent \
+  hangrylabs/kokorotts:latest
+```
+
+Replace the example address with the KokoroTTS host. Connect the agent to `http://<kokoro-host>:7860/mcp`. MCP has no authentication in this release and is disabled by default; use it only on a trusted local/private network. The API key option for `/v1/*` does not protect MCP.
 
 ## Image Tags
 

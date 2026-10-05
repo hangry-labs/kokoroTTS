@@ -24,6 +24,7 @@
 - 用于生成、流式处理、播放和下载音频的本地浏览器界面
 - OpenAI 兼容端点 `/v1/audio/speech`
 - 支持语音控制、SSML、Token 检查和模型管理的 KokoroTTS 原生 API
+- 面向 AI 智能体的可选 MCP 集成，支持限时音频链接和模型包管理
 - 11 种语言、173 个音色，包括专用德语、越南语和增强中文模型
 - 支持 WAV、MP3、FLAC、OGG Vorbis、Opus、AAC 和原始 PCM
 - 持久化模型设置、模型缓存和 GPU 监控

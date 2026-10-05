@@ -93,6 +93,7 @@ class InferenceRuntime:
         self._models: dict[tuple[str, str], KModel] = {}
         self._active: dict[tuple[str, str], int] = {}
         self._purging_devices: set[str] = set()
+        self._purging_families: set[str] = set()
         self._purging_all = False
         self._last_fallback: dict[str, str] | None = None
         self._condition = Condition(RLock())
@@ -232,6 +233,8 @@ class InferenceRuntime:
 
     def _apply_served_voices(self, selected: list[str]) -> list[str]:
         previous = self.served_voices
+        previous_families = set(model_families_for_voices(previous))
+        selected_families = set(model_families_for_voices(selected))
         for voice_id in selected:
             self._load_voice(voice_id)
         self.settings.set_served_voices(selected)
@@ -242,8 +245,9 @@ class InferenceRuntime:
             pipeline = self._cached_pipeline_for(voice_language(voice_id), voice_id)
             if pipeline is not None:
                 pipeline.voices.pop(voice_id, None)
-        if disabled:
-            self.purge()
+        disabled_families = previous_families - selected_families
+        if disabled_families:
+            self.purge_model_families(disabled_families)
         return list(selected)
 
     def serves_voice(self, voice_id: str) -> bool:
@@ -274,7 +278,11 @@ class InferenceRuntime:
     ) -> Iterator[KModel]:
         key = (model_family, device)
         with self._condition:
-            while self._purging_all or device in self._purging_devices:
+            while (
+                self._purging_all
+                or device in self._purging_devices
+                or model_family in self._purging_families
+            ):
                 self._condition.wait()
             model = self._models.get(key)
             if model is None:
@@ -294,6 +302,8 @@ class InferenceRuntime:
         removed: list[KModel] = []
         with self._condition:
             if device is None:
+                while self._purging_devices or self._purging_families:
+                    self._condition.wait()
                 self._purging_all = True
                 while self._active:
                     self._condition.wait()
@@ -302,6 +312,8 @@ class InferenceRuntime:
                 self._models.clear()
                 self._purging_all = False
             else:
+                while self._purging_all or self._purging_families:
+                    self._condition.wait()
                 self._purging_devices.add(device)
                 while any(key[1] == device for key in self._active):
                     self._condition.wait()
@@ -317,6 +329,33 @@ class InferenceRuntime:
         if torch.cuda.is_available() and (device is None or device.startswith("cuda")):
             torch.cuda.empty_cache()
         return purged, remaining
+
+    def purge_model_families(self, families: set[str]) -> list[dict[str, str]]:
+        """Release only selected checkpoint families after their active users finish."""
+        requested = set(families)
+        if not requested:
+            return self.loaded_models
+        removed: list[KModel] = []
+        with self._condition:
+            while self._purging_all or self._purging_devices or self._purging_families:
+                self._condition.wait()
+            self._purging_families.update(requested)
+            while any(key[0] in requested for key in self._active):
+                self._condition.wait()
+            matching = [key for key in self._models if key[0] in requested]
+            removed.extend(self._models.pop(key) for key in matching)
+            self._purging_families.difference_update(requested)
+            remaining = [
+                {"model_family": family, "device": device}
+                for family, device in self._models
+            ]
+            self._condition.notify_all()
+
+        del removed
+        gc.collect()
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+        return remaining
 
     @staticmethod
     def is_recoverable_cuda_error(error: RuntimeError) -> bool:

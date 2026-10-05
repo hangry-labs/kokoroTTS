@@ -24,6 +24,7 @@ Denne Hangry Labs-versjonen er laget for enkel lokal inferens. Start én contain
 - Lokalt nettlesergrensesnitt for generering, strømming, avspilling og nedlasting
 - OpenAI-kompatibelt endepunkt: `/v1/audio/speech`
 - KokoroTTS-API med stemmekontroller, SSML, tokeninspeksjon og modellstyring
+- Valgfri MCP-integrasjon for KI-agenter med utløpende lydlenker og styring av modellpakker
 - 173 stemmer på 11 språk, inkludert egne tyske, vietnamesiske og forbedrede kinesiske modeller
 - WAV, MP3, FLAC, OGG Vorbis, Opus, AAC og rå PCM
 - Vedvarende modellvalg, modellbuffer og GPU-overvåking

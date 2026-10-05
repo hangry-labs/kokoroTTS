@@ -27,6 +27,7 @@ SERVED_VOICES_KEY = "served_voices"
 SERVED_MODEL_FAMILIES_KEY = "served_model_families"
 SETTINGS_SCHEMA_VERSION_KEY = "schema_version"
 SETTINGS_SCHEMA_VERSION = 2
+MCP_ENABLED_KEY = "mcp_enabled"
 
 # v0.3/v1.0-snapshot installations persisted this exact list when every
 # available pack was enabled. Preserve that intent when adding the v1.1 family.
@@ -109,6 +110,13 @@ class RuntimeSettingsStore:
 
     def served_voices(self) -> list[str]:
         return voices_for_model_families(self.served_model_families())
+
+    def mcp_enabled(self, *, default: bool = False) -> bool:
+        value = self.snapshot().get(MCP_ENABLED_KEY, default)
+        return value if isinstance(value, bool) else default
+
+    def set_mcp_enabled(self, enabled: bool) -> None:
+        self._update(MCP_ENABLED_KEY, bool(enabled))
 
     def set_served_model_families(self, families: list[str]) -> list[str]:
         selected = self.validate_served_model_families(families)
