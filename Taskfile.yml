@@ -40,12 +40,12 @@ tasks:
   image:
     desc: Build local baked KokoroTTS Docker image
     cmds:
-      - cmd /c docker build --target baked -t {{.IMAGE}} .
+      - powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-image.ps1 -Target baked -Image "{{.IMAGE}}"
 
   image-tiny:
     desc: Build local tiny KokoroTTS Docker image without baked model/voice cache
     cmds:
-      - cmd /c docker build --target tiny -t {{.TINY_IMAGE}} .
+      - powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-image.ps1 -Target tiny -Image "{{.TINY_IMAGE}}"
 
   data-init:
     desc: Seed the persistent model and settings volume from the baked image

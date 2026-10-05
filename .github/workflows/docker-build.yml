@@ -59,6 +59,12 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      - name: Prepare image build identity
+        shell: bash
+        run: |
+          echo "BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> "$GITHUB_ENV"
+          echo "VCS_REF=$(git rev-parse --short=12 HEAD)" >> "$GITHUB_ENV"
+
       - name: Restore pyopenjtalk wheel
         id: pyopenjtalk-cache
         uses: actions/cache@v4
@@ -147,6 +153,8 @@ jobs:
           tags: ${{ steps.image_tags.outputs.baked_tags }}
           build-args: |
             PYOPENJTALK_VERSION=${{ env.PYOPENJTALK_VERSION }}
+            BUILD_DATE=${{ env.BUILD_DATE }}
+            VCS_REF=${{ env.VCS_REF }}
 
       - name: Report disk usage after baked image
         shell: bash
@@ -163,6 +171,8 @@ jobs:
           tags: ${{ steps.image_tags.outputs.tiny_tags }}
           build-args: |
             PYOPENJTALK_VERSION=${{ env.PYOPENJTALK_VERSION }}
+            BUILD_DATE=${{ env.BUILD_DATE }}
+            VCS_REF=${{ env.VCS_REF }}
 
       - name: Report final disk usage
         if: always()

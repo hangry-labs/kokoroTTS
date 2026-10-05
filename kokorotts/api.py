@@ -81,6 +81,8 @@ from .ssml import (
 
 APP_VERSION = os.getenv("APP_VERSION", KOKORO_VERSION)
 BUILD_ID = os.getenv("BUILD_ID", "stable")
+BUILD_DATE = os.getenv("KOKOROTTS_BUILD_DATE", "unknown")
+VCS_REF = os.getenv("KOKOROTTS_VCS_REF", "unknown")
 DEFAULT_DEVICE = os.getenv("KOKOROTTS_DEVICE", "auto")
 
 # Tiny images intentionally download all advertised voices before readiness so every
@@ -578,6 +580,8 @@ def ping() -> dict:
         "type": "KokoroTTS",
         "version": APP_VERSION,
         "build_id": BUILD_ID,
+        "build_date": BUILD_DATE,
+        "revision": VCS_REF,
     }
 
 
@@ -590,6 +594,8 @@ def status() -> dict:
         "type": "KokoroTTS",
         "version": APP_VERSION,
         "build_id": BUILD_ID,
+        "build_date": BUILD_DATE,
+        "revision": VCS_REF,
         "runtime": get_runtime_label(),
         "device": DEFAULT_DEVICE,
         "repo_id": RUNTIME.repo_id,

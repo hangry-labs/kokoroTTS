@@ -72,7 +72,8 @@ button:disabled { cursor: not-allowed; opacity: 0.45; }
 .runtime-copy { display: grid; gap: 2px; min-width: 0; }
 .runtime-badge strong { font-size: 0.78rem; }
 .runtime-copy span { display: block; max-width: 260px; color: var(--muted); font-size: 0.7rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.runtime-version { align-self: stretch; display: inline-flex; align-items: center; padding-left: 12px; border-left: 1px solid rgba(255, 255, 255, 0.1); color: #d9c3b4; font-size: 0.67rem; font-weight: 700; text-decoration: none; white-space: nowrap; }
+.runtime-version { align-self: stretch; display: inline-flex; align-items: flex-start; flex-direction: column; justify-content: center; gap: 2px; padding-left: 12px; border-left: 1px solid rgba(255, 255, 255, 0.1); color: #d9c3b4; font-size: 0.67rem; font-weight: 700; line-height: 1.2; text-decoration: none; white-space: nowrap; }
+.runtime-build { color: var(--muted); font-size: 0.56rem; font-weight: 600; }
 .runtime-version:hover { color: #fff; text-decoration: underline; text-underline-offset: 2px; }
 .runtime-version:focus-visible { border-radius: 3px; outline: 2px solid var(--focus); outline-offset: 3px; }
 .runtime-badge[data-state="ready"] i { color: var(--green); }

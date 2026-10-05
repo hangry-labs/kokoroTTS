@@ -100,6 +100,16 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends espeak-ng ffmpeg \
     && rm -rf /var/lib/apt/lists/*
 
+ARG BUILD_DATE=unknown
+ARG VCS_REF=unknown
+
+LABEL org.opencontainers.image.created="${BUILD_DATE}" \
+    org.opencontainers.image.revision="${VCS_REF}"
+
+ENV KOKOROTTS_BUILD_DATE="${BUILD_DATE}" \
+    KOKOROTTS_VCS_REF="${VCS_REF}" \
+    BUILD_ID="${BUILD_DATE}@${VCS_REF}"
+
 EXPOSE 7860
 
 CMD ["python", "-u", "-m", "kokorotts.server"]

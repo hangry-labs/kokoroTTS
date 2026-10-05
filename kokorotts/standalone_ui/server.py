@@ -4,6 +4,7 @@ import html
 import json
 import mimetypes
 import os
+from datetime import datetime, timezone
 from functools import lru_cache
 from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
@@ -34,6 +35,26 @@ def _read_version_file() -> str:
             return version("kokorotts")
         except PackageNotFoundError:
             return "0+unknown"
+
+
+def _snapshot_build_details(version_text: str) -> str:
+    if not version_text.lower().endswith("-snapshot"):
+        return ""
+
+    raw_date = os.getenv("KOKOROTTS_BUILD_DATE", "").strip()
+    if not raw_date or raw_date.lower() in {"unknown", "local"}:
+        return ""
+
+    try:
+        parsed = datetime.fromisoformat(raw_date.replace("Z", "+00:00"))
+        build_date = parsed.astimezone(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+    except ValueError:
+        build_date = raw_date
+
+    revision = os.getenv("KOKOROTTS_VCS_REF", "").strip()
+    if revision and revision.lower() not in {"unknown", "local"}:
+        return f"{build_date} · {revision[:12]}"
+    return build_date
 
 
 @lru_cache(maxsize=1)
@@ -93,8 +114,16 @@ def _index_response(locale: str) -> HTMLResponse:
     }
     bootstrap_json = json.dumps(bootstrap, ensure_ascii=False, separators=(",", ":")).replace("<", "\\u003c")
     index_html = (STATIC_DIR / "index.html").read_text(encoding="utf-8")
+    version_text = _read_version_file()
+    build_details = _snapshot_build_details(version_text)
+    build_markup = (
+        f'<span class="runtime-build">{html.escape(build_details)}</span>'
+        if build_details
+        else ""
+    )
     rendered_html = (
-        index_html.replace("{{UI_VERSION}}", html.escape(_read_version_file()))
+        index_html.replace("{{UI_VERSION}}", html.escape(version_text))
+        .replace("{{UI_BUILD_DETAILS}}", build_markup)
         .replace("{{UI_LOCALE}}", html.escape(locale))
         .replace("{{UI_DIRECTION}}", str(locale_entry["direction"]))
         .replace("{{UI_BOOTSTRAP}}", bootstrap_json)

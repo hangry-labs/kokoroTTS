@@ -65,6 +65,12 @@ class HttpClientServerSmokeTest(unittest.TestCase):
         status = self.client.status()
         self.assertEqual(status["type"], "KokoroTTS")
         self.assertGreaterEqual(status["voices"], 173)
+        self.assertRegex(status["build_date"], r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$")
+        self.assertRegex(status["revision"], r"^[0-9a-f]{12}$")
+        self.assertEqual(
+            status["build_id"],
+            f"{status['build_date']}@{status['revision']}",
+        )
 
     def test_tts_defaults_returns_default_request_values(self) -> None:
         defaults = self.client.defaults()

@@ -11,7 +11,11 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from kokorotts.standalone_ui.gpu import GpuMonitor, read_gpu_stats
-from kokorotts.standalone_ui.server import _read_version_file, create_app
+from kokorotts.standalone_ui.server import (
+    _read_version_file,
+    _snapshot_build_details,
+    create_app,
+)
 
 
 LOCALES_DIR = Path(__file__).parents[1] / "kokorotts" / "standalone_ui" / "static" / "locales"
@@ -57,6 +61,40 @@ class StandaloneUiTests(unittest.TestCase):
             with self.subTest(filename=filename):
                 self.assertRegex(page, rf'src="{re.escape(filename)}(?:\?[^\"]*)?"')
                 self.assertGreater((examples / filename).stat().st_size, 100_000)
+
+    def test_snapshot_badge_identifies_image_build_but_release_badge_stays_concise(self) -> None:
+        metadata = {
+            "KOKOROTTS_BUILD_DATE": "2026-10-05T13:47:26Z",
+            "KOKOROTTS_VCS_REF": "1234567890abcdef",
+        }
+        with patch.dict("os.environ", metadata, clear=False):
+            self.assertEqual(
+                _snapshot_build_details("1.0-snapshot"),
+                "2026-10-05 13:47 UTC · 1234567890ab",
+            )
+            self.assertEqual(_snapshot_build_details("1.0"), "")
+
+            with patch(
+                "kokorotts.standalone_ui.server._read_version_file",
+                return_value="1.0-snapshot",
+            ):
+                with TestClient(create_app(api_app=self.backend_app())) as client:
+                    snapshot = client.get("/")
+
+            with patch(
+                "kokorotts.standalone_ui.server._read_version_file",
+                return_value="1.0",
+            ):
+                with TestClient(create_app(api_app=self.backend_app())) as client:
+                    release = client.get("/")
+
+        self.assertIn("UI v1.0-snapshot", snapshot.text)
+        self.assertIn(
+            '<span class="runtime-build">2026-10-05 13:47 UTC · 1234567890ab</span>',
+            snapshot.text,
+        )
+        self.assertIn("UI v1.0", release.text)
+        self.assertNotIn('class="runtime-build"', release.text)
 
     def test_static_workspace_and_api_are_available(self) -> None:
         gpu_payload = {"gpus": [], "history": {}, "sample_interval_seconds": 1, "idle_timeout_seconds": 60}
@@ -125,6 +163,7 @@ class StandaloneUiTests(unittest.TestCase):
         self.assertLess(index.text.index('id="stream-start"'), index.text.index('id="stream-output"'))
         self.assertIn(f"UI v{_read_version_file()}", index.text)
         self.assertNotIn("{{UI_VERSION}}", index.text)
+        self.assertNotIn("{{UI_BUILD_DETAILS}}", index.text)
         self.assertNotIn("{{UI_LOCALE}}", index.text)
         self.assertNotIn("{{UI_DIRECTION}}", index.text)
         self.assertNotIn("{{UI_BOOTSTRAP}}", index.text)

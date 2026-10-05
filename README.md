@@ -446,6 +446,7 @@ The data volume is recommended but optional. Without it, the same files are stor
 
 #### Included Changes
 
+- Added immutable UTC image-build timestamps and Git revisions to snapshot runtime badges and native status metadata, making moving `latest` reports identifiable from a screenshot while stable releases keep their concise version label.
 - Added complete English, Polish, Japanese, Simplified Chinese, Spanish, and German localization to the browser workspace, including dynamic generation, streaming, model settings, audio-editor, and GPU-monitor states. Locale routes and the selected language persist across reloads.
 - Added concise Norwegian, Polish, Japanese, Simplified Chinese, and Spanish README entry points that lead to the corresponding Hangry Labs product guides, and connected the public examples page to locale-aware application links.
 - Replaced Gradio with a responsive standalone audio workspace based on the tested Hangry Labs Qwen3-ASR-STT interface.

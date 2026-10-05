@@ -22,6 +22,18 @@ class OpenAICompatibilityApiTests(unittest.TestCase):
                 self.assertEqual(response.status_code, 200)
                 self.assertEqual(response.json()["status"], "ok")
 
+    def test_native_status_exposes_image_build_identity(self) -> None:
+        ping = self.client.get("/tts/ping")
+        status = self.client.get("/tts/status")
+
+        self.assertEqual(ping.status_code, 200)
+        self.assertEqual(status.status_code, 200)
+        for response in (ping, status):
+            payload = response.json()
+            self.assertIn("build_id", payload)
+            self.assertIn("build_date", payload)
+            self.assertIn("revision", payload)
+
     def test_models_list_and_retrieve_canonical_model(self) -> None:
         models = self.client.get("/v1/models")
         alias = self.client.get("/v1/models/kokoro-82m")
