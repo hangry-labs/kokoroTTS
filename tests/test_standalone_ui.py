@@ -302,7 +302,9 @@ class StandaloneUiTests(unittest.TestCase):
         logo_rule = re.search(r"\.hero-logo \{(?P<body>.*?)\n      \}", page, re.DOTALL)
         self.assertIsNotNone(logo_rule)
         self.assertIn("height: auto", logo_rule.group("body"))
-        self.assertIn("drop-shadow", logo_rule.group("body"))
+        self.assertNotIn("drop-shadow", logo_rule.group("body"))
+        self.assertNotIn("box-shadow", logo_rule.group("body"))
+        self.assertNotIn("background:", logo_rule.group("body"))
         self.assertNotIn("aspect-ratio", logo_rule.group("body"))
         self.assertNotIn("border:", logo_rule.group("body"))
 
