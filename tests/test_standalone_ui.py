@@ -141,6 +141,8 @@ class StandaloneUiTests(unittest.TestCase):
         self.assertIn('href="/assets/kokoro_favicon.webp"', index.text)
         self.assertIn('class="collapsed-mascot"', index.text)
         self.assertIn('class="labs-signature"', index.text)
+        self.assertIn('href="mailto:contact@hangrylabs.app"', index.text)
+        self.assertIn('class="brand-contact"', index.text)
         self.assertIn('src="/assets/hangrylabs_logo.webp"', index.text)
         self.assertNotIn('src="/assets/hangrylabs_logo_horizontal.webp"', index.text)
         self.assertLess(index.text.index('class="labs-signature"'), index.text.index('class="collapsed-mascot"'))

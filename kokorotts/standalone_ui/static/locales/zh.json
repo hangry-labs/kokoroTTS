@@ -3,6 +3,8 @@
   "brand.mascotAlt": "KokoroTTS 吉祥物",
   "brand.productAlt": "KokoroTTS - 自然文本转语音、浏览器界面和 API",
   "brand.poweredBy": "技术支持",
+  "brand.contactUs": "联系我们：",
+  "brand.contactEmail": "发送邮件至 Hangry Labs：contact@hangrylabs.app",
   "nav.aria": "应用链接",
   "nav.examples": "示例",
   "nav.apiDocs": "API 文档",

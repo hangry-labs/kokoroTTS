@@ -3,6 +3,8 @@
   "brand.mascotAlt": "KokoroTTS mascot",
   "brand.productAlt": "KokoroTTS - Natural text-to-speech, browser UI, and API",
   "brand.poweredBy": "Powered by",
+  "brand.contactUs": "Contact us:",
+  "brand.contactEmail": "Email Hangry Labs at contact@hangrylabs.app",
   "nav.aria": "Application links",
   "nav.examples": "Examples",
   "nav.apiDocs": "API docs",
