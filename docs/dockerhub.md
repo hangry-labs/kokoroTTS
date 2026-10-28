@@ -84,6 +84,7 @@ published image digest. Docker Hub and GHCR publish matching images.
 | Port `7860` | Studio, HTTP APIs and optional MCP on the same server. |
 | `/app/persistent` | Optional data volume for model downloads, saved settings and temporary MCP audio. |
 | System → model packs | Enable standard Kokoro, German Martin, German Victoria, Vietnamese or Chinese v1.1 independently. |
+| System → Text chunking | Optional natural boundaries for non-English text, marked experimental and off by default. Applies to new requests from all clients; English is unchanged. Different boundaries can change pronunciation, pauses and quality. |
 | `/app/persistent/app/settings.json` | Saved deployment settings managed through System and the settings API. |
 | `KOKOROTTS_API_KEY` | Optional authentication for `/v1/*`; disabled by default. This does not protect native APIs or MCP. |
 | `KOKOROTTS_ENABLE_MCP=1` | Enable the opt-in `/mcp` endpoint on a trusted private network. |

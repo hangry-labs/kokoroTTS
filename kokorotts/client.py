@@ -122,6 +122,13 @@ class KokoroTTSClient:
             {"model_families": model_families},
         )
 
+    def set_experimental_natural_chunking(self, enabled: bool) -> dict[str, Any]:
+        return self._json(
+            "PUT",
+            "/system/settings/chunking",
+            {"experimental_natural_chunking": enabled},
+        )
+
     def metrics(
         self, text: str, voice: str = "af_heart", input_type: str = "text"
     ) -> dict[str, Any]:

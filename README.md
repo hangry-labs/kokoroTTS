@@ -266,6 +266,7 @@ Native and system endpoints:
 - `PUT /system/settings/model-families`
 - `PUT /system/settings/voices` (compatibility endpoint; selected voices expand to complete model families)
 - `PUT /system/settings/mcp`
+- `PUT /system/settings/chunking`
 - `POST /system/models/purge`
 - `POST /tts/metrics`
 - `POST /tts/tokenize`
@@ -528,6 +529,18 @@ task client-test
 
 The deployment controls in the System tab operate on five independently loaded model packs: the shared standard Kokoro checkpoint, German Martin, German Victoria, Kokoro Vietnamese, and Kokoro v1.1 Chinese. All packs are enabled by default on fresh installations. Existing installations that had all four former packs enabled automatically gain the new Chinese pack, while customized selections remain unchanged. The 54 standard voices, 14 Vietnamese voices, and 103 v1.1 Chinese/English voices move as their respective groups because each group shares one model and therefore has the same VRAM cost. Model weights load only when one of their voices is first used; disabling a pack releases cached models after active generations finish. In the tiny image, a disabled custom model is not downloaded unless its pack is later enabled and called.
 
+**System > Text chunking** also offers **Natural boundaries (experimental)**. It is off on fresh and existing deployments, preserving the tested splitter. Enable it to try sentence/clause, quote, and word-aware splits for non-English text. This can change pronunciation, pauses, generation time, and quality; it is not a guaranteed improvement. English keeps its current 400-phoneme quality ceiling. The setting affects subsequent requests from all clients, including native/OpenAI-compatible APIs, MCP, streams, token inspection, and non-English SSML text. A request already being planned or streamed keeps its original selection. Direct IPA overrides and explicit SSML break durations retain their existing rules.
+
+The choice is saved in `/app/persistent/app/settings.json`, alongside other deployment settings, and requires no restart. With the data volume it survives container/image replacement; without a mount it remains container-local. It can also be managed through the API:
+
+```bash
+curl -X PUT "http://localhost:7860/system/settings/chunking" \
+  -H "Content-Type: application/json" \
+  -d '{"experimental_natural_chunking":true}'
+```
+
+Send `false` to restore the established splitter. `GET /system/settings` reports the current selection under `chunking`; the Python client exposes `set_experimental_natural_chunking(True)` and `set_experimental_natural_chunking(False)`.
+
 Build or preview the README-based project website and its voice/SSML galleries
 with `task pages-build` or `task pages`. Run `task pages-test` for website checks;
 see the [website guide](site/README.md) for prerequisites and configuration.
@@ -629,6 +642,7 @@ The data volume is recommended but optional. Without it, the same files are stor
 
 #### Included Changes
 
+- Added an optional persistent **System > Text chunking > Natural boundaries (experimental)** setting. Off keeps the established splitter. On uses a separate non-English implementation that prefers sentence/clause boundaries, preserves nearby closing quotes and word runs, and rechecks every chunk against the 510-phoneme limit without dropping oversized word runs. The choice applies to subsequent native, OpenAI-compatible, MCP, streaming, and text-inspection requests and survives image replacement through the data volume. English retains its existing 400-phoneme quality ceiling; direct SSML phoneme overrides and authored breaks are unchanged. Different boundaries may change pronunciation, pauses, latency, and audio quality; the experimental mode is not a quality guarantee.
 - Opened the `v1.1-snapshot` development line after the qualified v1.0 release.
 - Add a multilingual README-based project website with shared navigation,
   integrated voice and SSML galleries, and local gallery styles.

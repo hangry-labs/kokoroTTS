@@ -142,6 +142,19 @@ class HttpClientServerSmokeTest(unittest.TestCase):
             families,
         )
 
+    def test_system_settings_chunking_put_persists_and_restores_mode(self) -> None:
+        previous = self.client.deployment_settings()["chunking"]["experimental_natural_chunking"]
+        try:
+            for enabled in (True, False):
+                response = self.client.set_experimental_natural_chunking(enabled)
+                self.assertEqual(response["chunking"]["experimental_natural_chunking"], enabled)
+                self.assertEqual(
+                    self.client.deployment_settings()["chunking"]["experimental_natural_chunking"],
+                    enabled,
+                )
+        finally:
+            self.client.set_experimental_natural_chunking(previous)
+
     def test_tts_metrics_basic_text_metrics(self) -> None:
         metrics = self.client.metrics("Hello from the Python client.", voice="af_heart")
 

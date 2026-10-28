@@ -499,6 +499,8 @@ class InferenceRuntime:
     def prepare_synthesis(
         self, text: str, voice: str, input_type: str = "text"
     ) -> list[SSMLSynthesisUnit]:
+        experimental_chunking = self.settings.experimental_natural_chunking()
+
         def phonemize(value: str, language: str, segment_voice: str) -> Iterator[str]:
             pipeline = self._pipeline_for(language, segment_voice)
             for _, phonemes, _ in pipeline(
@@ -506,6 +508,7 @@ class InferenceRuntime:
                 segment_voice,
                 1.0,
                 normalize_markdown_emphasis=input_type == "text",
+                experimental_natural_chunking=experimental_chunking,
             ):
                 yield phonemes
 

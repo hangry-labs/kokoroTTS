@@ -1,6 +1,7 @@
 from .catalog import DEFAULT_MODEL_REPO_ID, LANGUAGE_ALIASES, PIPELINE_LANGUAGE_CODES
 from .english_pronunciation import correct_english_pronunciations
 from .model import KModel
+from .natural_chunking import phonemize_naturally
 from .text_normalization import normalize_english_text
 from dataclasses import dataclass
 from huggingface_hub import hf_hub_download
@@ -370,6 +371,7 @@ class KPipeline:
         split_pattern: Optional[str] = r'\n+',
         model: Optional[KModel] = None,
         normalize_markdown_emphasis: bool = True,
+        experimental_natural_chunking: bool = False,
     ) -> Generator['KPipeline.Result', None, None]:
         model = model or self.model
         if model and voice is None:
@@ -411,7 +413,12 @@ class KPipeline:
             
             # Non-English processing with chunking
             else:
-                for chunk, ps in self._phonemize_non_english(graphemes):
+                chunks = (
+                    phonemize_naturally(graphemes, self.g2p, MODEL_PHONEME_LIMIT)
+                    if experimental_natural_chunking
+                    else self._phonemize_non_english(graphemes)
+                )
+                for chunk, ps in chunks:
                     output = KPipeline.infer(model, ps, pack, speed) if model else None
                     yield self.Result(graphemes=chunk, phonemes=ps, output=output, text_index=graphemes_index)
 

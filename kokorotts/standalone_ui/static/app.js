@@ -409,6 +409,9 @@ function renderDeploymentSettings(payload) {
     container.append(section)
   })
   updateModelSettingsSummary()
+  const chunking = $('#experimental-natural-chunking')
+  chunking.checked = payload.chunking?.experimental_natural_chunking === true
+  chunking.disabled = !payload.chunking
   const mcp = payload.mcp || {}
   $('#mcp-enabled').checked = Boolean(mcp.enabled)
   $('#mcp-location').textContent = t('mcp.location', {
@@ -433,6 +436,26 @@ function setAllModelSettings(checked) {
 
 $('#models-select-all').addEventListener('click', () => setAllModelSettings(true))
 $('#models-select-none').addEventListener('click', () => setAllModelSettings(false))
+
+$('#experimental-natural-chunking').addEventListener('change', async (event) => {
+  const checkbox = event.currentTarget
+  const requested = checkbox.checked
+  checkbox.disabled = true
+  try {
+    const settings = await fetchJson('/system/settings/chunking', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ experimental_natural_chunking: requested }),
+    })
+    renderDeploymentSettings(settings)
+    showToast(t(requested ? 'chunking.savedEnabled' : 'chunking.savedDisabled'), 'success')
+  } catch (error) {
+    checkbox.checked = !requested
+    showToast(errorMessage(error))
+  } finally {
+    checkbox.disabled = false
+  }
+})
 
 $('#mcp-enabled').addEventListener('change', async (event) => {
   const checkbox = event.currentTarget

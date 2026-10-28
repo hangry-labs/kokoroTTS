@@ -48,6 +48,32 @@ class FakeModel:
 
 
 class InferenceRuntimeTest(unittest.TestCase):
+    def test_chunking_setting_is_captured_once_for_each_ssml_plan(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            store = RuntimeSettingsStore(Path(directory) / "settings.json")
+            store.set_experimental_natural_chunking(True)
+            pipeline = FakePipeline("j")
+            original_call = pipeline.__class__.__call__
+
+            def changing_call(instance, *args, **kwargs):
+                store.set_experimental_natural_chunking(False)
+                yield from original_call(instance, *args, **kwargs)
+
+            runtime = InferenceRuntime(
+                pipeline_factory=lambda _language: pipeline,
+                settings=store,
+                eager_voices=False,
+            )
+            with patch.object(FakePipeline, "__call__", changing_call):
+                runtime.prepare_synthesis(
+                    '<speak>前半。<break time="100ms"/>後半。</speak>', "jf_alpha", "ssml"
+                )
+            runtime.prepare_synthesis("次のリクエスト。", "jf_alpha")
+            self.assertEqual(
+                [call["experimental_natural_chunking"] for call in pipeline.calls],
+                [True, True, False],
+            )
+
     def runtime(self, model_factory):
         return InferenceRuntime(
             model_factory=model_factory,

@@ -164,6 +164,11 @@
                 <button class="primary-button" id="save-model-settings" type="button"><i class="icon-check"></i><span data-i18n="models.save">Save model packs</span></button>
               </div>
             </section>
+            <section class="deployment-settings chunking-settings" aria-labelledby="chunking-settings-title">
+              <div class="section-title" id="chunking-settings-title"><i class="icon-audio-lines"></i><span data-i18n="chunking.title">Text chunking</span></div>
+              <label class="toggle-field chunking-toggle"><span data-i18n="chunking.enable">Natural boundaries (experimental)</span><input id="experimental-natural-chunking" type="checkbox" disabled aria-describedby="chunking-description"><span class="toggle-track" aria-hidden="true"></span></label>
+              <p id="chunking-description" data-i18n="chunking.description">Non-English text only. May change pronunciation and pauses. Saved for all clients; English stays unchanged. Off uses the established splitter.</p>
+            </section>
             <section class="deployment-settings mcp-settings" aria-labelledby="mcp-settings-title">
               <div class="section-title" id="mcp-settings-title"><i class="icon-radio"></i><span data-i18n="mcp.title">MCP connectivity</span></div>
               <p data-i18n="mcp.description">Allow trusted AI agents to generate expiring audio links and manage model packs. This is not authentication; use it only on a trusted deployment.</p>

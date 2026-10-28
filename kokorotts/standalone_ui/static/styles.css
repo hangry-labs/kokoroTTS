@@ -301,6 +301,9 @@ pre { margin: 10px 0 0; white-space: pre-wrap; overflow-wrap: anywhere; }
 .mcp-settings > p { margin: 8px 0 0; color: var(--muted); font-size: 0.72rem; line-height: 1.5; }
 .mcp-settings .mcp-toggle { margin-top: 12px; }
 .mcp-settings .mcp-location { overflow-wrap: anywhere; color: #9fa1a8; font-family: Consolas, "Cascadia Code", monospace; font-size: 0.66rem; }
+.chunking-settings > p { margin: 8px 0 0; color: var(--muted); font-size: 0.72rem; line-height: 1.5; }
+.chunking-settings .chunking-toggle { margin-top: 12px; }
+.chunking-toggle > span:first-child { min-width: 0; overflow-wrap: anywhere; }
 .settings-toolbar, .settings-save-row { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
 .settings-toolbar p { max-width: 760px; margin: 7px 0 0; color: var(--muted); font-size: 0.75rem; line-height: 1.5; }
 .settings-actions { display: flex; gap: 8px; flex: 0 0 auto; }

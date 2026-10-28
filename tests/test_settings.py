@@ -17,6 +17,28 @@ from kokorotts.settings import DEFAULT_SETTINGS_PATH, RuntimeSettingsStore
 
 
 class RuntimeSettingsStoreTest(unittest.TestCase):
+    def test_experimental_chunking_defaults_off_and_survives_new_store(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "settings.json"
+            store = RuntimeSettingsStore(path)
+            self.assertFalse(store.experimental_natural_chunking())
+            store.set_mcp_enabled(True)
+            store.set_experimental_natural_chunking(True)
+            restored = RuntimeSettingsStore(path)
+            self.assertTrue(restored.experimental_natural_chunking())
+            self.assertTrue(restored.mcp_enabled())
+            restored.set_experimental_natural_chunking(False)
+            self.assertFalse(RuntimeSettingsStore(path).experimental_natural_chunking())
+
+    def test_invalid_persisted_chunking_setting_uses_established_mode(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "settings.json"
+            for value in ("true", 1, None, [], {}):
+                path.write_text(json.dumps({"experimental_natural_chunking": value}))
+                self.assertFalse(RuntimeSettingsStore(path).experimental_natural_chunking())
+            with self.assertRaisesRegex(ValueError, "true or false"):
+                RuntimeSettingsStore(path).set_experimental_natural_chunking("true")
+
     def test_mcp_setting_is_disabled_by_default_and_persisted(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "settings.json"

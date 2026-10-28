@@ -1,16 +1,61 @@
 from __future__ import annotations
 
 import os
+import tempfile
 import unittest
+from pathlib import Path
 from unittest.mock import patch
 
 from fastapi.responses import Response
 from fastapi.testclient import TestClient
 
 from kokorotts.api import api, openai_speed_controls
+from kokorotts.natural_chunking import ChunkingValidationError
+from kokorotts.settings import RuntimeSettingsStore
 
 
 class OpenAICompatibilityApiTests(unittest.TestCase):
+    def test_system_chunking_setting_is_strict_persistent_and_additive(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            store = RuntimeSettingsStore(Path(directory) / "settings.json")
+            with patch("kokorotts.api.RUNTIME.settings", store):
+                self.assertFalse(self.client.get("/system/settings").json()["chunking"]["experimental_natural_chunking"])
+                response = self.client.put(
+                    "/system/settings/chunking", json={"experimental_natural_chunking": True}
+                )
+                self.assertEqual(response.status_code, 200)
+                self.assertTrue(response.json()["chunking"]["experimental_natural_chunking"])
+                self.assertTrue(RuntimeSettingsStore(store.path).experimental_natural_chunking())
+                for value in ("true", 1, None):
+                    invalid = self.client.put(
+                        "/system/settings/chunking", json={"experimental_natural_chunking": value}
+                    )
+                    self.assertEqual(invalid.status_code, 422)
+                self.assertTrue(store.experimental_natural_chunking())
+
+    def test_chunking_setting_write_failure_is_actionable_and_keeps_old_value(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            store = RuntimeSettingsStore(Path(directory) / "settings.json")
+            with patch("kokorotts.api.RUNTIME.settings", store), patch.object(
+                store, "_update", side_effect=PermissionError("read-only settings")
+            ):
+                response = self.client.put(
+                    "/system/settings/chunking", json={"experimental_natural_chunking": True}
+                )
+                self.assertEqual(response.status_code, 500)
+                self.assertIn("writable", response.json()["detail"])
+                self.assertFalse(store.experimental_natural_chunking())
+
+    def test_experimental_chunking_errors_are_client_errors_before_audio(self) -> None:
+        with patch(
+            "kokorotts.api.RUNTIME.prepare_synthesis",
+            side_effect=ChunkingValidationError("Replace the character or disable experimental chunking."),
+        ):
+            for endpoint in ("/tts/generate", "/tts/stream", "/tts/metrics", "/tts/tokenize"):
+                response = self.client.post(endpoint, json={"text": "test", "voice": "af_heart"})
+                self.assertEqual(response.status_code, 400, endpoint)
+                self.assertIn("disable experimental", response.json()["detail"])
+
     @classmethod
     def setUpClass(cls) -> None:
         cls.client = TestClient(api)

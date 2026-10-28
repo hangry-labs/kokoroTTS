@@ -28,6 +28,7 @@ SERVED_MODEL_FAMILIES_KEY = "served_model_families"
 SETTINGS_SCHEMA_VERSION_KEY = "schema_version"
 SETTINGS_SCHEMA_VERSION = 2
 MCP_ENABLED_KEY = "mcp_enabled"
+EXPERIMENTAL_NATURAL_CHUNKING_KEY = "experimental_natural_chunking"
 
 # v0.3/v1.0-snapshot installations persisted this exact list when every
 # available pack was enabled. Preserve that intent when adding the v1.1 family.
@@ -117,6 +118,15 @@ class RuntimeSettingsStore:
 
     def set_mcp_enabled(self, enabled: bool) -> None:
         self._update(MCP_ENABLED_KEY, bool(enabled))
+
+    def experimental_natural_chunking(self) -> bool:
+        value = self.snapshot().get(EXPERIMENTAL_NATURAL_CHUNKING_KEY, False)
+        return value if isinstance(value, bool) else False
+
+    def set_experimental_natural_chunking(self, enabled: bool) -> None:
+        if not isinstance(enabled, bool):
+            raise ValueError("experimental_natural_chunking must be true or false.")
+        self._update(EXPERIMENTAL_NATURAL_CHUNKING_KEY, enabled)
 
     def set_served_model_families(self, families: list[str]) -> list[str]:
         selected = self.validate_served_model_families(families)

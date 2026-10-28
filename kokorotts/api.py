@@ -54,9 +54,12 @@ from .openai_compat import (
     require_openai_api_key,
     resolve_openai_model,
 )
+from .natural_chunking import ChunkingValidationError
+from .pipeline import ENGLISH_QUALITY_PHONEME_LIMIT, MODEL_PHONEME_LIMIT
 from .runtime import InferenceRuntime, SynthesisChunk, SynthesisResult
 from .sample_texts import get_initial_text, get_intro_text, get_random_quote
 from .schemas import (
+    ChunkingSettingsUpdate,
     MCPSettingsUpdate,
     MetricsRequest,
     OpenAISpeechRequest,
@@ -311,7 +314,7 @@ def synthesize_payload(payload: TTSRequest) -> ProcessedSynthesis:
             payload.input_type,
             plan,
         )
-    except SSMLValidationError as exc:
+    except (SSMLValidationError, ChunkingValidationError) as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     waveform = inference.audio if inference else np.zeros(0, dtype=np.int16)
     if inference and payload.input_type == "ssml":
@@ -434,6 +437,8 @@ def get_text_metrics(
     if text.strip():
         try:
             phoneme_segments = RUNTIME.phoneme_segments(text, voice, input_type)
+        except ChunkingValidationError:
+            raise
         except Exception:  # noqa: BLE001 - metrics stay best-effort for UI compatibility
             if input_type == "ssml":
                 raise
@@ -742,6 +747,12 @@ def deployment_settings_payload() -> dict:
         "supported_model_families": model_family_inventory(),
         "settings_path": str(RUNTIME.settings.path),
         "model_loading": "lazy",
+        "chunking": {
+            "experimental_natural_chunking": RUNTIME.settings.experimental_natural_chunking(),
+            "scope": "non_english",
+            "max_phonemes": MODEL_PHONEME_LIMIT,
+            "english_quality_phoneme_limit": ENGLISH_QUALITY_PHONEME_LIMIT,
+        },
         "mcp": {
             "enabled": RUNTIME.settings.mcp_enabled(default=MCP_DEFAULT_ENABLED),
             "endpoint": "/mcp",
@@ -786,6 +797,23 @@ def update_mcp_setting(payload: MCPSettingsUpdate) -> dict:
     return deployment_settings_payload()
 
 
+@api.put("/system/settings/chunking", tags=["System"])
+def update_chunking_setting(payload: ChunkingSettingsUpdate) -> dict:
+    try:
+        RUNTIME.settings.set_experimental_natural_chunking(
+            payload.experimental_natural_chunking
+        )
+    except OSError as exc:
+        raise HTTPException(
+            status_code=500,
+            detail=(
+                f"Chunking setting could not be saved: {exc}. "
+                "Check the settings directory is writable."
+            ),
+        ) from exc
+    return deployment_settings_payload()
+
+
 @api.post("/tts/metrics", tags=["KokoroTTS native API"])
 def metrics(payload: MetricsRequest) -> dict:
     if not RUNTIME.serves_voice(payload.voice):
@@ -795,7 +823,7 @@ def metrics(payload: MetricsRequest) -> dict:
         )
     try:
         result = get_text_metrics(payload.text, payload.voice, payload.input_type)
-    except SSMLValidationError as exc:
+    except (SSMLValidationError, ChunkingValidationError) as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     return {
         "voice": payload.voice,
@@ -884,7 +912,7 @@ async def stream_tts(
             payload.text, payload.voice, payload.input_type
         )
         validate_plan_prosody(plan, payload)
-    except SSMLValidationError as exc:
+    except (SSMLValidationError, ChunkingValidationError) as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
     async def disconnected_stream():

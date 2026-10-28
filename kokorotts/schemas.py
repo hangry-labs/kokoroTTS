@@ -2,7 +2,7 @@
 
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, StrictBool
 
 
 class TTSRequest(BaseModel):
@@ -118,3 +118,15 @@ class ServedModelFamiliesRequest(BaseModel):
 
 class MCPSettingsUpdate(BaseModel):
     enabled: bool = Field(..., description="Whether the opt-in MCP endpoint is available.")
+
+
+class ChunkingSettingsUpdate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    experimental_natural_chunking: StrictBool = Field(
+        ...,
+        description=(
+            "Enable experimental natural-boundary chunking for non-English text "
+            "for all subsequent requests. Default is false; English is unchanged."
+        ),
+    )

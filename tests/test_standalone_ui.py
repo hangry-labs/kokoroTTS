@@ -156,6 +156,8 @@ class StandaloneUiTests(unittest.TestCase):
         self.assertIn('id="gpu-output"', index.text)
         self.assertIn('id="model-settings-groups"', index.text)
         self.assertIn('id="save-model-settings"', index.text)
+        self.assertIn('id="experimental-natural-chunking"', index.text)
+        self.assertIn("/system/settings/chunking", script.text)
         self.assertGreater(index.text.index('data-panel="system"'), index.text.index('data-panel="api"'))
         self.assertLess(index.text.index('id="model-settings-groups"'), index.text.index('id="runtime-output"'))
         self.assertLess(index.text.index('id="text-input"'), index.text.index('id="generate-button"'))
