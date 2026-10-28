@@ -58,7 +58,7 @@ Hear all 173 voices in their supported languages on the interactive examples pag
 
 **[Open the KokoroTTS examples page](https://hangry-labs.github.io/kokoroTTS/examples/)**
 
-To hear multiple characters generated in one request and see the exact scripts, open the dedicated **[SSML dialogue examples](https://hangry-labs.github.io/kokoroTTS/examples/ssml.html)**.
+Explore the **[Magic Studio and dialogue examples](https://hangry-labs.github.io/kokoroTTS/examples/ssml.html#magic-studio)** to see the visual turn editor, listen to Bella and Isabella's conversation, and inspect the multi-voice SSML scripts.
 
 The included interface provides generation and streaming workflows, precise voice controls, waveform playback and downloads, live API information, and runtime/GPU monitoring.
 
@@ -225,6 +225,14 @@ curl -X POST "http://localhost:7860/tts/generate" \
 ```
 
 #### Experimental SSML Input
+
+The current snapshot also includes **Magic Studio**, a visual multi-voice
+dialogue editor with per-turn preview/regeneration, locked takes, undo/redo,
+SSML-H import/export, and an explicitly saved script/workspace library.
+See [SSML-H and Magic Studio](docs/SSML-H.md) for the processor profile,
+take/render/assembly endpoints, limits and persistence. Kokoro uses native
+voices and prosody, not Qwen-style voice design or cloning. Choose **Text**,
+**SSML**, or **SSML-H** to edit the corresponding source directly.
 
 The native generation, streaming, metrics, and token-inspection endpoints accept experimental SSML when `input_type` is explicitly set to `ssml`. The default remains `text`; markup is never detected or enabled automatically. The browser UI exposes the same opt-in mode with an experimental indicator and an in-app rules guide.
 
@@ -642,6 +650,9 @@ The data volume is recommended but optional. Without it, the same files are stor
 
 #### Included Changes
 
+- Added a Bella/Isabella Magic dialogue recording in compact Opus format and a full-resolution WebP editor screenshot to the public dialogue showcase.
+- Fixed the local website preview's audio duration and seeking by serving byte ranges and consistent GET/HEAD headers, keeping the Magic recording's playback timeline correctly scaled.
+- Added the newer Hangry Labs **Magic Studio** dialogue workspace, adapted from Qwen3-TTS Studio: visual voice/language/prosody editing, per-turn previews and regeneration, locked takes, assembly, undo/redo, import/export, and explicitly saved scripts/audio workspaces with folders and search. Additive `/tts/plan`, `/tts/ssml/capabilities` and `/tts/magic/*` endpoints share the Kokoro runtime. Explicit `ssml-h` uses the pinned shared compiler; existing plain-text/SSML and OpenAI defaults are unchanged. Unsupported neural voice design, cloning and delivery directions fail clearly rather than being ignored.
 - Added an optional persistent **System > Text chunking > Natural boundaries (experimental)** setting. Off keeps the established splitter. On uses a separate non-English implementation that prefers sentence/clause boundaries, preserves nearby closing quotes and word runs, and rechecks every chunk against the 510-phoneme limit without dropping oversized word runs. The choice applies to subsequent native, OpenAI-compatible, MCP, streaming, and text-inspection requests and survives image replacement through the data volume. English retains its existing 400-phoneme quality ceiling; direct SSML phoneme overrides and authored breaks are unchanged. Different boundaries may change pronunciation, pauses, latency, and audio quality; the experimental mode is not a quality guarantee.
 - Opened the `v1.1-snapshot` development line after the qualified v1.0 release.
 - Add a multilingual README-based project website with shared navigation,

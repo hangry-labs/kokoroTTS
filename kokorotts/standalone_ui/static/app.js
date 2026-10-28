@@ -1,4 +1,5 @@
 import { AudioEditor } from './audio-editor.js'
+import { createStudio } from './studio.js'
 import { browserLanguage, initializeI18n, languageLabel, t } from './i18n.js'
 
 await initializeI18n()
@@ -44,6 +45,7 @@ const GPU_METRICS = [
 
 const generateOutput = new AudioEditor($('#generate-output'), { label: t('editor.generatedAudio') })
 const streamOutput = new AudioEditor($('#stream-output'), { label: t('editor.streamedAudio') })
+let studio = null
 
 function setStatus(message, tone = 'neutral') {
   const status = $('#global-status')
@@ -69,6 +71,7 @@ async function responseError(response) {
   const text = await response.text()
   try {
     const payload = JSON.parse(text)
+    if (Array.isArray(payload.detail)) return payload.detail.map((item) => `${(item.loc || []).join('.')}: ${item.msg}`).join('; ')
     return payload.error?.message || payload.detail || text
   } catch {
     return text || `HTTP ${response.status}`
@@ -271,6 +274,7 @@ function ssmlTemplate(value) {
 
 function setComposerText(value) {
   state.plainTextDraft = value
+  if (state.inputType === 'magic') studio?.editor.loadSample(value)
   if (state.inputType === 'ssml') {
     state.ssmlDraft = ssmlTemplate(value)
     $('#text-input').value = state.ssmlDraft
@@ -280,34 +284,46 @@ function setComposerText(value) {
   updateTextMetrics()
 }
 
-function setInputType(inputType) {
+function setInputType(inputType, options = {}) {
   const input = $('#text-input')
+  const previous = state.inputType
+  try { studio?.setMode(inputType, previous, options) }
+  catch (error) { showToast(errorMessage(error)); return }
   if (state.inputType === 'ssml') state.ssmlDraft = input.value
-  else state.plainTextDraft = input.value
+  else if (state.inputType === 'ssml-h') state.ssmlHDraft = input.value
+  else if (state.inputType === 'text') state.plainTextDraft = input.value
 
   state.inputType = inputType
   if (inputType === 'ssml') {
     if (!state.ssmlDraft) state.ssmlDraft = ssmlTemplate(state.plainTextDraft)
     input.value = state.ssmlDraft
-  } else {
+  } else if (inputType === 'ssml-h') {
+    input.value = previous === 'magic' ? studio.document() : (state.ssmlHDraft || `<speak version="1.1" xmlns="http://www.w3.org/2001/10/synthesis" xmlns:h="https://hangrylabs.app/ns/ssml-h/1.0">${escapeXml(state.plainTextDraft)}</speak>`)
+  } else if (inputType === 'text') {
     input.value = state.plainTextDraft
   }
 
-  const active = inputType === 'ssml'
+  const active = inputType === 'ssml' || inputType === 'ssml-h'
   const button = $('#ssml-mode-button')
   button.classList.toggle('active', active)
   button.setAttribute('aria-pressed', String(active))
   button.title = active ? t('ssml.disable') : t('ssml.enable')
   $('#composer').dataset.inputType = inputType
-  $('#input-mode-label').textContent = active ? 'SSML' : t('composer.text')
+  $('#markup-experimental').hidden = inputType === 'text'
+  $('#input-mode-label').textContent = inputType === 'magic' ? t('magic.title', {}, 'Magic') : active ? inputType.toUpperCase() : t('composer.text')
+  $$('[data-input-type]').forEach((control) => {
+    const selected = control.dataset.inputType === inputType
+    control.classList.toggle('active', selected)
+    control.setAttribute('aria-pressed', String(selected))
+  })
   input.spellcheck = !active
   input.setAttribute('aria-label', active ? t('composer.ssmlAria') : t('composer.textAria'))
   updateTextMetrics()
-  setStatus(active ? t('status.ssmlEnabled') : t('status.textEnabled'), active ? 'warning' : 'success')
+  setStatus(inputType === 'magic' ? t('magic.editorLabel') : active ? t('status.ssmlEnabled') : t('status.textEnabled'), active ? 'warning' : 'success')
 }
 
 function updateTextMetrics() {
-  const text = $('#text-input').value
+  const text = state.inputType === 'magic' && studio ? studio.editor.plainText() : $('#text-input').value
   const words = text.trim() ? text.trim().split(/\s+/u).length : 0
   const key = state.inputType === 'ssml' ? 'composer.metricsSsml' : 'composer.metricsText'
   $('#text-metrics').textContent = t(key, { characters: text.length, words })
@@ -317,7 +333,11 @@ $('#text-input').addEventListener('input', () => {
   if (state.inputType === 'ssml') state.ssmlDraft = $('#text-input').value
   else state.plainTextDraft = $('#text-input').value
   updateTextMetrics()
+  studio?.library.markDirty()
+  studio?.invalidateOutput()
 })
+
+$$('[data-input-type]').forEach((button) => button.addEventListener('click', () => setInputType(button.dataset.inputType)))
 
 $('#ssml-mode-button').addEventListener('click', () => {
   setInputType(state.inputType === 'ssml' ? 'text' : 'ssml')
@@ -361,6 +381,7 @@ function refreshVoiceOptions(preferredVoice) {
     voices.map((voice) => ({ value: voice.id, label: voiceDisplayName(voice) })),
     preferredVoice,
   )
+  studio?.syncVoices()
 }
 
 function updateModelSettingsSummary() {
@@ -520,6 +541,7 @@ async function loadSample(random = false) {
 
 $('#language').addEventListener('change', async () => {
   refreshVoiceOptions()
+  if (state.inputType === 'magic') return
   try {
     await loadSample(false)
     setStatus(t('status.languageReady'), 'success')
@@ -540,8 +562,8 @@ $('#sample-button').addEventListener('click', async () => {
 function requestPayload(outputFormat = $('#output-format').value) {
   const normalize = $('#normalize').checked
   return {
-    text: $('#text-input').value,
-    input_type: state.inputType,
+    text: state.inputType === 'magic' && studio ? studio.document() : $('#text-input').value,
+    input_type: state.inputType === 'magic' ? 'ssml-h' : state.inputType,
     voice: $('#voice').value,
     speed: Number($('#speed').value),
     device: $('#device').value,
@@ -573,25 +595,57 @@ $('#generate-button').addEventListener('click', async () => {
   generateOutput.clear()
   setStatus(t('status.generating'))
   const started = performance.now()
+  $('#generate-stop').hidden = false
+  $('#generate-stop').disabled = false
+  if (state.inputType !== 'magic') studio?.setExternalBusy(true)
   try {
+    if (state.inputType === 'magic') {
+      const blob = await studio.render(payload)
+      await generateOutput.load(blob, `kokorotts_dialogue.${payload.output_format}`)
+      await generateOutput.play().catch(() => {})
+      setStatus(t('status.generated', { seconds: ((performance.now() - started) / 1000).toFixed(2) }), 'success')
+      return
+    }
+    state.generateAbort = new AbortController()
     const response = await fetch('/tts/generate', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify(payload),
+      signal: state.generateAbort.signal,
     })
     if (!response.ok) throw new Error(await responseError(response))
     const blob = await response.blob()
     const extension = payload.output_format
     await generateOutput.load(blob, responseFilename(response, `kokorotts_${payload.voice}.${extension}`))
+    studio?.markOutput()
     await generateOutput.play().catch(() => {})
     setStatus(t('status.generated', { seconds: ((performance.now() - started) / 1000).toFixed(2) }), 'success')
   } catch (error) {
+    if (error.name === 'AbortError') { setStatus(t('stream.stop')); return }
     setStatus(t('status.generationFailed'), 'error')
     showToast(errorMessage(error))
   } finally {
+    studio?.setExternalBusy(false)
     button.disabled = false
     $('#output-format').disabled = false
+    $('#generate-stop').hidden = true
+    $('#generate-stop').disabled = true
+    state.generateAbort = null
   }
+})
+
+$('#generate-stop').addEventListener('click', () => { studio?.stop(); state.generateAbort?.abort() })
+$('#magic-assemble').addEventListener('click', async () => {
+  $('#generate-button').disabled = true
+  $('#generate-stop').hidden = false
+  $('#generate-stop').disabled = false
+  try {
+    const payload = requestPayload()
+    const blob = await studio.assemble(payload)
+    await generateOutput.load(blob, `kokorotts_dialogue.${payload.output_format}`)
+    await generateOutput.play().catch(() => {})
+  } catch (error) { if (error.name !== 'AbortError') showToast(errorMessage(error)) }
+  finally { $('#generate-button').disabled = false; $('#generate-stop').hidden = true }
 })
 
 $('#output-format').addEventListener('change', () => {
@@ -607,7 +661,7 @@ $('#tokenize-button').addEventListener('click', async () => {
     const payload = await fetchJson('/tts/tokenize', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ text: $('#text-input').value, voice: $('#voice').value, input_type: state.inputType }),
+      body: JSON.stringify({ text: requestPayload().text, voice: $('#voice').value, input_type: requestPayload().input_type }),
     })
     $('#token-output').textContent = JSON.stringify(payload, null, 2)
     $('#token-details').open = true
@@ -1226,6 +1280,11 @@ window.addEventListener('beforeunload', () => {
 restoreSessionState()
 setHeroCollapsed(state.headerCollapsed, false, false)
 loadWorkspace()
+  .then(async () => {
+    studio = await createStudio({ state, requestPayload, fetchJson, responseError,
+      showToast, errorMessage, setInputType, updateTextMetrics, output: generateOutput })
+    setInputType('magic')
+  })
   .then(() => activateTab(state.activeTab))
   .catch((error) => {
     setStatus(t('status.connectionFailed'), 'error')

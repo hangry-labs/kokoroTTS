@@ -1,12 +1,117 @@
-"""Public-source staging must not copy ignored files or follow outside links."""
+"""Public-source staging safety and media-aware website preview serving."""
 from contextlib import redirect_stdout
+from http.client import HTTPConnection
+from http.server import ThreadingHTTPServer
 import io
 from pathlib import Path
 import shutil
 import subprocess
 import tempfile
+from threading import Thread
 import unittest
 from unittest.mock import patch
+
+from scripts.serve_pages import Handler, PREFIX
+
+
+class PagesPreviewTests(unittest.TestCase):
+    def setUp(self):
+        workspace = tempfile.TemporaryDirectory()
+        self.addCleanup(workspace.cleanup)
+        root = Path(workspace.name)
+        (root / 'dialogue.opus').write_bytes(b'OggS' + bytes(range(256)))
+        (root / 'empty.opus').touch()
+        root_patch = patch('scripts.serve_pages.ROOT', root)
+        root_patch.start()
+        self.addCleanup(root_patch.stop)
+
+        class QuietHandler(Handler):
+            def log_message(self, *args):
+                pass
+
+        self.server = ThreadingHTTPServer(('127.0.0.1', 0), QuietHandler)
+        worker = Thread(target=self.server.serve_forever, daemon=True)
+        worker.start()
+
+        def stop():
+            self.server.shutdown()
+            worker.join()
+            self.server.server_close()
+
+        self.addCleanup(stop)
+
+    def request(self, method='GET', path=PREFIX + '/dialogue.opus', **headers):
+        connection = HTTPConnection(*self.server.server_address, timeout=5)
+        self.addCleanup(connection.close)
+        connection.request(method, path, headers=headers)
+        response = connection.getresponse()
+        return response, response.read()
+
+    def test_full_audio_and_head_share_length_type_and_range_support(self):
+        full, body = self.request()
+        head, head_body = self.request('HEAD')
+        self.assertEqual(full.status, 200)
+        self.assertEqual(head.status, 200)
+        self.assertEqual(body, b'OggS' + bytes(range(256)))
+        self.assertEqual(head_body, b'')
+        for name in ('Content-Length', 'Content-Type', 'Accept-Ranges'):
+            self.assertEqual(full.getheader(name), head.getheader(name))
+        self.assertEqual(full.getheader('Accept-Ranges'), 'bytes')
+        self.assertEqual(full.getheader('Content-Length'), '260')
+
+    def test_audio_ranges_support_middle_tail_and_open_ended_seeking(self):
+        data = b'OggS' + bytes(range(256))
+        for requested, start, end in (
+            ('bytes=100-131', 100, 131),
+            ('bytes=-32', 228, 259),
+            ('bytes=200-', 200, 259),
+            ('bytes=250-999', 250, 259),
+            ('bytes=-999', 0, 259),
+        ):
+            with self.subTest(requested=requested):
+                response, body = self.request(
+                    path=PREFIX + '/dialogue.opus?v=2', Range=requested,
+                )
+                self.assertEqual(response.status, 206)
+                self.assertEqual(body, data[start:end + 1])
+                self.assertEqual(response.getheader('Content-Range'), f'bytes {start}-{end}/260')
+                self.assertEqual(int(response.getheader('Content-Length')), len(body))
+
+    def test_head_ignores_range_and_invalid_get_ranges_are_bounded(self):
+        head, body = self.request('HEAD', Range='bytes=10-19')
+        self.assertEqual(head.status, 200)
+        self.assertEqual(head.getheader('Content-Length'), '260')
+        self.assertEqual(body, b'')
+        for requested in ('bytes=260-', 'bytes=20-10', 'bytes=-0', 'bytes=invalid'):
+            with self.subTest(requested=requested):
+                response, body = self.request(Range=requested)
+                self.assertEqual(response.status, 416)
+                self.assertEqual(response.getheader('Content-Range'), 'bytes */260')
+                self.assertEqual(body, b'')
+        empty, body = self.request(path=PREFIX + '/empty.opus', Range='bytes=0-')
+        self.assertEqual(empty.status, 416)
+        self.assertEqual(empty.getheader('Content-Range'), 'bytes */0')
+
+    def test_unsupported_or_conditional_ranges_fall_back_to_full_response(self):
+        for headers in (
+            {'Range': 'bytes=0-1,10-11'},
+            {'Range': 'items=0-1'},
+            {'Range': 'bytes=0-1', 'If-Range': 'old-version'},
+        ):
+            with self.subTest(headers=headers):
+                response, body = self.request(**headers)
+                self.assertEqual(response.status, 200)
+                self.assertEqual(len(body), 260)
+
+    def test_get_and_head_keep_project_prefix_routing(self):
+        for method in ('GET', 'HEAD'):
+            with self.subTest(method=method):
+                redirect, _ = self.request(method, path=PREFIX)
+                self.assertEqual(redirect.status, 302)
+                self.assertEqual(redirect.getheader('Location'), PREFIX + '/')
+                missing, _ = self.request(method, path='/dialogue.opus')
+                self.assertEqual(missing.status, 404)
+
 
 try:
     from scripts.stage_pages import stage

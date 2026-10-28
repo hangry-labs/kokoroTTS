@@ -1,6 +1,6 @@
 ---
 layout: default
-title: SSML dialogue examples
+title: Magic Studio and dialogue examples
 permalink: /examples/ssml.html
 sidebar: false
 wide: true

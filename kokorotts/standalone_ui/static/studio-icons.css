@@ -1,0 +1,6 @@
+@font-face { font-family: 'studio-lucide'; src: url('/static/vendor/lucide/studio-lucide.woff2') format('woff2'); font-display:block; }
+.icon-mic, .icon-lock, .icon-lock-open, .icon-upload { font-family:'studio-lucide' !important; }
+.icon-mic::before { content:'\e118'; }
+.icon-lock::before { content:'\e10b'; }
+.icon-lock-open::before { content:'\e10c'; }
+.icon-upload::before { content:'\e19e'; }

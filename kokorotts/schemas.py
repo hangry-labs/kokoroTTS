@@ -9,7 +9,7 @@ class TTSRequest(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
     text: str = Field(..., min_length=1, description="Text to synthesize.")
-    input_type: Literal["text", "ssml"] = Field(
+    input_type: Literal["text", "ssml", "ssml-h"] = Field(
         "text",
         description=(
             "Input interpretation. Experimental SSML must be selected explicitly and "
@@ -88,7 +88,7 @@ class OpenAISpeechRequest(BaseModel):
 
 class MetricsRequest(BaseModel):
     text: str = Field("", description="Text to inspect.")
-    input_type: Literal["text", "ssml"] = Field(
+    input_type: Literal["text", "ssml", "ssml-h"] = Field(
         "text", description="Input interpretation used for token inspection."
     )
     voice: str = Field(

@@ -317,7 +317,7 @@ def synthesize_payload(payload: TTSRequest) -> ProcessedSynthesis:
     except (SSMLValidationError, ChunkingValidationError) as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     waveform = inference.audio if inference else np.zeros(0, dtype=np.int16)
-    if inference and payload.input_type == "ssml":
+    if inference and payload.input_type in {"ssml", "ssml-h"}:
         processed_chunks = list(
             iter_processed_ssml_audio(
                 inference.chunks,
@@ -407,7 +407,7 @@ def iter_stream_audio(
         payload.input_type,
         plan,
     )
-    if payload.input_type == "ssml" and plan is not None:
+    if payload.input_type in {"ssml", "ssml-h"} and plan is not None:
         audio_chunks = iter_processed_ssml_audio(
             chunks,
             plan,
@@ -440,7 +440,7 @@ def get_text_metrics(
         except ChunkingValidationError:
             raise
         except Exception:  # noqa: BLE001 - metrics stay best-effort for UI compatibility
-            if input_type == "ssml":
+            if input_type in {"ssml", "ssml-h"}:
                 raise
             phoneme_segments = []
     return {
@@ -628,6 +628,7 @@ def status() -> dict:
         "input_types": {
             "text": {"label": "Plain text", "experimental": False},
             "ssml": {"label": "SSML", "experimental": True},
+            "ssml-h": {"label": "SSML-H / Magic", "experimental": True},
         },
     }
 
@@ -642,6 +643,7 @@ def defaults() -> dict:
         "input_types": {
             "text": {"label": "Plain text", "experimental": False},
             "ssml": {"label": "SSML", "experimental": True},
+            "ssml-h": {"label": "SSML-H / Magic", "experimental": True},
         },
         "voice": default_voice,
         "speed": 1.0,

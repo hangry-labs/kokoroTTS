@@ -24,6 +24,13 @@ export function t(key, variables = {}, fallback = key) {
   return interpolate(typeof value === 'string' ? value : fallback, variables)
 }
 
+// Shared studio modules support both literal and tagged-template messages.
+export function msg(value, ...values) {
+  if (typeof value === 'string') return t(`text:${value}`, {}, value)
+  const template = value.reduce((text, part, index) => text + part + (index < values.length ? `{v${index}}` : ''), '')
+  return t(`text:${template}`, Object.fromEntries(values.map((item, index) => [`v${index}`, item])), template)
+}
+
 export function currentLocale() {
   return bootstrap.locale
 }

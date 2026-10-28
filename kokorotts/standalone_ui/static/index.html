@@ -22,7 +22,9 @@
     }
   </script>
   <link rel="stylesheet" href="/static/vendor/lucide/lucide.css">
+  <link rel="stylesheet" href="/static/studio-icons.css">
   <link rel="stylesheet" href="/static/styles.css">
+  <link rel="stylesheet" href="/static/magic.css">
   <script type="module" src="/static/app.js"></script>
 </head>
 <body>
@@ -106,25 +108,107 @@
     </aside>
 
     <section class="content-panel">
+      <div class="generate-workspace-grid" id="generate-authoring"><div class="generate-primary-column">
       <section class="composer" id="composer">
+        <div class="script-toolbar">
+          <label class="script-inline-name"><span class="visually-hidden" data-i18n="scripts.name">Script name</span><input id="script-name" type="text" maxlength="80" placeholder="Name this script" data-i18n-placeholder="scripts.namePlaceholder" autocomplete="off"></label>
+          <button class="secondary-button compact-command" id="script-save" type="button" hidden><i class="icon-check"></i><span data-i18n="scripts.saveShort">Save</span></button>
+          <button class="icon-button bordered" id="dialogue-undo" type="button" title="Undo" aria-label="Undo" disabled><i class="icon-rotate-ccw"></i></button>
+          <button class="icon-button bordered" id="dialogue-redo" type="button" title="Redo" aria-label="Redo" disabled><i class="icon-rotate-ccw" style="transform:scaleX(-1)"></i></button>
+          <button class="icon-button bordered" id="script-new" type="button" title="New script" aria-label="New script"><i class="icon-file-audio"></i></button>
+          <input id="script-import-input" type="file" accept=".ssml,.xml,application/ssml+xml" hidden>
+          <details class="script-transfer-menu"><summary><i class="icon-upload"></i><span data-i18n="scripts.transfer">Import / export</span></summary><div class="script-transfer-panel"><button class="secondary-button" id="script-import" type="button" data-i18n="scripts.import">Import SSML-H</button><button class="secondary-button" id="script-download" type="button" data-i18n="scripts.export">Export SSML-H</button></div></details>
+        </div>
         <div class="composer-heading">
-          <div class="section-title"><i class="icon-message-square-text"></i><span id="input-mode-label" data-i18n="composer.text">Text</span></div>
+          <div class="section-title"><i class="icon-message-square-text"></i><span id="input-mode-label" data-i18n="composer.text">Text</span><small class="markup-experimental" id="markup-experimental" hidden data-i18n="ssml.experimental">Experimental</small></div>
           <div class="composer-actions">
             <span class="text-metrics" id="text-metrics" data-i18n="composer.zeroCharacters">0 characters</span>
+            <div class="segmented-control input-type-control" role="group" aria-label="Input format">
+              <button type="button" data-input-type="magic" aria-pressed="false" data-i18n="magic.title">Magic</button>
+              <button type="button" class="active" data-input-type="text" aria-pressed="true" data-i18n="composer.text">Text</button>
+              <button type="button" data-input-type="ssml" aria-pressed="false">SSML</button>
+              <button type="button" data-input-type="ssml-h" aria-pressed="false">SSML-H</button>
+            </div>
             <div class="ssml-mode-control">
-              <button class="secondary-button compact-command ssml-mode-button" id="ssml-mode-button" type="button" aria-pressed="false" title="Enable experimental SSML input" data-i18n-title="ssml.enable"><i class="icon-braces"></i>SSML<span data-i18n="ssml.experimental">Experimental</span></button>
+              <button class="secondary-button compact-command ssml-mode-button" id="ssml-mode-button" type="button" hidden aria-pressed="false" title="Enable experimental SSML input" data-i18n-title="ssml.enable"><i class="icon-braces"></i>SSML<span data-i18n="ssml.experimental">Experimental</span></button>
               <button class="ssml-help-button" id="ssml-help-button" type="button" aria-label="Open experimental SSML guide" aria-haspopup="dialog" title="SSML rules" data-i18n-aria-label="ssml.openGuide" data-i18n-title="ssml.rules">i</button>
             </div>
             <button class="secondary-button compact-command" id="sample-button" type="button"><i class="icon-shuffle"></i><span data-i18n="composer.newSample">New sample</span></button>
             <button class="secondary-button compact-command" id="tokenize-button" type="button"><i class="icon-braces"></i><span data-i18n="composer.inspectTokens">Inspect tokens</span></button>
           </div>
         </div>
+        <section class="magic-editor-shell" id="magic-editor-shell" aria-label="Magic dialogue editor" data-i18n-aria-label="magic.editorLabel">
+          <div class="magic-toolbar" role="toolbar" aria-label="Dialogue tools" data-i18n-aria-label="magic.toolbarLabel">
+            <div class="magic-menu" data-magic-menu="voice">
+              <button class="magic-category-button" type="button" data-magic-menu-trigger="voice" aria-expanded="false" title="Voice" aria-label="Voice" data-i18n-title="magic.voice" data-i18n-aria-label="magic.voice"><i class="icon-mic"></i><span data-i18n="magic.voice">Voice</span><i class="icon-chevron-down"></i></button>
+              <section class="magic-menu-panel magic-choice-panel" data-magic-menu-panel="voice" hidden>
+                <div class="magic-menu-heading"><strong data-i18n="magic.voice">Voice</strong><span data-magic-current="voice"></span></div>
+                <label class="magic-menu-search"><span class="visually-hidden" data-i18n="profiles.search">Search saved voices</span><input data-magic-filter="voice" type="search" placeholder="Search voices" data-i18n-placeholder="profiles.searchPlaceholder"></label>
+                <div class="magic-menu-list magic-voice-menu-list" data-magic-options="voice"></div>
+                <select id="magic-voice-control" hidden tabindex="-1" aria-hidden="true"></select>
+              </section>
+            </div>
+            <div class="magic-menu" data-magic-menu="language">
+              <button class="magic-category-button" type="button" data-magic-menu-trigger="language" aria-expanded="false" title="Language" aria-label="Language" data-i18n-title="magic.language" data-i18n-aria-label="magic.language"><i class="icon-book-open"></i><span data-i18n="magic.language">Language</span><i class="icon-chevron-down"></i></button>
+              <section class="magic-menu-panel magic-choice-panel" data-magic-menu-panel="language" hidden>
+                <div class="magic-menu-heading"><strong data-i18n="magic.language">Language</strong><span data-magic-current="language"></span></div>
+                <label class="magic-menu-search"><span class="visually-hidden" data-i18n="magic.searchLanguages">Search languages</span><input data-magic-filter="language" type="search" placeholder="Search languages" data-i18n-placeholder="magic.searchLanguages"></label>
+                <div class="magic-menu-list" data-magic-options="language"></div>
+                <select id="magic-language-control" hidden tabindex="-1" aria-hidden="true"></select>
+              </section>
+            </div>
+            <div class="magic-menu" data-magic-menu="direction">
+              <button class="magic-category-button" type="button" data-magic-menu-trigger="direction" aria-expanded="false" title="Direction" aria-label="Direction" data-i18n-title="magic.direction" data-i18n-aria-label="magic.direction"><i class="icon-message-square-text"></i><span data-i18n="magic.direction">Direction</span><i class="icon-chevron-down"></i></button>
+              <section class="magic-menu-panel magic-direction-panel" data-magic-menu-panel="direction" hidden>
+                <div class="magic-menu-heading"><strong data-i18n="magic.direction">Direction</strong><span data-magic-current="direction"></span></div>
+                <div class="magic-direction-layout">
+                  <div class="magic-menu-mode-list">
+                    <button type="button" data-magic-direction-mode="predefined"><i class="icon-sparkles" aria-hidden="true"></i><span data-i18n="magic.predefined">Predefined</span><i class="icon-chevron-down" aria-hidden="true"></i></button>
+                    <button type="button" data-magic-direction-mode="custom"><i class="icon-message-square-text" aria-hidden="true"></i><span data-i18n="magic.directionCustom">Custom...</span><i class="icon-chevron-down" aria-hidden="true"></i></button>
+                  </div>
+                  <div class="magic-menu-detail" data-magic-direction-detail="predefined">
+                    <div class="magic-menu-list" data-magic-options="direction"></div>
+                  </div>
+                  <div class="magic-menu-detail" data-magic-direction-detail="custom" hidden>
+                    <label class="magic-popup-field"><span data-i18n="magic.customDirection">Custom direction</span><input id="magic-custom-direction" type="text" maxlength="240" placeholder="Softly, with cautious optimism" data-i18n-placeholder="magic.customDirectionPlaceholder"></label>
+                  </div>
+                </div>
+                <select id="magic-direction-control" hidden tabindex="-1" aria-hidden="true"></select>
+              </section>
+            </div>
+            <div class="magic-menu" data-magic-menu="transformations">
+              <button class="magic-category-button" type="button" data-magic-menu-trigger="transformations" aria-expanded="false" title="Transform" aria-label="Transform" data-i18n-title="magic.transformations" data-i18n-aria-label="magic.transformations"><i class="icon-sliders-horizontal"></i><span data-i18n="magic.transformations">Transform</span><i class="icon-chevron-down"></i></button>
+              <section class="magic-menu-panel magic-transform-panel" data-magic-menu-panel="transformations" hidden>
+                <div class="magic-menu-heading"><strong data-i18n="magic.transformations">Transform</strong><span data-magic-current="transformations"></span></div>
+                <label class="magic-popup-field"><span data-i18n="magic.rate">Rate</span><select id="magic-rate-control"></select></label>
+                <label class="magic-popup-field"><span data-i18n="magic.pitch">Pitch</span><select id="magic-pitch-control"></select></label>
+                <label class="magic-popup-field"><span data-i18n="magic.volume">Volume</span><select id="magic-volume-control"></select></label>
+              </section>
+            </div>
+            <div class="magic-menu" data-magic-menu="expression">
+              <button class="magic-category-button" type="button" data-magic-menu-trigger="expression" aria-expanded="false" title="Expression" aria-label="Expression" data-i18n-title="magic.expression" data-i18n-aria-label="magic.expression"><i class="icon-sparkles"></i><span data-i18n="magic.expression">Expression</span><i class="icon-chevron-down"></i></button>
+              <section class="magic-menu-panel magic-expression-panel" data-magic-menu-panel="expression" hidden>
+                <div class="magic-menu-heading"><strong data-i18n="magic.expression">Expression</strong></div>
+                <label class="magic-popup-field" title="Inline cues are experimental and may be spoken literally" data-i18n-title="magic.cueHelp"><span data-i18n="magic.cue">Cue (experimental)</span><select id="magic-expression-control"></select></label>
+                <label class="magic-popup-field"><span data-i18n="magic.sayAs">Say as</span><select id="magic-say-as-control"></select></label>
+                <button class="secondary-button compact-command magic-pronunciation-action" id="magic-add-substitution" type="button"><i class="icon-audio-lines"></i><span data-i18n="magic.pronunciation">Pronunciation</span></button>
+              </section>
+            </div>
+            <div class="magic-toolbar-actions">
+              <button class="secondary-button compact-command" id="magic-edit-definitions" type="button" title="Characters" aria-label="Characters" data-i18n-title="magic.characters" data-i18n-aria-label="magic.characters"><i class="icon-boxes"></i><span data-i18n="magic.characters">Characters</span><span class="magic-definition-count" id="magic-definition-count">0</span></button>
+              <button class="secondary-button compact-command" id="magic-add-pause" type="button" title="Add pause" aria-label="Add pause" data-i18n-title="magic.addPause" data-i18n-aria-label="magic.addPause"><i class="icon-pause"></i><span data-i18n="magic.addPause">Add pause</span></button>
+              <button class="secondary-button compact-command" id="magic-add-turn" type="button" title="Add turn" aria-label="Add turn" data-i18n-title="magic.addTurn" data-i18n-aria-label="magic.addTurn"><i class="icon-message-square-text"></i><span data-i18n="magic.addTurn">Add turn</span></button>
+            </div>
+          </div>
+          <div class="magic-canvas" id="magic-editor"></div>
+          <footer class="magic-footer"><span><i class="icon-sparkles"></i><span data-i18n="magic.footer">Turns are converted to validated SSML-H when you generate</span></span><span id="magic-summary" data-i18n="text:1 turn">1 turn</span></footer>
+        </section>
         <textarea id="text-input" rows="8" spellcheck="true" aria-label="Text to synthesize" data-i18n-aria-label="composer.textAria"></textarea>
         <details id="token-details"><summary data-i18n="composer.tokenDetails">Token details</summary><pre id="token-output"></pre></details>
       </section>
 
       <div class="tab-panel" data-panel="generate">
-        <div class="generate-action-row"><button class="primary-button" id="generate-button" type="button"><i class="icon-audio-lines"></i><span data-i18n="tabs.generate">Generate</span></button></div>
+        <div class="generate-action-row"><button class="primary-button" id="generate-button" type="button"><i class="icon-audio-lines"></i><span data-i18n="tabs.generate">Generate</span></button><button class="secondary-button" id="generate-stop" type="button" disabled hidden><i class="icon-square"></i><span data-i18n="stream.stop">Stop</span></button><button class="secondary-button" id="magic-assemble" type="button" hidden disabled><i class="icon-audio-lines"></i><span data-i18n="magic.assemble">Assemble takes</span></button></div>
         <div id="generate-output"></div>
         <div class="output-options"><label class="compact-field"><span data-i18n="generate.outputFormat">Output format</span><select id="output-format"><option value="mp3">MP3</option></select></label></div>
       </div>
@@ -138,6 +222,17 @@
         <div class="stream-progress" id="stream-progress" hidden><span></span></div>
       </div>
 
+      </div>
+      <aside class="script-library" aria-labelledby="script-library-title">
+        <div class="script-library-heading">
+          <div class="section-title"><i class="icon-book-open"></i><span id="script-library-title" data-i18n="scripts.saved">Saved scripts</span><span class="count-badge" id="script-count">0</span></div>
+          <button class="icon-button bordered" id="script-folder-add" type="button" title="New folder" aria-label="New folder" data-i18n-title="scripts.newFolder" data-i18n-aria-label="scripts.newFolder"><span class="folder-plus-icon" aria-hidden="true">+</span></button>
+        </div>
+        <label class="profile-search script-search"><span class="visually-hidden" data-i18n="scripts.search">Search saved scripts</span><input id="script-filter" type="search" placeholder="Search scripts" data-i18n-placeholder="scripts.searchPlaceholder"></label>
+        <div class="script-list" id="script-list"></div>
+        <small class="script-library-note" data-i18n="scripts.persisted">Scripts remain in the persistent product volume.</small>
+      </aside>
+      </div>
       <div class="tab-panel" data-panel="api" hidden>
         <div class="view-heading"><div><h2 data-i18n="tabs.api">API</h2><p data-i18n="api.description">Live discovery responses</p></div><button class="secondary-button" id="api-refresh" type="button"><i class="icon-refresh-cw"></i><span data-i18n="common.refresh">Refresh</span></button></div>
         <div class="data-output json-output" id="api-output"></div>
@@ -189,6 +284,8 @@
       <div><span data-i18n="ssml.experimental">Experimental</span><h2 id="ssml-dialog-title" data-i18n="ssml.title">SSML input</h2></div>
       <button class="icon-button bordered" id="ssml-help-close" type="button" aria-label="Close SSML guide" title="Close" data-i18n-aria-label="ssml.closeGuide" data-i18n-title="common.close"><i class="icon-x"></i></button>
     </div>
+    <p data-i18n="studio.guide">Magic edits SSML-H dialogue. SSML-H uses standard rate/pitch/volume effects; legacy SSML keeps Kokoro speed/tempo and IPA. Kokoro supports native voices, not neural voice design, cloning or delivery instructions.</p>
+    <p><a href="https://github.com/hangry-labs/kokoroTTS/blob/main/docs/SSML-H.md" target="_blank" rel="noreferrer">SSML-H / Magic Studio</a> · <a href="/tts/ssml/capabilities" target="_blank" rel="noreferrer" data-i18n="studio.capabilities">Supported controls and limits</a></p>
     <p data-i18n="ssml.intro">SSML is used only when the orange SSML mode is active. Plain text remains the default. Language segments keep the current voice; voice segments create characters and multilingual dialogue.</p>
     <pre><code>&lt;speak&gt;
   &lt;voice name="af_heart"&gt;Good morning, Michael.&lt;/voice&gt;
@@ -212,5 +309,26 @@
   </dialog>
 
   <div class="toast" id="toast" role="alert" hidden></div>
+<dialog class="guide-dialog compact-dialog" id="magic-substitution-dialog">
+    <form id="magic-substitution-form" method="dialog">
+      <div class="dialog-heading"><h2 data-i18n="magic.pronunciationTitle">Pronunciation override</h2><button class="icon-button" id="magic-substitution-close" type="button" title="Close" aria-label="Close" data-i18n-title="common.close" data-i18n-aria-label="common.close"><i class="icon-x"></i></button></div>
+      <p data-i18n="magic.pronunciationCopy">Keep the selected text in the script while sending different written text to the speech model.</p>
+      <div class="magic-selected-text"><span data-i18n="magic.selectedText">Selected text</span><output id="magic-substitution-source"></output></div>
+      <label class="field"><span data-i18n="magic.speakAs">Speak as</span><input id="magic-substitution-alias" type="text" maxlength="300" autocomplete="off" required placeholder="Text the model should pronounce" data-i18n-placeholder="magic.speakAsPlaceholder"></label>
+      <div class="dialog-actions"><button class="secondary-button" id="magic-substitution-cancel" type="button" data-i18n="common.cancel">Cancel</button><button class="primary-button" type="submit"><i class="icon-check"></i><span data-i18n="magic.applyPronunciation">Apply pronunciation</span></button></div>
+    </form>
+  </dialog>
+<dialog class="guide-dialog" id="edit-script-dialog">
+    <form id="edit-script-form" method="dialog">
+      <div class="dialog-heading"><h2 data-i18n="scripts.editTitle">Edit script details</h2><button class="icon-button" id="edit-script-close" type="button" title="Close" aria-label="Close" data-i18n-title="common.close" data-i18n-aria-label="common.close"><i class="icon-x"></i></button></div>
+      <p><span data-i18n="scripts.editCopy">Organize</span> <strong id="edit-script-name"></strong> <span data-i18n="scripts.editSuffix">with a description and searchable tags.</span></p>
+      <label class="field"><span data-i18n="scripts.folder">Folder</span><select id="edit-script-folder"></select></label>
+      <label class="field"><span><span data-i18n="profiles.tags">Tags</span> <small data-i18n="profiles.commaSeparated">Comma separated</small></span><input id="edit-script-tags" type="text" maxlength="395" placeholder="launch, dramatic, english" data-i18n-placeholder="scripts.tagsPlaceholder" autocomplete="off"></label>
+      <label class="field"><span><span data-i18n="profiles.description">Description</span> <small data-i18n="common.optional">Optional</small></span><input id="edit-script-description" type="text" maxlength="240" placeholder="Short launch dialogue" data-i18n-placeholder="scripts.descriptionPlaceholder"></label>
+      <div class="dialog-actions"><button class="secondary-button" id="edit-script-cancel" type="button" data-i18n="common.cancel">Cancel</button><button class="primary-button" type="submit"><i class="icon-check"></i><span data-i18n="scripts.updateDetails">Update details</span></button></div>
+    </form>
+  </dialog>
+<dialog class="confirm-dialog script-folder-dialog" id="script-folder-dialog"><form id="script-folder-form"><div class="dialog-heading"><h2 data-i18n="scripts.newFolder">New folder</h2><button class="icon-button" id="script-folder-close" type="button" title="Close" aria-label="Close" data-i18n-title="common.close" data-i18n-aria-label="common.close"><i class="icon-x"></i></button></div><label class="field"><span data-i18n="scripts.folderName">Folder name</span><input id="script-folder-name" type="text" maxlength="80" placeholder="Audio dramas" data-i18n-placeholder="scripts.folderPlaceholder" required></label><div class="dialog-actions"><button class="secondary-button" id="script-folder-cancel" type="button" data-i18n="common.cancel">Cancel</button><button class="primary-button" type="submit"><i class="icon-check"></i><span data-i18n="scripts.createFolder">Create folder</span></button></div></form></dialog>
+<dialog class="confirm-dialog" id="delete-script-dialog"><div class="dialog-heading"><h2 data-i18n="scripts.deleteTitle">Delete saved script?</h2><button class="icon-button" id="delete-script-close" type="button" title="Close" aria-label="Close" data-i18n-title="common.close" data-i18n-aria-label="common.close"><i class="icon-x"></i></button></div><p><span data-i18n="scripts.deletePrefix">Permanently delete</span> <strong id="delete-script-name"></strong><span data-i18n="scripts.deleteSuffix">?</span></p><div class="dialog-actions"><button class="secondary-button" id="delete-script-cancel" type="button" data-i18n="common.cancel">Cancel</button><button class="danger-button" id="delete-script-confirm" type="button" data-i18n="common.delete">Delete</button></div></dialog>
 </body>
 </html>

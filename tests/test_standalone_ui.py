@@ -62,6 +62,25 @@ class StandaloneUiTests(unittest.TestCase):
                 self.assertRegex(page, rf'src="{re.escape(filename)}(?:\?[^\"]*)?"')
                 self.assertGreater((examples / filename).stat().st_size, 100_000)
 
+    def test_magic_showcase_includes_compact_audio_and_full_resolution_screenshot(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        page = (root / 'examples' / 'ssml.html').read_text(encoding='utf-8')
+        index = (root / 'examples' / 'index.html').read_text(encoding='utf-8')
+        self.assertIn('id="magic-studio"', page)
+        self.assertIn('src="kokorotts-magic-dialogue.opus"', page)
+        self.assertIn('href="kokorotts-magic-dialogue.opus" download', page)
+        self.assertIn('src="../assets/kokorotts-magic-studio.webp"', page)
+        self.assertIn('width="2533" height="1217"', page)
+        self.assertIn('href="ssml.html#magic-studio"', index)
+        audio = root / 'examples' / 'kokorotts-magic-dialogue.opus'
+        picture = root / 'assets' / 'kokorotts-magic-studio.webp'
+        self.assertGreater(audio.stat().st_size, 100_000)
+        self.assertLess(audio.stat().st_size, 300_000)
+        self.assertLess(picture.stat().st_size, 150_000)
+        self.assertEqual(audio.read_bytes()[:4], b'OggS')
+        self.assertIn(b'OpusHead', audio.read_bytes()[:100])
+        self.assertEqual(picture.read_bytes()[8:12], b'WEBP')
+
     def test_snapshot_badge_identifies_image_build_but_release_badge_stays_concise(self) -> None:
         metadata = {
             "KOKOROTTS_BUILD_DATE": "2026-10-05T13:47:26Z",
@@ -191,7 +210,11 @@ class StandaloneUiTests(unittest.TestCase):
         self.assertIn("$('#volume').disabled = normalized", script.text)
         self.assertIn("function resetVoiceControls()", script.text)
         self.assertIn("function setInputType(", script.text)
-        self.assertIn("input_type: state.inputType", script.text)
+        self.assertIn("input_type: state.inputType === 'magic' ? 'ssml-h'", script.text)
+        self.assertIn('id="magic-editor-shell"', index.text)
+        self.assertIn('data-input-type="ssml-h"', index.text)
+        self.assertIn('id="script-list"', index.text)
+        self.assertIn("createStudio", script.text)
         self.assertIn("ssmlDialog.showModal()", script.text)
         self.assertIn("state.plainTextDraft", script.text)
         self.assertIn("state.ssmlDraft", script.text)

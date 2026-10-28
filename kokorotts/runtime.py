@@ -538,7 +538,26 @@ class InferenceRuntime:
                 resolve_language=resolve_language_code,
                 resolve_voice_language=resolve_voice_language,
             )
-        raise ValueError("input_type must be 'text' or 'ssml'")
+        if input_type == "ssml-h":
+            _, groups = self.prepare_dialogue(text, voice)
+            return [unit for group in groups for unit in group]
+        raise ValueError("input_type must be 'text', 'ssml' or 'ssml-h'")
+
+    def prepare_dialogue(self, text: str, voice: str):
+        """Validate and compile a whole studio document with one settings snapshot."""
+        from .ssml_h import compile_dialogue, parse_dialogue
+
+        experimental = self.settings.experimental_natural_chunking()
+        turns = parse_dialogue(text, voice, self.serves_voice)
+
+        def phonemize(value, language, selected_voice):
+            pipeline = self._pipeline_for(language, selected_voice)
+            for _, phonemes, _ in pipeline(value, selected_voice, 1.0,
+                    normalize_markdown_emphasis=False,
+                    experimental_natural_chunking=experimental):
+                if phonemes:
+                    yield phonemes
+        return turns, compile_dialogue(turns, phonemize)
 
     def phoneme_segments(
         self, text: str, voice: str, input_type: str = "text"

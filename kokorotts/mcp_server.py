@@ -662,8 +662,8 @@ def create_mcp_server(
             ),
         ],
         input_type: Annotated[
-            Literal["text", "ssml"],
-            Field(description="Use text for ordinary input or ssml for explicit SSML."),
+            Literal["text", "ssml", "ssml-h"],
+            Field(description="Use text for ordinary input, ssml for Kokoro legacy SSML/IPA, or ssml-h for standard-style multi-voice dialogue. Kokoro does not support voice design or delivery instructions."),
         ],
         voice: Annotated[
             str,

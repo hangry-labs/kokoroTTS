@@ -111,6 +111,7 @@ spacy-curated-transformers==0.3.1
 spacy-legacy==3.0.12
 spacy-loggers==1.0.5
 srsly==2.5.4
+ssml-h-tools==0.3.1
 sse-starlette==3.5.0
 starlette==1.7.0
 sympy==1.14.0

@@ -178,7 +178,7 @@ const TRANSLATIONS = {
   en: {
     title: "Hangry Labs KokoroTTS Voice Examples",
     dockerHub: "Docker Hub",
-    ssmlDialogues: "SSML dialogues",
+    ssmlDialogues: "Magic & dialogues",
     volumeControl: "Volume control",
     muteAudio: "Mute audio",
     unmuteAudio: "Unmute audio",
@@ -200,7 +200,7 @@ const TRANSLATIONS = {
   nb: {
     title: "Hangry Labs KokoroTTS stemmeeksempler",
     dockerHub: "Docker Hub",
-    ssmlDialogues: "SSML-dialoger",
+    ssmlDialogues: "Magic og dialoger",
     volumeControl: "Volumkontroll",
     muteAudio: "Demp lyd",
     unmuteAudio: "Slå på lyd",
@@ -222,7 +222,7 @@ const TRANSLATIONS = {
   pl: {
     title: "Przykłady głosów Hangry Labs KokoroTTS",
     dockerHub: "Docker Hub",
-    ssmlDialogues: "Dialogi SSML",
+    ssmlDialogues: "Magic i dialogi",
     volumeControl: "Regulacja głośności",
     muteAudio: "Wycisz dźwięk",
     unmuteAudio: "Włącz dźwięk",
@@ -244,7 +244,7 @@ const TRANSLATIONS = {
   ja: {
     title: "Hangry Labs KokoroTTS 音声サンプル",
     dockerHub: "Docker Hub",
-    ssmlDialogues: "SSML ダイアログ",
+    ssmlDialogues: "Magic と対話",
     volumeControl: "音量調整",
     muteAudio: "ミュート",
     unmuteAudio: "ミュート解除",
@@ -266,7 +266,7 @@ const TRANSLATIONS = {
   zh: {
     title: "Hangry Labs KokoroTTS 声音示例",
     dockerHub: "Docker Hub",
-    ssmlDialogues: "SSML 对话",
+    ssmlDialogues: "Magic 与对话",
     volumeControl: "音量控制",
     muteAudio: "静音",
     unmuteAudio: "取消静音",
@@ -288,7 +288,7 @@ const TRANSLATIONS = {
   es: {
     title: "Ejemplos de voz de Hangry Labs KokoroTTS",
     dockerHub: "Docker Hub",
-    ssmlDialogues: "Diálogos SSML",
+    ssmlDialogues: "Magic y diálogos",
     volumeControl: "Control de volumen",
     muteAudio: "Silenciar audio",
     unmuteAudio: "Activar audio",
@@ -310,7 +310,7 @@ const TRANSLATIONS = {
   fr: {
     title: "Exemples de voix Hangry Labs KokoroTTS",
     dockerHub: "Docker Hub",
-    ssmlDialogues: "Dialogues SSML",
+    ssmlDialogues: "Magic et dialogues",
     volumeControl: "Contrôle du volume",
     muteAudio: "Couper le son",
     unmuteAudio: "Rétablir le son",
@@ -332,7 +332,7 @@ const TRANSLATIONS = {
   hi: {
     title: "Hangry Labs KokoroTTS आवाज़ उदाहरण",
     dockerHub: "Docker Hub",
-    ssmlDialogues: "SSML संवाद",
+    ssmlDialogues: "Magic और संवाद",
     volumeControl: "आवाज़ नियंत्रण",
     muteAudio: "आवाज़ बंद करें",
     unmuteAudio: "आवाज़ चालू करें",
@@ -354,7 +354,7 @@ const TRANSLATIONS = {
   it: {
     title: "Esempi di voce Hangry Labs KokoroTTS",
     dockerHub: "Docker Hub",
-    ssmlDialogues: "Dialoghi SSML",
+    ssmlDialogues: "Magic e dialoghi",
     volumeControl: "Controllo volume",
     muteAudio: "Disattiva audio",
     unmuteAudio: "Attiva audio",
@@ -376,7 +376,7 @@ const TRANSLATIONS = {
   pt: {
     title: "Exemplos de voz do Hangry Labs KokoroTTS",
     dockerHub: "Docker Hub",
-    ssmlDialogues: "Diálogos SSML",
+    ssmlDialogues: "Magic e diálogos",
     volumeControl: "Controle de volume",
     muteAudio: "Silenciar áudio",
     unmuteAudio: "Ativar áudio",
@@ -398,7 +398,7 @@ const TRANSLATIONS = {
   de: {
     title: "Hangry Labs KokoroTTS Stimmbeispiele",
     dockerHub: "Docker Hub",
-    ssmlDialogues: "SSML-Dialoge",
+    ssmlDialogues: "Magic und Dialoge",
     volumeControl: "Lautstärkeregelung",
     muteAudio: "Audio stummschalten",
     unmuteAudio: "Audio einschalten",
@@ -420,7 +420,7 @@ const TRANSLATIONS = {
   vi: {
     title: "Ví dụ giọng nói Hangry Labs KokoroTTS",
     dockerHub: "Docker Hub",
-    ssmlDialogues: "Hội thoại SSML",
+    ssmlDialogues: "Magic và hội thoại",
     volumeControl: "Điều khiển âm lượng",
     muteAudio: "Tắt tiếng",
     unmuteAudio: "Bật tiếng",

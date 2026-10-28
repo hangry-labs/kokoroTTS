@@ -199,6 +199,12 @@ Replace the example address with the KokoroTTS host. Connect the agent to `http:
 | `latest` | Moving development full image. |
 | `latest_tiny` | Moving development tiny image. |
 
+Development snapshots also include **Magic Studio**: visual SSML-H dialogue
+editing, individual turn previews, locked takes, audio assembly, and an
+explicit-save script library. Saved scripts and audio workspaces use the same
+optional `/app/persistent` data volume. Kokoro uses native voices and prosody;
+neural voice design, cloning, and delivery instructions are not supported.
+
 Use stable tag-plus-digest references for repeatable deployments. Moving tags
 remain unpinned and receive subsequent development builds.
 

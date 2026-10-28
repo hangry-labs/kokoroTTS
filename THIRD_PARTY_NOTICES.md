@@ -148,6 +148,21 @@ either distribution mode.
 
 ## Browser Libraries
 
+### Hangry Labs Studio Components and SSML-H Tools
+
+- The Magic document editor, toolbar, take-bundle protocol, and dialogue
+  script/workspace storage are adapted from
+  [faster-qwen3-tts-studio](https://github.com/hangry-labs/faster-qwen3-tts-studio),
+  including its Apache-2.0 components originally adapted from Hangry Labs
+  VoxCPMTTS. Kokoro-specific changes preserve native model routing and controls.
+- Copyright: Hangry Labs and contributors. License: Apache License 2.0.
+- The engine-neutral parser is
+  [ssml-h-tools](https://github.com/hangry-labs/ssml-h-tools), pinned to 0.3.1,
+  under Apache License 2.0. Its dependency uses the separately noted defusedxml
+  terms. Distribution-supplied licenses remain in package metadata.
+- Additional Lucide glyphs use the same ISC/MIT notices below; the second
+  locally packaged subset avoids replacing icons used by the existing UI.
+
 ### WaveSurfer.js
 
 - Project: [katspaugh/wavesurfer.js](https://github.com/katspaugh/wavesurfer.js)
