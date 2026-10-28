@@ -533,15 +533,17 @@ $('#save-model-settings').addEventListener('click', async () => {
   }
 })
 
+let sampleRequest = 0
 async function loadSample(random = false) {
+  const request = ++sampleRequest
   const language = $('#language').value
   const payload = await fetchJson(`/tts/samples?language=${encodeURIComponent(language)}&random=${random}`)
+  if (request !== sampleRequest || language !== $('#language').value) return
   setComposerText(payload.text)
 }
 
 $('#language').addEventListener('change', async () => {
   refreshVoiceOptions()
-  if (state.inputType === 'magic') return
   try {
     await loadSample(false)
     setStatus(t('status.languageReady'), 'success')

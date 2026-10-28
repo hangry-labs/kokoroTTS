@@ -89,11 +89,11 @@ wheels = [
 
 [[package]]
 name = "certifi"
-version = "2026.7.22"
+version = "2026.10.18"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/a3/c2/24167ea9858356b47a87a50d39908bfdb72ceeefe0041586e704e5376b3a/certifi-2026.7.22.tar.gz", hash = "sha256:741e2c3b351ddf169a738da9f2c048608ff7f2c5cc02f1ebc6b118bb090d5d55", size = 138112, upload-time = "2026-07-22T03:35:12.644Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/7e/eb/a2aa1ac3ea30dd3f30ca57f40232138b6b0040719316ecb85daf61167771/certifi-2026.10.18.tar.gz", hash = "sha256:b9995d97b64d0431a5af837d8ca8cd6238104d1f319f04bd93ea43124d6c861e", size = 135227, upload-time = "2026-10-18T16:21:07.655Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/0b/a7/71ac2cff56fec219ed242bb11b8efb69fcc4bec75db06fb7bfe35de520e6/certifi-2026.7.22-py3-none-any.whl", hash = "sha256:62f22742b58a1a33014a2b6b706588a8d7e2a88ae7bd1a6ebe8c992928483775", size = 136983, upload-time = "2026-07-22T03:35:11.276Z" },
+    { url = "https://files.pythonhosted.org/packages/08/ba/95dd616042484f7c83a06974388b37b837732740ee70bc5dc715b5fcd55a/certifi-2026.10.18-py3-none-any.whl", hash = "sha256:73191c47aaa79da394e8fee2dbc2ec827432cab56311122c9e47abf79e390f62", size = 134093, upload-time = "2026-10-18T16:21:06.276Z" },
 ]
 
 [[package]]
@@ -468,11 +468,11 @@ wheels = [
 
 [[package]]
 name = "filelock"
-version = "4.0.12"
+version = "4.2.1"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/53/e4/34efcb869715cf299e47d1ac7b2624d2bcb6f2d3dffc2f0abe8417f65ab2/filelock-4.0.12.tar.gz", hash = "sha256:cf42711a7ac791818b299fab0332a088c65aeeefa36290de98db92c434303b0c", size = 253880, upload-time = "2026-10-05T13:17:43.677Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/d5/98/771d8ca889f220d7d7e352addf500666368f0fd081c6080a83767580c6e4/filelock-4.2.1.tar.gz", hash = "sha256:c4c937ccac2a813cee448e662a56366cfb374c0f8702e75f295c412cc1c5d5a3", size = 650997, upload-time = "2026-10-17T16:48:14.435Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/da/a1/b047e1c486a2c66283633b7dbb73872ca16ca1ce6a426f70d4d037fc8e1c/filelock-4.0.12-py3-none-any.whl", hash = "sha256:5f17ee83ecee8a6f3e389c75822fb70a1c2f0506b99438a6dffa1d56793588c8", size = 111732, upload-time = "2026-10-05T13:17:42.361Z" },
+    { url = "https://files.pythonhosted.org/packages/28/00/db89d339bc4ecdc8087fa7b8607ba22ffc27bf96286f340c9620bea428b3/filelock-4.2.1-py3-none-any.whl", hash = "sha256:7be2662e9e826b9bba28afc0f843a123280d799a2ea44bb5d35ccec67905ae44", size = 162455, upload-time = "2026-10-17T16:48:12.937Z" },
 ]
 
 [[package]]
@@ -691,16 +691,21 @@ source = { editable = "." }
 
 [package.optional-dependencies]
 server = [
+    { name = "certifi" },
     { name = "defusedxml" },
     { name = "fastapi" },
+    { name = "filelock" },
     { name = "huggingface-hub" },
     { name = "loguru" },
     { name = "mcp" },
     { name = "misaki", extra = ["de", "en", "zh"] },
     { name = "numpy" },
+    { name = "opentelemetry-api" },
     { name = "pyopenjtalk" },
+    { name = "python-multipart" },
     { name = "sea-g2p" },
     { name = "setuptools" },
+    { name = "ssml-h-tools" },
     { name = "torch" },
     { name = "transformers" },
     { name = "uvicorn", extra = ["standard"] },
@@ -709,16 +714,21 @@ server = [
 
 [package.metadata]
 requires-dist = [
+    { name = "certifi", marker = "extra == 'server'", specifier = "==2026.10.18" },
     { name = "defusedxml", marker = "extra == 'server'", specifier = "==0.7.1" },
     { name = "fastapi", marker = "extra == 'server'", specifier = "==0.136.3" },
+    { name = "filelock", marker = "extra == 'server'", specifier = "==4.2.1" },
     { name = "huggingface-hub", marker = "extra == 'server'", specifier = "==0.36.2" },
     { name = "loguru", marker = "extra == 'server'", specifier = "==0.7.3" },
     { name = "mcp", marker = "extra == 'server'", specifier = "==2.3.0" },
     { name = "misaki", extras = ["de", "en", "zh"], marker = "extra == 'server'", url = "https://github.com/hexgrad/misaki/archive/bbaf917e7bf7fbbe830f74f4acda6583ce1c0caf.tar.gz" },
     { name = "numpy", marker = "extra == 'server'", specifier = "==2.2.6" },
+    { name = "opentelemetry-api", marker = "extra == 'server'", specifier = "==1.45.1" },
     { name = "pyopenjtalk", marker = "extra == 'server'", specifier = "==0.4.1" },
+    { name = "python-multipart", marker = "extra == 'server'", specifier = "==0.0.32" },
     { name = "sea-g2p", marker = "extra == 'server'", specifier = "==0.10.0" },
     { name = "setuptools", marker = "extra == 'server'", specifier = "==79.0.1" },
+    { name = "ssml-h-tools", marker = "extra == 'server'", specifier = "==0.3.1" },
     { name = "torch", marker = "extra == 'server'", specifier = "==2.11.0" },
     { name = "transformers", marker = "extra == 'server'", specifier = "==4.57.6" },
     { name = "uvicorn", extras = ["standard"], marker = "extra == 'server'", specifier = "==0.51.0" },
@@ -1687,6 +1697,18 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/e4/be/0123026f719d1a7936f214a88b553bb5701e04ff2511147c1dab0c5035eb/sse_starlette-3.5.0.tar.gz", hash = "sha256:75de713aa8a9441513cc283220826da079d982770965b951e9437720e8bafdb2", size = 36794, upload-time = "2026-09-28T17:48:14.7Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/be/e4/cdda14023c316d71493bc54fdffc3dd006631b88866145c9d3cc33e0f1df/sse_starlette-3.5.0-py3-none-any.whl", hash = "sha256:3e6e1070df3f0f5d9cea81496de92dbb72f6721871d99748ece67441dd8b7997", size = 17407, upload-time = "2026-09-28T17:48:13.228Z" },
+]
+
+[[package]]
+name = "ssml-h-tools"
+version = "0.3.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "defusedxml" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/f3/31/d503b752ffe56a36ee54a24a6c2eb204aa13b136a206e615d91a089611d3/ssml_h_tools-0.3.1.tar.gz", hash = "sha256:df869dafc6abe176f12c53e05a2a838d92ad033ab4d572d73409b924781e8921", size = 23766, upload-time = "2026-10-10T21:22:05.211Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/8f/d7/5e56b2a3f73f7df80ac28893f483e7d9be9fe85430a9b8bc55b1ccb1f4d0/ssml_h_tools-0.3.1-py3-none-any.whl", hash = "sha256:c080652629e6ef1898c564f61edd0982fdfeacbb88bef82a43bbaca45031946f", size = 18803, upload-time = "2026-10-10T21:22:03.787Z" },
 ]
 
 [[package]]

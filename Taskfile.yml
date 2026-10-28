@@ -74,6 +74,11 @@ tasks:
     cmds:
       - uv pip compile requirements.in --python-version 3.13 --python-platform x86_64-manylinux_2_36 --index-strategy unsafe-best-match --upgrade --no-header --no-annotate --output-file requirements.txt
 
+  deps-test:
+    desc: Check security pins agree across dependency inputs and lockfiles
+    cmds:
+      - uv run --no-project --python 3.13 python -m unittest tests.test_dependency_security -v
+
   imagerun:
     desc: Run baked image with UI and API on PORT (default GPU_DEVICE=0)
     cmds:

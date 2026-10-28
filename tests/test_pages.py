@@ -14,6 +14,21 @@ from unittest.mock import patch
 from scripts.serve_pages import Handler, PREFIX
 
 
+class PagesDependencyTests(unittest.TestCase):
+    def test_local_theme_build_does_not_include_remote_theme_zip_downloader(self):
+        root = Path(__file__).resolve().parents[1]
+        gemfile = (root / 'site/Gemfile').read_text(encoding='utf-8')
+        lock = (root / 'site/Gemfile.lock').read_text(encoding='utf-8')
+        self.assertIn('gem "jekyll", "3.10.0"', gemfile)
+        for plugin in (
+            'jekyll-seo-tag', 'jekyll-relative-links', 'jekyll-optional-front-matter',
+            'jekyll-readme-index', 'jekyll-default-layout', 'jekyll-titles-from-headings',
+        ):
+            self.assertIn(f'gem "{plugin}"', gemfile)
+        self.assertNotIn('jekyll-remote-theme (', lock)
+        self.assertNotIn('rubyzip (', lock)
+
+
 class PagesPreviewTests(unittest.TestCase):
     def setUp(self):
         workspace = tempfile.TemporaryDirectory()

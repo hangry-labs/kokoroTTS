@@ -650,6 +650,8 @@ The data volume is recommended but optional. Without it, the same files are stor
 
 #### Included Changes
 
+- Fixed language changes leaving stale text in the Magic editor. The selected language now loads its introductory sample in Magic as well as Text mode; same-language voice changes keep the current script, and late sample responses cannot overwrite a newer language selection.
+- Applied targeted Certifi, Filelock, and OpenTelemetry security updates without changing the qualified Torch/Transformers/CUDA stack. Removed the unused remote-theme/Rubyzip dependency from the local website builder. See the [dependency security review](docs/DEPENDENCY_SECURITY.md) for remaining advisory exposure and compatibility decisions.
 - Added a Bella/Isabella Magic dialogue recording in compact Opus format and a full-resolution WebP editor screenshot to the public dialogue showcase.
 - Fixed the local website preview's audio duration and seeking by serving byte ranges and consistent GET/HEAD headers, keeping the Magic recording's playback timeline correctly scaled.
 - Added the newer Hangry Labs **Magic Studio** dialogue workspace, adapted from Qwen3-TTS Studio: visual voice/language/prosody editing, per-turn previews and regeneration, locked takes, assembly, undo/redo, import/export, and explicitly saved scripts/audio workspaces with folders and search. Additive `/tts/plan`, `/tts/ssml/capabilities` and `/tts/magic/*` endpoints share the Kokoro runtime. Explicit `ssml-h` uses the pinned shared compiler; existing plain-text/SSML and OpenAI defaults are unchanged. Unsupported neural voice design, cloning and delivery directions fail clearly rather than being ignored.
