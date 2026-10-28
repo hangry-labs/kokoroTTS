@@ -13,6 +13,8 @@
   <a href="README.es.md">Español</a>
 </p>
 
+<p align="center"><a href="https://hangry-labs.github.io/kokoroTTS/examples/?lang=en"><strong>🎧 Listen to voice examples</strong></a></p>
+
 # Hangry Labs KokoroTTS
 
 Easy-to-run Kokoro text-to-speech Docker images with a browser UI and HTTP API included.
@@ -132,7 +134,7 @@ Then open: **[http://localhost:7860](http://localhost:7860)**
 
 ## API Usage
 
-<details>
+<details markdown="1">
 
 <summary><strong>Show OpenAI-compatible and native API documentation</strong></summary>
 
@@ -300,7 +302,7 @@ audio.save("hello.mp3")
 
 ## MCP for AI Agents
 
-<details>
+<details markdown="1">
 
 <summary><strong>Show MCP setup, tools, and security guidance</strong></summary>
 
@@ -472,7 +474,7 @@ If you encounter bugs, have feature requests, or need help using Hangry Labs Kok
 
 ## Docker Images
 
-<details>
+<details markdown="1">
 
 <summary><strong>Show image variants, tags, and registry guidance</strong></summary>
 
@@ -491,7 +493,7 @@ Exact commands for every release and the current snapshot are kept in [Version H
 
 ## Local Development
 
-<details>
+<details markdown="1">
 
 <summary><strong>Show local development, testing, and release workflows</strong></summary>
 
@@ -526,6 +528,10 @@ task client-test
 
 The deployment controls in the System tab operate on five independently loaded model packs: the shared standard Kokoro checkpoint, German Martin, German Victoria, Kokoro Vietnamese, and Kokoro v1.1 Chinese. All packs are enabled by default on fresh installations. Existing installations that had all four former packs enabled automatically gain the new Chinese pack, while customized selections remain unchanged. The 54 standard voices, 14 Vietnamese voices, and 103 v1.1 Chinese/English voices move as their respective groups because each group shares one model and therefore has the same VRAM cost. Model weights load only when one of their voices is first used; disabling a pack releases cached models after active generations finish. In the tiny image, a disabled custom model is not downloaded unless its pack is later enabled and called.
 
+Build or preview the README-based project website and its voice/SSML galleries
+with `task pages-build` or `task pages`. Run `task pages-test` for website checks;
+see the [website guide](site/README.md) for prerequisites and configuration.
+
 Release from a clean tree:
 
 ```bash
@@ -548,7 +554,7 @@ The release task creates the release commit, annotated `vX.Y` Git tag, and next-
 
 ## Performance Benchmarks
 
-<details>
+<details markdown="1">
 
 <summary><strong>Show voice-generation and VRAM benchmark documentation</strong></summary>
 
@@ -624,6 +630,8 @@ The data volume is recommended but optional. Without it, the same files are stor
 #### Included Changes
 
 - Opened the `v1.1-snapshot` development line after the qualified v1.0 release.
+- Add a multilingual README-based project website with shared navigation,
+  integrated voice and SSML galleries, and local gallery styles.
 
 ### v1.0
 
@@ -657,7 +665,7 @@ docker run -p 7860:7860 --gpus all -v kokorotts_data:/app/persistent hangrylabs/
 
 The data volume is recommended but optional. Without it, the same files are stored in the container and disappear when that container is removed.
 
-<details>
+<details markdown="1">
 
 <summary><strong>Show v1.0 release notes and qualification</strong></summary>
 
@@ -760,7 +768,7 @@ Tiny image with NVIDIA GPU support:
 docker run -p 7860:7860 --gpus all -v kokorotts_hf_cache:/app/.cache/huggingface hangrylabs/kokorotts:v0.3_tiny@sha256:0caaaeda5d56c89218ad28d9210b8e9a067b96ebaaf3c40d83ecb520d687006b
 ```
 
-<details>
+<details markdown="1">
 
 <summary><strong>Show v0.3 release notes</strong></summary>
 
@@ -790,7 +798,7 @@ docker run -p 7860:7860 hangrylabs/kokorotts:v0.2@sha256:35c3fa113aaf8cf278b682b
 docker run -p 7860:7860 --gpus "device=1" -e CUDA_VISIBLE_DEVICES=1 hangrylabs/kokorotts:v0.2@sha256:35c3fa113aaf8cf278b682b6505dabb662f2afdf516d3fe21d443ade57930122
 ```
 
-<details>
+<details markdown="1">
 
 <summary><strong>Show v0.2 release notes</strong></summary>
 
@@ -827,7 +835,7 @@ docker run -p 7860:7860 kokorotts:v0.0.1-local
 docker run -p 7860:7860 --gpus "device=1" -e CUDA_VISIBLE_DEVICES=1 kokorotts:v0.0.1-local
 ```
 
-<details>
+<details markdown="1">
 
 <summary><strong>Show v0.0.1 release notes</strong></summary>
 

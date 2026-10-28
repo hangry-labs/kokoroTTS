@@ -1,0 +1,26 @@
+/* SPDX-License-Identifier: Apache-2.0. Gallery within the shared project site. */
+html,body{overflow-x:clip}
+.gallery-content{font:16px/1.5 ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;z-index:0}
+.gallery-content::before{content:none}
+.gallery-content>section{min-height:0;max-width:none;padding:24px 28px}
+.gallery-content .brand-lockup,.gallery-content [data-project-overview],.gallery-content .top-links>a[href="https://github.com/Hangry-Labs/kokoroTTS"]{display:none}
+.gallery-content .topbar{justify-content:flex-start;background:none;border:0;backdrop-filter:none;padding:0;margin-bottom:22px}
+.gallery-content .top-actions{justify-content:flex-start}
+.gallery-content .hero{gap:20px;grid-template-columns:minmax(0,1fr) minmax(220px,.55fr)}
+.gallery-content .hero-logo-link{max-width:280px}
+.gallery-content .hero-site-link{display:none}
+.gallery-content .brand-glow{font-size:clamp(2rem,4vw,3.5rem);line-height:1.1}
+.gallery-content .gallery-footer{margin-top:0;padding-bottom:8px}
+.gallery-content [data-audio-card] .rounded-full{flex-shrink:0}
+@media(max-width:900px){.gallery-content .hero{grid-template-columns:minmax(0,1fr)}.gallery-content .hero-logo-panel{display:none}}
+@media(max-width:620px){.gallery-content>section{padding:20px 16px}}
+
+.ssml-content.ssml-page{min-width:0;background:none}
+.ssml-content>.page-shell{width:auto;max-width:none;margin:0;padding:24px 28px}
+.ssml-content .site-header,.ssml-content footer{display:none}
+.ssml-content .page-shell::before{content:none}
+.ssml-content .intro{min-height:0;padding-top:10px;gap:24px}
+.ssml-content .intro h1{font-size:clamp(2rem,4.4vw,4rem)}
+.ssml-content .intro img{max-height:260px}
+.ssml-content .intro p{font-size:1rem}
+@media(max-width:620px){.ssml-content>.page-shell{padding:20px 16px}.ssml-content .intro img{max-height:190px}}

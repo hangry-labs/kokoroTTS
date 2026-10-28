@@ -13,6 +13,8 @@
   <a href="README.es.md">Español</a>
 </p>
 
+<p align="center"><a href="https://hangry-labs.github.io/kokoroTTS/examples/?lang=ja"><strong>🎧 音声サンプルを聴く</strong></a></p>
+
 # Hangry Labs KokoroTTS
 
 ローカルのブラウザー UI、ストリーミング、OpenAI 互換 API を備えた Docker ファーストのテキスト読み上げ環境です。

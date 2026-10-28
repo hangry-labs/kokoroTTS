@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0. Shared Hangry Labs animated background.
 const canvas = document.getElementById("shapes");
 const ctx = canvas.getContext("2d");
 const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -7,6 +8,8 @@ const frameInterval = 100;
 let columns = 0;
 let drops = [];
 let lastUpdate = 0;
+let animation = null;
+const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
 function resetCanvas() {
   canvas.width = window.innerWidth;
@@ -23,8 +26,9 @@ function resetCanvas() {
 }
 
 function draw(timestamp) {
+  if (document.hidden || reducedMotion.matches) { animation = null; return; }
   if (timestamp - lastUpdate < frameInterval) {
-    requestAnimationFrame(draw);
+    animation = requestAnimationFrame(draw);
     return;
   }
   lastUpdate = timestamp;
@@ -47,9 +51,17 @@ function draw(timestamp) {
     }
   }
 
-  requestAnimationFrame(draw);
+  animation = requestAnimationFrame(draw);
 }
 
 window.addEventListener("resize", resetCanvas);
+function updateAnimation() {
+  if (animation !== null) cancelAnimationFrame(animation);
+  animation = null;
+  if (!document.hidden && !reducedMotion.matches) animation = requestAnimationFrame(draw);
+  else ctx.clearRect(0,0,canvas.width,canvas.height);
+}
+document.addEventListener("visibilitychange",updateAnimation);
+reducedMotion.addEventListener("change",updateAnimation);
 resetCanvas();
-requestAnimationFrame(draw);
+updateAnimation();

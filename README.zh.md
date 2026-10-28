@@ -13,6 +13,8 @@
   <a href="README.es.md">Español</a>
 </p>
 
+<p align="center"><a href="https://hangry-labs.github.io/kokoroTTS/examples/?lang=zh"><strong>🎧 收听语音示例</strong></a></p>
+
 # Hangry Labs KokoroTTS
 
 以 Docker 为优先的文本转语音服务，包含本地浏览器界面、流式生成和 OpenAI 兼容 API。

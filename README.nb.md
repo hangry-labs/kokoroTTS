@@ -13,6 +13,8 @@
   <a href="README.es.md">Español</a>
 </p>
 
+<p align="center"><a href="https://hangry-labs.github.io/kokoroTTS/examples/?lang=nb"><strong>🎧 Lytt til stemmeeksempler</strong></a></p>
+
 # Hangry Labs KokoroTTS
 
 Docker-først tekst-til-tale med et lokalt nettlesergrensesnitt, strømming og OpenAI-kompatibelt API.

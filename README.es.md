@@ -13,6 +13,8 @@
   <strong>Español</strong>
 </p>
 
+<p align="center"><a href="https://hangry-labs.github.io/kokoroTTS/examples/?lang=es"><strong>🎧 Escuchar ejemplos de voces</strong></a></p>
+
 # Hangry Labs KokoroTTS
 
 Texto a voz preparado para Docker, con interfaz web local, generación por streaming y una API compatible con OpenAI.

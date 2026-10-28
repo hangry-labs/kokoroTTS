@@ -13,6 +13,8 @@
   <a href="README.es.md">Español</a>
 </p>
 
+<p align="center"><a href="https://hangry-labs.github.io/kokoroTTS/examples/?lang=pl"><strong>🎧 Posłuchaj przykładów głosów</strong></a></p>
+
 # Hangry Labs KokoroTTS
 
 Gotowy do uruchomienia w Dockerze system zamiany tekstu na mowę z lokalnym interfejsem, strumieniowaniem i API zgodnym z OpenAI.

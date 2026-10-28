@@ -1,124 +1,103 @@
-<p>
-  <a href="https://hangry-labs.github.io/kokoroTTS/examples/">
-    <img src="https://github.com/Hangry-Labs/kokoroTTS/raw/main/assets/kokoro_logo_horizontal.webp" alt="Hangry Labs KokoroTTS logo">
+<p align="center">
+  <a href="https://hangry-labs.github.io/kokoroTTS/">
+    <img src="https://raw.githubusercontent.com/hangry-labs/kokoroTTS/main/assets/kokoro_logo_horizontal.webp" alt="Hangry Labs KokoroTTS logo" width="900">
   </a>
 </p>
 
-<p>
-  <strong>English</strong> ·
-  <a href="https://github.com/Hangry-Labs/kokoroTTS/blob/main/README.nb.md">Norsk bokmål</a> ·
-  <a href="https://github.com/Hangry-Labs/kokoroTTS/blob/main/README.pl.md">Polski</a> ·
-  <a href="https://github.com/Hangry-Labs/kokoroTTS/blob/main/README.ja.md">日本語</a> ·
-  <a href="https://github.com/Hangry-Labs/kokoroTTS/blob/main/README.zh.md">简体中文</a> ·
-  <a href="https://github.com/Hangry-Labs/kokoroTTS/blob/main/README.es.md">Español</a>
+<p align="center">
+  <a href="https://hangry-labs.github.io/kokoroTTS/?lang=en">English</a> ·
+  <a href="https://hangry-labs.github.io/kokoroTTS/README.nb.html?lang=nb">Norsk bokmål</a> ·
+  <a href="https://hangry-labs.github.io/kokoroTTS/README.pl.html?lang=pl">Polski</a> ·
+  <a href="https://hangry-labs.github.io/kokoroTTS/README.ja.html?lang=ja">日本語</a> ·
+  <a href="https://hangry-labs.github.io/kokoroTTS/README.zh.html?lang=zh">简体中文</a> ·
+  <a href="https://hangry-labs.github.io/kokoroTTS/README.es.html?lang=es">Español</a>
 </p>
+
+<p align="center"><a href="https://hangry-labs.github.io/kokoroTTS/examples/?lang=en"><strong>🎧 Listen to voice examples</strong></a> · <a href="https://hangry-labs.github.io/kokoroTTS/examples/ssml.html">SSML dialogue showcase</a></p>
 
 # Hangry Labs KokoroTTS
 
-Easy-to-run Kokoro text-to-speech Docker images with a browser UI and HTTP API included.
-
-This Hangry Labs fork is built for people who want text to speech to work without a long setup. Install Docker, run one command, open the local UI, or call the API from your own application.
-
-## Listen First
-
-Voice examples are available here:
-
-https://hangry-labs.github.io/kokoroTTS/examples/
-
-The examples page includes MP3 previews for all 173 voices across American English, British English, Japanese, Mandarin Chinese, Spanish, French, Hindi, Italian, Brazilian Portuguese, German, and Vietnamese. Selecting a language filters the examples and switches the page text to that language.
-
-## Project Links
-
-- Voice examples: https://hangry-labs.github.io/kokoroTTS/examples/
-- GitHub repository: https://github.com/Hangry-Labs/kokoroTTS
-- Issues and support: https://github.com/Hangry-Labs/kokoroTTS/issues
-- Hangry Labs: https://hangrylabs.app/
+Local Kokoro text to speech with a browser Studio, OpenAI-compatible and native
+HTTP APIs, and optional MCP tools in one Docker container. Run on NVIDIA GPU or
+CPU, with 173 voices across 11 language groups and five independently managed
+model packs.
 
 ## Quick Start
 
-### Stable version:
-
-Released images are pinned by both tag and registry digest so Docker verifies the exact published image.
-
-Run with NVIDIA GPU support:
+Run the stable full image with NVIDIA GPU support:
 
 ```bash
 docker run -p 7860:7860 --gpus all -v kokorotts_data:/app/persistent hangrylabs/kokorotts:v1.0@sha256:5afef5b9f3d779e56248992274d46a66c0715110eb09e47e1332c39951361f24
 ```
 
-Run on CPU:
+Or run on CPU:
 
 ```bash
 docker run -p 7860:7860 -v kokorotts_data:/app/persistent hangrylabs/kokorotts:v1.0@sha256:5afef5b9f3d779e56248992274d46a66c0715110eb09e47e1332c39951361f24
 ```
 
-Run on a specific GPU:
+Open **[http://localhost:7860](http://localhost:7860)**. The Studio and APIs share
+the same port. Docker Desktop with Linux containers is supported on Windows;
+GPU use requires a working NVIDIA Container Toolkit/Docker GPU setup.
 
-```bash
-docker run -p 7860:7860 --gpus "device=1" -e CUDA_VISIBLE_DEVICES=1 -v kokorotts_data:/app/persistent hangrylabs/kokorotts:v1.0@sha256:5afef5b9f3d779e56248992274d46a66c0715110eb09e47e1332c39951361f24
-```
+The full image includes all model families, voices and language assets for
+offline use after pulling. The optional `kokorotts_data` volume preserves saved
+settings and downloaded files when replacing containers. Without it, those files
+live inside the current container.
 
-Run the tiny image without baked model assets:
+### Tiny image
+
+The tiny image keeps the same UI and APIs but downloads model and voice files
+on first use. Keep its data volume so subsequent runs can reuse those assets:
 
 ```bash
 docker run -p 7860:7860 --gpus all -v kokorotts_data:/app/persistent hangrylabs/kokorotts:v1.0_tiny@sha256:c8c044a2968cbd6cc49c811176fb856c000af324f8b01a027db91e38f1a863fa
 ```
 
-The tiny image is smaller, but it downloads model and voice files after startup and stores them in the Docker volume. If you just want KokoroTTS to work quickly, use one of the standard `v1.0` commands above.
-
-### Latest image (`v1.1-snapshot`):
-
-Choose one complete command below.
-
-Run the full image with NVIDIA GPU support:
-
-```bash
-docker run -p 7860:7860 --gpus all -v kokorotts_data:/app/persistent hangrylabs/kokorotts:latest
-```
-
-Run the full image on CPU:
-
-```bash
-docker run -p 7860:7860 -v kokorotts_data:/app/persistent hangrylabs/kokorotts:latest
-```
-
-Run the full image on GPU index `1`:
-
-```bash
-docker run -p 7860:7860 --gpus "device=1" -e CUDA_VISIBLE_DEVICES=1 -v kokorotts_data:/app/persistent hangrylabs/kokorotts:latest
-```
-
-Run the tiny image with NVIDIA GPU support:
-
-```bash
-docker run -p 7860:7860 --gpus all -v kokorotts_data:/app/persistent hangrylabs/kokorotts:latest_tiny
-```
-
-Use the stable version tag when you want repeatable deployments. Use `latest` when you want the newest published full image, and `latest_tiny` when you want the newest published tiny image. The `/app/persistent` volume is recommended but optional; without it, downloaded assets and saved settings remain inside the current container and are lost when it is removed.
-
-Then open:
-
-http://localhost:7860
-
-The container includes the web UI and the HTTP API on the same port.
+Omit `--gpus all` for CPU use. Stable commands pin both the readable version and
+published image digest. Docker Hub and GHCR publish matching images.
 
 ## What You Get
 
-<p>
-  <img src="https://github.com/Hangry-Labs/kokoroTTS/raw/main/assets/ui.webp" alt="KokoroTTS browser interface">
-</p>
+<p align="center"><img src="https://raw.githubusercontent.com/hangry-labs/kokoroTTS/main/assets/ui.webp" alt="KokoroTTS Studio with generation, playback and audio controls"></p>
 
-- Responsive browser audio workspace with Generate, Stream, API, and System views
-- Waveform playback, seeking, download controls, and cancellable MP3 streaming
-- OpenAI-compatible and Kokoro-native HTTP APIs for applications and automation
-- MP3 output from the UI by default
-- OpenAI-compatible MP3 defaults plus backward-compatible WAV defaults on the native API
-- WAV, MP3, FLAC, OGG Vorbis, Opus, AAC, and raw PCM output support
-- Full 173-voice catalog exposed in the UI and API, including dedicated German, Vietnamese, and enhanced Chinese models
-- Persistent System controls for choosing independently loaded model packs and their served voices
-- Optional Streamable HTTP MCP tools with expiring URL-only audio results for AI agents
-- GPU support when Docker/NVIDIA support is available
-- Offline-friendly usage with the standard full image once it is available locally
+- Generate and Stream workspaces with waveform playback, seeking and downloads.
+- 173 voices across American and British English, Japanese, Mandarin Chinese,
+  Spanish, French, Hindi, Italian, Brazilian Portuguese, German and Vietnamese.
+- Experimental native SSML for multi-character dialogue, language routing,
+  prosody, explicit pauses and direct phonemes, with five complete recordings
+  and copyable scripts in the [dialogue showcase](https://hangry-labs.github.io/kokoroTTS/examples/ssml.html).
+- Per-request speed, pitch, tempo, volume and normalization controls. Neutral
+  defaults preserve ordinary synthesis.
+- OpenAI-compatible and Kokoro-native APIs, progressive audio streaming, model
+  discovery and interactive API documentation.
+- WAV, MP3, FLAC, OGG Vorbis, Opus, AAC and raw PCM. The Studio and OpenAI API
+  default to MP3; the native API defaults to WAV for compatibility.
+- System controls for model packs, saved defaults and runtime/GPU status.
+- Studio languages: English, Polish, Japanese, Chinese, Spanish and German.
+- Optional MCP tools returning expiring audio links for AI agents.
+
+## Runtime Settings
+
+| Setting | Purpose |
+| --- | --- |
+| Port `7860` | Studio, HTTP APIs and optional MCP on the same server. |
+| `/app/persistent` | Optional data volume for model downloads, saved settings and temporary MCP audio. |
+| System → model packs | Enable standard Kokoro, German Martin, German Victoria, Vietnamese or Chinese v1.1 independently. |
+| `/app/persistent/app/settings.json` | Saved deployment settings managed through System and the settings API. |
+| `KOKOROTTS_API_KEY` | Optional authentication for `/v1/*`; disabled by default. This does not protect native APIs or MCP. |
+| `KOKOROTTS_ENABLE_MCP=1` | Enable the opt-in `/mcp` endpoint on a trusted private network. |
+| `KOKOROTTS_MCP_BASE_URL` | Public-to-the-caller server address used for generated audio links. |
+
+All five packs are enabled by default. Model weights load into CPU/GPU memory on
+first use; disabling a pack releases its cached model after active generations
+finish. Voices sharing one checkpoint stay together: 54 standard voices, two
+independent German voices, 14 Vietnamese voices, and 103 Chinese v1.1/English
+voices. In the tiny image, a disabled custom model is not downloaded until its
+pack is enabled and called.
+
+See the [main guide](https://hangry-labs.github.io/kokoroTTS/#docker-images) for
+GPU selection, image details and persistence.
 
 ## API Examples
 
@@ -212,32 +191,46 @@ Replace the example address with the KokoroTTS host. Connect the agent to `http:
 
 ## Image Tags
 
-- Current release tag: `v1.0`
-- Future release tags use the same pattern: `vX.Y`
-- Tiny tags use the pattern `vX.Y_tiny`
+| Tag | Contents |
+| --- | --- |
+| `v1.0` | Stable full image with baked model and voice assets. |
+| `v1.0_tiny` | Stable runtime with assets downloaded on first use. |
+| `latest` | Moving development full image. |
+| `latest_tiny` | Moving development tiny image. |
 
-Example release tags:
+Use stable tag-plus-digest references for repeatable deployments. Moving tags
+remain unpinned and receive subsequent development builds.
 
-```bash
-docker run -p 7860:7860 --gpus all -v kokorotts_data:/app/persistent hangrylabs/kokorotts:v1.0@sha256:5afef5b9f3d779e56248992274d46a66c0715110eb09e47e1332c39951361f24
-docker run -p 7860:7860 --gpus "device=1" -e CUDA_VISIBLE_DEVICES=1 -v kokorotts_data:/app/persistent hangrylabs/kokorotts:v1.0@sha256:5afef5b9f3d779e56248992274d46a66c0715110eb09e47e1332c39951361f24
-docker run -p 7860:7860 --gpus all -v kokorotts_data:/app/persistent hangrylabs/kokorotts:v1.0_tiny@sha256:c8c044a2968cbd6cc49c811176fb856c000af324f8b01a027db91e38f1a863fa
-```
+- [Docker Hub tags](https://hub.docker.com/r/hangrylabs/kokorotts/tags)
+- [GHCR mirror](https://github.com/hangry-labs/kokoroTTS/pkgs/container/kokorotts)
+- [Release history](https://hangry-labs.github.io/kokoroTTS/#version-history)
 
-The standard `vX.Y` image is the recommended image for most users. It includes the standard Kokoro model, dedicated German and Vietnamese models, the enhanced Kokoro v1.1 Chinese model, all voice packs, and required language assets for offline-friendly use after the image is pulled.
+## Benchmarks
 
-Tiny images use the `vX.Y_tiny` tag pattern. They keep runtime and language dependencies, but skip baked Hugging Face model and voice files. Current images use the optional `/app/persistent` volume so downloaded assets and settings survive container replacement.
+The repository includes repeatable [speech-generation measurements](https://hangry-labs.github.io/kokoroTTS/benchmarks/tts/BENCHMARKS.html)
+and [VRAM lifecycle measurements](https://hangry-labs.github.io/kokoroTTS/benchmarks/vram/VRAM_BENCHMARKS.html).
+Each report records the hardware, corpus and settings used; results depend on
+the selected language, checkpoint and deployment hardware.
 
-All five model packs are served by default. The System controls can disable the shared standard Kokoro checkpoint, German Martin, German Victoria, Kokoro Vietnamese, or Kokoro v1.1 Chinese. The 54 standard voices, 14 Vietnamese voices, and 103 v1.1 Chinese/English voices remain together within their respective packs because each group shares one model and has the same VRAM cost. Models load into CPU/GPU memory on first use, and disabling a pack releases cached models after active generations finish. With the tiny image, a disabled custom checkpoint is not downloaded unless its pack is later enabled and called.
+## Privacy and Responsible Use
 
-## Links
+Synthesis runs locally. The full image can run without network access; the tiny
+image needs network access to download missing assets before offline use.
+Protect sensitive input text and generated speech, and use voices and content
+you are authorized to use. Do not impersonate people or present synthetic speech
+as an authentic recording. Review generated output before publishing it.
 
-- Voice examples: https://hangry-labs.github.io/kokoroTTS/examples/
-- GitHub: https://github.com/Hangry-Labs/kokoroTTS
-- Hangry Labs: https://hangrylabs.app/
-- Issues: https://github.com/Hangry-Labs/kokoroTTS/issues
+## Project Links
 
-Docker Hub comments are not monitored regularly. GitHub Issues are the best place to report bugs.
+- [Project website and documentation](https://hangry-labs.github.io/kokoroTTS/)
+- [Voice gallery](https://hangry-labs.github.io/kokoroTTS/examples/)
+- [SSML dialogue showcase](https://hangry-labs.github.io/kokoroTTS/examples/ssml.html)
+- [GitHub source](https://github.com/hangry-labs/kokoroTTS)
+- [Issues and support](https://github.com/hangry-labs/kokoroTTS/issues)
+- [Hangry Labs](https://hangrylabs.app/)
+
+Docker Hub comments are not monitored regularly. GitHub Issues are the best
+place to report bugs.
 
 ## Attribution
 
@@ -264,8 +257,8 @@ image is a mixed-license distribution containing GPL, LGPL, and other
 third-party components. Commercial use is permitted, while redistribution
 must follow the applicable notices, license, and corresponding-source terms.
 Every full and tiny image includes a checksum-verified compliance bundle at
-`/app/third_party`; details are maintained in the repository's `LICENSE` and
-`THIRD_PARTY_NOTICES.md` files. Original Kokoro copyright remains with the
+`/app/third_party`; details are maintained in the repository's [LICENSE](https://github.com/hangry-labs/kokoroTTS/blob/main/LICENSE) and
+[third-party notices](https://hangry-labs.github.io/kokoroTTS/THIRD_PARTY_NOTICES.html). Original Kokoro copyright remains with the
 upstream authors; Hangry Labs maintains the Docker packaging, web UI/API
 integration, examples page, documentation, release tooling, and other
 modifications in this fork.

@@ -1,0 +1,108 @@
+title: KokoroTTS
+description: Local multilingual Kokoro text to speech from Hangry Labs.
+url: https://hangry-labs.github.io
+baseurl: /kokoroTTS
+repository: hangry-labs/kokoroTTS
+encoding: utf-8
+markdown: kramdown
+highlighter: rouge
+theme: null
+layouts_dir: site/theme/_layouts
+plugins:
+  - jekyll-seo-tag
+  - jekyll-relative-links
+  - jekyll-optional-front-matter
+  - jekyll-readme-index
+  - jekyll-default-layout
+  - jekyll-titles-from-headings
+relative_links:
+  enabled: true
+  collections: true
+kramdown:
+  input: GFM
+  hard_wrap: false
+  parse_block_html: false
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: default
+      lang: en
+  - scope:
+      path: README.nb.md
+    values:
+      lang: nb
+  - scope:
+      path: README.pl.md
+    values:
+      lang: pl
+  - scope:
+      path: README.ja.md
+    values:
+      lang: ja
+  - scope:
+      path: README.zh.md
+    values:
+      lang: zh
+  - scope:
+      path: README.es.md
+    values:
+      lang: es
+hangry:
+  languages: [en, nb, pl, ja, zh, es]
+  asset_root: /site/theme/assets/hangry-pages
+  examples_path: /examples/
+  docs_path: /docs/
+  repository_url: https://github.com/hangry-labs/kokoroTTS
+  background: matrix
+exclude:
+  - AGENTS.md
+  - "**/AGENTS.md"
+  - UPSTREAM_ISSUES.md
+  - UPSTREAM_PULL_REQUESTS.md
+  - .ai
+  - .idea
+  - .venv
+  - .cache
+  - .task
+  - .ci-build
+  - .sass-cache
+  - .jekyll-cache
+  - .jekyll-metadata
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor
+  - build
+  - dist
+  - outputs
+  - artifacts
+  - models
+  - benchmark-data
+  - benchmark-artifacts
+  - docs/internal
+  - scripts
+  - tests
+  - Dockerfile
+  - Taskfile.yml
+  - pyproject.toml
+  - MANIFEST.in
+  - "requirements.*"
+  - "*.egg-info"
+  - site/Gemfile
+  - site/Gemfile.lock
+  - site/Dockerfile
+  - site/README.md
+  - site/theme/hangry-labs-pages.gemspec
+  - examples/index.html
+  - "**/__pycache__"
+  - todo
+  - kokorotts
+  - .pytest_cache
+  - site/tests
+  - examples/ssml.html
+  - .build-cache
+  - test-results
+  - testbench
+  - uv.lock
+  - "*.tmp"

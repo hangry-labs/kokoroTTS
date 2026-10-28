@@ -31,3 +31,5 @@ benchmarks/
 examples/
 demo/
 
+# Website builder is separate from the inference image
+site/

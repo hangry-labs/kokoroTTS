@@ -1,0 +1,8 @@
+source "https://rubygems.org"
+
+# Matches GitHub Pages' supported build rather than the TTS runtime.
+gem "github-pages", "232", group: :jekyll_plugins
+gem "webrick", "~> 1.9"
+gem "csv", "~> 3.3"
+gem "base64", "~> 0.3"
+gem "logger", "~> 1.7"
